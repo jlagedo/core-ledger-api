@@ -1,0 +1,25 @@
+@host = http://localhost:5204
+
+### Get all todos
+GET {{host}}/api/todos
+
+### Create todo
+POST {{host}}/api/todos
+Content-Type: application/json
+
+{
+  "description": "Test todo",
+  "isCompleted": false
+}
+
+### Update todo
+PUT {{host}}/api/todos/1
+Content-Type: application/json
+
+{
+  "description": "Updated todo",
+  "isCompleted": true
+}
+
+### Delete todo
+DELETE {{host}}/api/todos/1

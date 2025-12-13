@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: core-ledger-db
+    environment:
+      POSTGRES_DB: core_ledger_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/18/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
