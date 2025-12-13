@@ -8,6 +8,7 @@ builder.Services.AddDbContext<ToDoDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddControllers();
 var app = builder.Build();
 
