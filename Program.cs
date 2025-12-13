@@ -5,7 +5,7 @@ using core_ledger_api.Infra;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ToDoDbContext>(options =>
 {
-    options.UseInMemoryDatabase("ToDos");
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddControllers();
