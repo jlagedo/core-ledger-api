@@ -1,6 +1,197 @@
 @CoreLedger.API_HostAddress = http://localhost:5071
 
-GET {{CoreLedger.API_HostAddress}}/weatherforecast/
+# ==================== ToDos API Tests ====================
+
+### GET All ToDos - Retrieve all ToDo items
+GET {{CoreLedger.API_HostAddress}}/api/ToDos
+Accept: application/json
+
+###
+
+### GET ToDo by ID - Retrieve a specific ToDo item (valid ID)
+GET {{CoreLedger.API_HostAddress}}/api/ToDos/1
+Accept: application/json
+
+###
+
+### GET ToDo by ID - Retrieve a specific ToDo item (non-existent ID)
+GET {{CoreLedger.API_HostAddress}}/api/ToDos/999
+Accept: application/json
+
+###
+
+### POST Create ToDo - Create a new ToDo item (valid data)
+POST {{CoreLedger.API_HostAddress}}/api/ToDos
+Content-Type: application/json
+
+{
+  "description": "Complete project documentation"
+}
+
+###
+
+### POST Create ToDo - Create a new ToDo item (empty description - should fail validation)
+POST {{CoreLedger.API_HostAddress}}/api/ToDos
+Content-Type: application/json
+
+{
+  "description": ""
+}
+
+###
+
+### POST Create ToDo - Create a new ToDo item (null description - should fail validation)
+POST {{CoreLedger.API_HostAddress}}/api/ToDos
+Content-Type: application/json
+
+{
+  "description": null
+}
+
+###
+
+### POST Create ToDo - Create a new ToDo item (missing description - should fail validation)
+POST {{CoreLedger.API_HostAddress}}/api/ToDos
+Content-Type: application/json
+
+{
+}
+
+###
+
+### PUT Update ToDo - Update an existing ToDo item (mark as completed)
+PUT {{CoreLedger.API_HostAddress}}/api/ToDos/1
+Content-Type: application/json
+
+{
+  "description": "Complete project documentation - Updated",
+  "isCompleted": true
+}
+
+###
+
+### PUT Update ToDo - Update an existing ToDo item (change description only)
+PUT {{CoreLedger.API_HostAddress}}/api/ToDos/1
+Content-Type: application/json
+
+{
+  "description": "Updated task description",
+  "isCompleted": false
+}
+
+###
+
+### PUT Update ToDo - Update an existing ToDo item (mark as incomplete)
+PUT {{CoreLedger.API_HostAddress}}/api/ToDos/1
+Content-Type: application/json
+
+{
+  "description": "Task to be completed later",
+  "isCompleted": false
+}
+
+###
+
+### PUT Update ToDo - Update non-existent ToDo item
+PUT {{CoreLedger.API_HostAddress}}/api/ToDos/999
+Content-Type: application/json
+
+{
+  "description": "This should fail",
+  "isCompleted": true
+}
+
+###
+
+### PUT Update ToDo - Update with empty description (should fail validation)
+PUT {{CoreLedger.API_HostAddress}}/api/ToDos/1
+Content-Type: application/json
+
+{
+  "description": "",
+  "isCompleted": false
+}
+
+###
+
+### PUT Update ToDo - Update with null description (should fail validation)
+PUT {{CoreLedger.API_HostAddress}}/api/ToDos/1
+Content-Type: application/json
+
+{
+  "description": null,
+  "isCompleted": false
+}
+
+###
+
+### PUT Update ToDo - Update with missing properties (should fail validation)
+PUT {{CoreLedger.API_HostAddress}}/api/ToDos/1
+Content-Type: application/json
+
+{
+}
+
+###
+
+### DELETE ToDo - Delete an existing ToDo item
+DELETE {{CoreLedger.API_HostAddress}}/api/ToDos/1
+
+###
+
+### DELETE ToDo - Delete non-existent ToDo item
+DELETE {{CoreLedger.API_HostAddress}}/api/ToDos/999
+
+###
+
+# ==================== Workflow Test Sequence ====================
+
+### Workflow Step 1: Create a new ToDo
+POST {{CoreLedger.API_HostAddress}}/api/ToDos
+Content-Type: application/json
+
+{
+  "description": "Test workflow task"
+}
+
+###
+
+### Workflow Step 2: Get all ToDos to verify creation
+GET {{CoreLedger.API_HostAddress}}/api/ToDos
+Accept: application/json
+
+###
+
+### Workflow Step 3: Get the newly created ToDo by ID (assuming ID 2)
+GET {{CoreLedger.API_HostAddress}}/api/ToDos/2
+Accept: application/json
+
+###
+
+### Workflow Step 4: Update the ToDo to mark as completed
+PUT {{CoreLedger.API_HostAddress}}/api/ToDos/2
+Content-Type: application/json
+
+{
+  "description": "Test workflow task - Completed",
+  "isCompleted": true
+}
+
+###
+
+### Workflow Step 5: Verify the update
+GET {{CoreLedger.API_HostAddress}}/api/ToDos/2
+Accept: application/json
+
+###
+
+### Workflow Step 6: Delete the test ToDo
+DELETE {{CoreLedger.API_HostAddress}}/api/ToDos/2
+
+###
+
+### Workflow Step 7: Verify deletion
+GET {{CoreLedger.API_HostAddress}}/api/ToDos/2
 Accept: application/json
 
 ###
