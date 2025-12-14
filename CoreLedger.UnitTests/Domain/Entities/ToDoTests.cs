@@ -1,6 +1,5 @@
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Exceptions;
-using FluentAssertions;
 
 namespace CoreLedger.UnitTests.Domain.Entities;
 
@@ -21,11 +20,11 @@ public class ToDoTests
         var todo = ToDo.Create(description);
 
         // Assert
-        todo.Should().NotBeNull();
-        todo.Description.Should().Be(description);
-        todo.IsCompleted.Should().BeFalse();
-        todo.CompletedAt.Should().BeNull();
-        todo.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        Assert.NotNull(todo);
+        Assert.Equal(description, todo.Description);
+        Assert.False(todo.IsCompleted);
+        Assert.Null(todo.CompletedAt);
+        Assert.True((DateTime.UtcNow - todo.CreatedAt).TotalSeconds < 1);
     }
 
     [Theory]
@@ -34,12 +33,9 @@ public class ToDoTests
     [InlineData("   ")]
     public void Create_WithEmptyDescription_ShouldThrowDomainValidationException(string? description)
     {
-        // Act
-        var act = () => ToDo.Create(description);
-
-        // Assert
-        act.Should().Throw<DomainValidationException>()
-            .WithMessage("Description cannot be empty");
+        // Act & Assert
+        var exception = Assert.Throws<DomainValidationException>(() => ToDo.Create(description));
+        Assert.Equal("Description cannot be empty", exception.Message);
     }
 
     [Fact]
@@ -48,12 +44,9 @@ public class ToDoTests
         // Arrange
         var description = new string('x', 501);
 
-        // Act
-        var act = () => ToDo.Create(description);
-
-        // Assert
-        act.Should().Throw<DomainValidationException>()
-            .WithMessage("Description cannot exceed 500 characters");
+        // Act & Assert
+        var exception = Assert.Throws<DomainValidationException>(() => ToDo.Create(description));
+        Assert.Equal("Description cannot exceed 500 characters", exception.Message);
     }
 
     [Fact]
@@ -66,8 +59,8 @@ public class ToDoTests
         var todo = ToDo.Create(description);
 
         // Assert
-        todo.Should().NotBeNull();
-        todo.Description.Should().HaveLength(500);
+        Assert.NotNull(todo);
+        Assert.Equal(500, todo.Description.Length);
     }
 
     #endregion
@@ -86,10 +79,10 @@ public class ToDoTests
         todo.UpdateDescription(newDescription);
 
         // Assert
-        todo.Description.Should().Be(newDescription);
-        todo.UpdatedAt.Should().NotBeNull();
-        todo.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
-        todo.CreatedAt.Should().Be(originalCreatedAt);
+        Assert.Equal(newDescription, todo.Description);
+        Assert.NotNull(todo.UpdatedAt);
+        Assert.True((DateTime.UtcNow - todo.UpdatedAt.Value).TotalSeconds < 1);
+        Assert.Equal(originalCreatedAt, todo.CreatedAt);
     }
 
     [Theory]
@@ -101,12 +94,9 @@ public class ToDoTests
         // Arrange
         var todo = ToDo.Create("Original description");
 
-        // Act
-        var act = () => todo.UpdateDescription(description);
-
-        // Assert
-        act.Should().Throw<DomainValidationException>()
-            .WithMessage("Description cannot be empty");
+        // Act & Assert
+        var exception = Assert.Throws<DomainValidationException>(() => todo.UpdateDescription(description));
+        Assert.Equal("Description cannot be empty", exception.Message);
     }
 
     [Fact]
@@ -116,12 +106,9 @@ public class ToDoTests
         var todo = ToDo.Create("Original description");
         var description = new string('x', 501);
 
-        // Act
-        var act = () => todo.UpdateDescription(description);
-
-        // Assert
-        act.Should().Throw<DomainValidationException>()
-            .WithMessage("Description cannot exceed 500 characters");
+        // Act & Assert
+        var exception = Assert.Throws<DomainValidationException>(() => todo.UpdateDescription(description));
+        Assert.Equal("Description cannot exceed 500 characters", exception.Message);
     }
 
     #endregion
@@ -138,11 +125,11 @@ public class ToDoTests
         todo.MarkAsCompleted();
 
         // Assert
-        todo.IsCompleted.Should().BeTrue();
-        todo.CompletedAt.Should().NotBeNull();
-        todo.CompletedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
-        todo.UpdatedAt.Should().NotBeNull();
-        todo.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        Assert.True(todo.IsCompleted);
+        Assert.NotNull(todo.CompletedAt);
+        Assert.True((DateTime.UtcNow - todo.CompletedAt.Value).TotalSeconds < 1);
+        Assert.NotNull(todo.UpdatedAt);
+        Assert.True((DateTime.UtcNow - todo.UpdatedAt.Value).TotalSeconds < 1);
     }
 
     [Fact]
@@ -152,12 +139,9 @@ public class ToDoTests
         var todo = ToDo.Create("Test task");
         todo.MarkAsCompleted();
 
-        // Act
-        var act = () => todo.MarkAsCompleted();
-
-        // Assert
-        act.Should().Throw<DomainValidationException>()
-            .WithMessage("ToDo is already completed");
+        // Act & Assert
+        var exception = Assert.Throws<DomainValidationException>(() => todo.MarkAsCompleted());
+        Assert.Equal("ToDo is already completed", exception.Message);
     }
 
     #endregion
@@ -175,10 +159,10 @@ public class ToDoTests
         todo.MarkAsIncomplete();
 
         // Assert
-        todo.IsCompleted.Should().BeFalse();
-        todo.CompletedAt.Should().BeNull();
-        todo.UpdatedAt.Should().NotBeNull();
-        todo.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        Assert.False(todo.IsCompleted);
+        Assert.Null(todo.CompletedAt);
+        Assert.NotNull(todo.UpdatedAt);
+        Assert.True((DateTime.UtcNow - todo.UpdatedAt.Value).TotalSeconds < 1);
     }
 
     [Fact]
@@ -187,12 +171,9 @@ public class ToDoTests
         // Arrange
         var todo = ToDo.Create("Test task");
 
-        // Act
-        var act = () => todo.MarkAsIncomplete();
-
-        // Assert
-        act.Should().Throw<DomainValidationException>()
-            .WithMessage("ToDo is already incomplete");
+        // Act & Assert
+        var exception = Assert.Throws<DomainValidationException>(() => todo.MarkAsIncomplete());
+        Assert.Equal("ToDo is already incomplete", exception.Message);
     }
 
     #endregion
@@ -207,18 +188,18 @@ public class ToDoTests
 
         // Act & Assert - Complete
         todo.MarkAsCompleted();
-        todo.IsCompleted.Should().BeTrue();
-        todo.CompletedAt.Should().NotBeNull();
+        Assert.True(todo.IsCompleted);
+        Assert.NotNull(todo.CompletedAt);
 
         // Act & Assert - Incomplete
         todo.MarkAsIncomplete();
-        todo.IsCompleted.Should().BeFalse();
-        todo.CompletedAt.Should().BeNull();
+        Assert.False(todo.IsCompleted);
+        Assert.Null(todo.CompletedAt);
 
         // Act & Assert - Complete again
         todo.MarkAsCompleted();
-        todo.IsCompleted.Should().BeTrue();
-        todo.CompletedAt.Should().NotBeNull();
+        Assert.True(todo.IsCompleted);
+        Assert.NotNull(todo.CompletedAt);
     }
 
     #endregion

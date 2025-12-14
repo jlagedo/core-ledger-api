@@ -2,7 +2,6 @@ using CoreLedger.Application.UseCases.ToDos.Commands;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Exceptions;
 using CoreLedger.Domain.Interfaces;
-using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 
@@ -55,11 +54,8 @@ public class UpdateToDoCommandHandlerTests
         _mockRepository.GetByIdAsync(command.Id, Arg.Any<CancellationToken>())
             .Returns((ToDo?)null);
 
-        // Act
-        var act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<EntityNotFoundException>();
+        // Act & Assert
+        await Assert.ThrowsAsync<EntityNotFoundException>(() => _handler.Handle(command, CancellationToken.None));
 
         await _mockRepository.Received(1).GetByIdAsync(command.Id, Arg.Any<CancellationToken>());
         await _mockRepository.DidNotReceive().UpdateAsync(Arg.Any<ToDo>(), Arg.Any<CancellationToken>());

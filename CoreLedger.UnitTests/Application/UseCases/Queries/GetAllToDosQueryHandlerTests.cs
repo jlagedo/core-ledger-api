@@ -3,7 +3,6 @@ using CoreLedger.Application.DTOs;
 using CoreLedger.Application.UseCases.ToDos.Queries;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Interfaces;
-using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 
@@ -56,9 +55,9 @@ public class GetAllToDosQueryHandlerTests
         var result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Should().HaveCount(3);
-        result.Should().BeEquivalentTo(expectedDtos);
+        Assert.NotNull(result);
+        Assert.Equal(3, result.Count);
+        Assert.Equal(expectedDtos, result);
 
         await _mockRepository.Received(1).GetAllAsync(Arg.Any<CancellationToken>());
         _mockMapper.Received(1).Map<IReadOnlyList<ToDoDto>>(Arg.Any<IEnumerable<ToDo>>());
@@ -82,8 +81,8 @@ public class GetAllToDosQueryHandlerTests
         var result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Should().BeEmpty();
+        Assert.NotNull(result);
+        Assert.Empty(result);
 
         await _mockRepository.Received(1).GetAllAsync(Arg.Any<CancellationToken>());
     }

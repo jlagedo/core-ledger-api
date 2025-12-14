@@ -1,6 +1,5 @@
 using CoreLedger.Application.UseCases.ToDos.Commands;
 using CoreLedger.Application.Validators;
-using FluentAssertions;
 
 namespace CoreLedger.UnitTests.Application.Validators;
 
@@ -27,8 +26,8 @@ public class UpdateToDoCommandValidatorTests
         var result = _validator.Validate(command);
 
         // Assert
-        result.IsValid.Should().BeTrue();
-        result.Errors.Should().BeEmpty();
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
     }
 
     [Theory]
@@ -44,9 +43,9 @@ public class UpdateToDoCommandValidatorTests
         var result = _validator.Validate(command);
 
         // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(UpdateToDoCommand.Id));
-        result.Errors.Should().Contain(e => e.ErrorMessage.Contains("greater than"));
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.PropertyName == nameof(UpdateToDoCommand.Id));
+        Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("greater than"));
     }
 
     [Theory]
@@ -62,9 +61,9 @@ public class UpdateToDoCommandValidatorTests
         var result = _validator.Validate(command);
 
         // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(UpdateToDoCommand.Description));
-        result.Errors.Should().Contain(e => e.ErrorMessage.Contains("required"));
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.PropertyName == nameof(UpdateToDoCommand.Description));
+        Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("required"));
     }
 
     [Fact]
@@ -77,9 +76,9 @@ public class UpdateToDoCommandValidatorTests
         var result = _validator.Validate(command);
 
         // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(UpdateToDoCommand.Description));
-        result.Errors.Should().Contain(e => e.ErrorMessage.Contains("500 characters"));
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.PropertyName == nameof(UpdateToDoCommand.Description));
+        Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("500 characters"));
     }
 
     [Fact]
@@ -92,8 +91,8 @@ public class UpdateToDoCommandValidatorTests
         var result = _validator.Validate(command);
 
         // Assert
-        result.IsValid.Should().BeTrue();
-        result.Errors.Should().BeEmpty();
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
     }
 
     [Theory]
@@ -108,7 +107,7 @@ public class UpdateToDoCommandValidatorTests
         var result = _validator.Validate(command);
 
         // Assert
-        result.IsValid.Should().BeTrue();
+        Assert.True(result.IsValid);
     }
 
     [Fact]
@@ -121,9 +120,9 @@ public class UpdateToDoCommandValidatorTests
         var result = _validator.Validate(command);
 
         // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().HaveCount(2);
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(UpdateToDoCommand.Id));
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(UpdateToDoCommand.Description));
+        Assert.False(result.IsValid);
+        Assert.Equal(2, result.Errors.Count);
+        Assert.Contains(result.Errors, e => e.PropertyName == nameof(UpdateToDoCommand.Id));
+        Assert.Contains(result.Errors, e => e.PropertyName == nameof(UpdateToDoCommand.Description));
     }
 }

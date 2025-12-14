@@ -3,7 +3,6 @@ using CoreLedger.Application.DTOs;
 using CoreLedger.Application.UseCases.ToDos.Commands;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Interfaces;
-using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 
@@ -52,9 +51,9 @@ public class CreateToDoCommandHandlerTests
         var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Description.Should().Be(command.Description);
-        result.IsCompleted.Should().BeFalse();
+        Assert.NotNull(result);
+        Assert.Equal(command.Description, result.Description);
+        Assert.False(result.IsCompleted);
 
         await _mockRepository.Received(1).AddAsync(
             Arg.Is<ToDo>(t => t.Description == command.Description && !t.IsCompleted),

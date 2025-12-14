@@ -4,7 +4,6 @@ using CoreLedger.Application.UseCases.ToDos.Queries;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Exceptions;
 using CoreLedger.Domain.Interfaces;
-using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 
@@ -52,8 +51,8 @@ public class GetToDoByIdQueryHandlerTests
         var result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Should().BeEquivalentTo(expectedDto);
+        Assert.NotNull(result);
+        Assert.Equal(expectedDto, result);
 
         await _mockRepository.Received(1).GetByIdAsync(query.Id, Arg.Any<CancellationToken>());
         _mockMapper.Received(1).Map<ToDoDto>(Arg.Any<ToDo>());
@@ -68,11 +67,8 @@ public class GetToDoByIdQueryHandlerTests
         _mockRepository.GetByIdAsync(query.Id, Arg.Any<CancellationToken>())
             .Returns((ToDo?)null);
 
-        // Act
-        var act = async () => await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<EntityNotFoundException>();
+        // Act & Assert
+        await Assert.ThrowsAsync<EntityNotFoundException>(() => _handler.Handle(query, CancellationToken.None));
 
         await _mockRepository.Received(1).GetByIdAsync(query.Id, Arg.Any<CancellationToken>());
         _mockMapper.DidNotReceive().Map<ToDoDto>(Arg.Any<ToDo>());
@@ -113,11 +109,8 @@ public class GetToDoByIdQueryHandlerTests
         _mockRepository.GetByIdAsync(query.Id, Arg.Any<CancellationToken>())
             .Returns((ToDo?)null);
 
-        // Act
-        var act = async () => await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<EntityNotFoundException>();
+        // Act & Assert
+        await Assert.ThrowsAsync<EntityNotFoundException>(() => _handler.Handle(query, CancellationToken.None));
         
         _mockLogger.Received().Log(
             LogLevel.Warning,

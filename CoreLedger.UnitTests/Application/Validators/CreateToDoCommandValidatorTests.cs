@@ -1,6 +1,5 @@
 using CoreLedger.Application.UseCases.ToDos.Commands;
 using CoreLedger.Application.Validators;
-using FluentAssertions;
 
 namespace CoreLedger.UnitTests.Application.Validators;
 
@@ -27,8 +26,8 @@ public class CreateToDoCommandValidatorTests
         var result = _validator.Validate(command);
 
         // Assert
-        result.IsValid.Should().BeTrue();
-        result.Errors.Should().BeEmpty();
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
     }
 
     [Theory]
@@ -44,10 +43,10 @@ public class CreateToDoCommandValidatorTests
         var result = _validator.Validate(command);
 
         // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().ContainSingle();
-        result.Errors[0].PropertyName.Should().Be(nameof(CreateToDoCommand.Description));
-        result.Errors[0].ErrorMessage.Should().Contain("required");
+        Assert.False(result.IsValid);
+        Assert.Single(result.Errors);
+        Assert.Equal(nameof(CreateToDoCommand.Description), result.Errors[0].PropertyName);
+        Assert.Contains("required", result.Errors[0].ErrorMessage);
     }
 
     [Fact]
@@ -60,10 +59,10 @@ public class CreateToDoCommandValidatorTests
         var result = _validator.Validate(command);
 
         // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().ContainSingle();
-        result.Errors[0].PropertyName.Should().Be(nameof(CreateToDoCommand.Description));
-        result.Errors[0].ErrorMessage.Should().Contain("500 characters");
+        Assert.False(result.IsValid);
+        Assert.Single(result.Errors);
+        Assert.Equal(nameof(CreateToDoCommand.Description), result.Errors[0].PropertyName);
+        Assert.Contains("500 characters", result.Errors[0].ErrorMessage);
     }
 
     [Fact]
@@ -76,8 +75,8 @@ public class CreateToDoCommandValidatorTests
         var result = _validator.Validate(command);
 
         // Assert
-        result.IsValid.Should().BeTrue();
-        result.Errors.Should().BeEmpty();
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
     }
 
     [Theory]
@@ -93,6 +92,6 @@ public class CreateToDoCommandValidatorTests
         var result = _validator.Validate(command);
 
         // Assert
-        result.IsValid.Should().BeTrue();
+        Assert.True(result.IsValid);
     }
 }
