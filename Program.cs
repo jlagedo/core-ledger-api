@@ -3,8 +3,11 @@ using coreledger.model;
 using core_ledger_api.Infra;
 using coreledger.Middleware;
 using core_ledger_api.Middleware;
+using core_ledger_api.Filters;
 using Serilog;
 using Serilog.Events;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 
 // Configure Serilog before building the app
 Log.Logger = new LoggerConfiguration()
@@ -45,7 +48,14 @@ builder.Services.AddDbContext<ToDoDbContext>(options =>
 });
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddAutoMapper(typeof(Program));
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidationFilter>();
+});
+
+// Register FluentValidation
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 var app = builder.Build();
 
 // Security middleware
@@ -54,7 +64,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 app.UseHttpsRedirection();
-
+app.UseSecurityHeaders();
 app.UseGlobalExceptionHandler();
 app.UseCorrelationId();
     

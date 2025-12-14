@@ -12,6 +12,15 @@ Content-Type: application/json
   "isCompleted": false
 }
 
+### Create invalid todo
+POST {{host}}/api/todos
+Content-Type: application/json
+
+{
+  "description": "",
+  "isCompleted": false
+}
+
 ### Update todo
 PUT {{host}}/api/todos/1
 Content-Type: application/json
