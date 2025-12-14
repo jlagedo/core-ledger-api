@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using coreledger.model;
 using core_ledger_api.Infra;
 using coreledger.Middleware;
+using core_ledger_api.Middleware;
 using Serilog;
 using Serilog.Events;
 
@@ -46,6 +47,9 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddControllers();
 var app = builder.Build();
+
+// FIRST middleware - catches all exceptions
+app.UseGlobalExceptionHandler();
 
 app.UseCorrelationId();
     
