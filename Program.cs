@@ -48,9 +48,14 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddControllers();
 var app = builder.Build();
 
-// FIRST middleware - catches all exceptions
-app.UseGlobalExceptionHandler();
+// Security middleware
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+app.UseHttpsRedirection();
 
+app.UseGlobalExceptionHandler();
 app.UseCorrelationId();
     
     // Ensure request logging
