@@ -22,4 +22,4 @@ Content-Type: application/json
 }
 
 ### Delete todo
-DELETE {{host}}/api/todos/1
+DELETE {{host}}/api/todos/9999999
