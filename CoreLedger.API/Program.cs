@@ -1,6 +1,7 @@
 using CoreLedger.Application;
 using CoreLedger.Infrastructure;
 using CoreLedger.API.Middleware;
+using CoreLedger.API.Extensions;
 using Serilog;
 using Serilog.Events;
 using FluentValidation;
@@ -38,8 +39,7 @@ try
     builder.Services.AddFluentValidationAutoValidation();
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddOpenApi();
+    builder.Services.AddSwaggerDocumentation();
 
     var app = builder.Build();
 
@@ -65,7 +65,7 @@ try
 
     if (app.Environment.IsDevelopment())
     {
-        app.MapOpenApi();
+        app.UseSwaggerDocumentation();
     }
 
     app.MapControllers();
