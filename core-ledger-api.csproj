@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>core_ledger_api</RootNamespace>
     <UserSecretsId>f0c4b34f-1213-4864-9faa-45a8743211f2</UserSecretsId>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
