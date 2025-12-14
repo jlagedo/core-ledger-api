@@ -53,7 +53,7 @@ public class UpdateToDoCommandValidatorTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void Validate_WithEmptyDescription_ShouldFail(string description)
+    public void Validate_WithEmptyDescription_ShouldFail(string? description)
     {
         // Arrange
         var command = new UpdateToDoCommand(1, description!, false);

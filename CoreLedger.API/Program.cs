@@ -41,6 +41,11 @@ try
 
     builder.Services.AddSwaggerDocumentation();
 
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    builder.Services.AddHealthChecks()
+        .AddNpgSql(connectionString ?? throw new InvalidOperationException("DefaultConnection not configured"))
+        .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy());
+
     var app = builder.Build();
 
     if (!app.Environment.IsDevelopment())
@@ -69,6 +74,10 @@ try
     }
 
     app.MapControllers();
+
+    app.MapHealthChecks("/health");
+    app.MapHealthChecks("/health/ready");
+    app.MapHealthChecks("/health/live");
 
     Log.Information("Core Ledger API started successfully");
 

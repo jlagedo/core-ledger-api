@@ -35,7 +35,7 @@ public class CreateToDoCommandValidatorTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void Validate_WithEmptyDescription_ShouldFail(string description)
+    public void Validate_WithEmptyDescription_ShouldFail(string? description)
     {
         // Arrange
         var command = new CreateToDoCommand(description!);

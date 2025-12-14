@@ -32,7 +32,7 @@ public class ToDoTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void Create_WithEmptyDescription_ShouldThrowDomainValidationException(string description)
+    public void Create_WithEmptyDescription_ShouldThrowDomainValidationException(string? description)
     {
         // Act
         var act = () => ToDo.Create(description);
@@ -96,7 +96,7 @@ public class ToDoTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void UpdateDescription_WithEmptyDescription_ShouldThrowDomainValidationException(string description)
+    public void UpdateDescription_WithEmptyDescription_ShouldThrowDomainValidationException(string? description)
     {
         // Arrange
         var todo = ToDo.Create("Original description");
