@@ -754,3 +754,10 @@ FodyWeavers.xsd
 # .NET Core
 # TODO: Remove the following line when you enable the appsettings.Development.json file in your project
 #appsettings.Development.json
+
+# Secrets
+.env
+.env.*
+!.env.template
+appsettings.*.json
+!appsettings.jsons
