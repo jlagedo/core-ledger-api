@@ -35,11 +35,7 @@ public class ToDoTests
     public void Create_WithEmptyDescription_ShouldThrowDomainValidationException(string? description)
     {
         // Act & Assert
-        var exception = Assert.Throws<DomainValidationException>(() =>
-        {
-            Debug.Assert(description != null, nameof(description) + " != null");
-            return ToDo.Create(description);
-        });
+        var exception = Assert.Throws<DomainValidationException>(() => ToDo.Create(description!));
         Assert.Equal("Description cannot be empty", exception.Message);
     }
 
@@ -100,11 +96,7 @@ public class ToDoTests
         var todo = ToDo.Create("Original description");
 
         // Act & Assert
-        var exception = Assert.Throws<DomainValidationException>(() =>
-        {
-            Debug.Assert(description != null, nameof(description) + " != null");
-            todo.UpdateDescription(description);
-        });
+        var exception = Assert.Throws<DomainValidationException>(() => todo.UpdateDescription(description!));
         Assert.Equal("Description cannot be empty", exception.Message);
     }
 
