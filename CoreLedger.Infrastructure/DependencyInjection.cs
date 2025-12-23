@@ -33,6 +33,7 @@ public static class DependencyInjection
 
         services.AddScoped<IToDoRepository, ToDoRepository>();
         services.AddScoped<IAccountTypeRepository, AccountTypeRepository>();
+        services.AddScoped<IAccountRepository, AccountRepository>();
 
         return services;
     }

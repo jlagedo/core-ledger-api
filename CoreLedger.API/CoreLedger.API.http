@@ -424,3 +424,246 @@ GET {{CoreLedger.API_HostAddress}}/api/ToDos/2
 Accept: application/json
 
 ###
+
+# ==================== Accounts API Tests ====================
+
+### GET All Accounts - Retrieve all account items
+GET {{CoreLedger.API_HostAddress}}/api/accounts
+Accept: application/json
+
+###
+
+### GET Account by ID - Retrieve a specific account item (valid ID)
+GET {{CoreLedger.API_HostAddress}}/api/accounts/1
+Accept: application/json
+
+###
+
+### GET Account by ID - Retrieve a specific account item (non-existent ID)
+GET {{CoreLedger.API_HostAddress}}/api/accounts/999
+Accept: application/json
+
+###
+
+### POST Create Account - Create a new account item (valid data - Asset account)
+POST {{CoreLedger.API_HostAddress}}/api/accounts
+Content-Type: application/json
+
+{
+  "code": 1001,
+  "name": "Cash on Hand",
+  "typeId": 1,
+  "status": 1,
+  "normalBalance": 1
+}
+
+###
+
+### POST Create Account - Create a new account item (valid data - Liability account)
+POST {{CoreLedger.API_HostAddress}}/api/accounts
+Content-Type: application/json
+
+{
+  "code": 2001,
+  "name": "Accounts Payable",
+  "typeId": 2,
+  "status": 1,
+  "normalBalance": 2
+}
+
+###
+
+### POST Create Account - Create a new account item (empty name - should fail validation)
+POST {{CoreLedger.API_HostAddress}}/api/accounts
+Content-Type: application/json
+
+{
+  "code": 1002,
+  "name": "",
+  "typeId": 1,
+  "status": 1,
+  "normalBalance": 1
+}
+
+###
+
+### POST Create Account - Create a new account item (code exceeds 10 digits - should fail validation)
+POST {{CoreLedger.API_HostAddress}}/api/accounts
+Content-Type: application/json
+
+{
+  "code": 99999999999,
+  "name": "Invalid Code Account",
+  "typeId": 1,
+  "status": 1,
+  "normalBalance": 1
+}
+
+###
+
+### POST Create Account - Create a new account item (invalid typeId - should fail)
+POST {{CoreLedger.API_HostAddress}}/api/accounts
+Content-Type: application/json
+
+{
+  "code": 1003,
+  "name": "Invalid Type Account",
+  "typeId": 999,
+  "status": 1,
+  "normalBalance": 1
+}
+
+###
+
+### POST Create Account - Create a new account item (duplicate code - should fail)
+POST {{CoreLedger.API_HostAddress}}/api/accounts
+Content-Type: application/json
+
+{
+  "code": 1001,
+  "name": "Duplicate Code Account",
+  "typeId": 1,
+  "status": 1,
+  "normalBalance": 1
+}
+
+###
+
+### PUT Update Account - Update an existing account item
+PUT {{CoreLedger.API_HostAddress}}/api/accounts/1
+Content-Type: application/json
+
+{
+  "code": 1001,
+  "name": "Updated Cash on Hand",
+  "typeId": 1,
+  "status": 1,
+  "normalBalance": 1
+}
+
+###
+
+### PUT Update Account - Update account status to inactive
+PUT {{CoreLedger.API_HostAddress}}/api/accounts/1
+Content-Type: application/json
+
+{
+  "code": 1001,
+  "name": "Cash on Hand",
+  "typeId": 1,
+  "status": 2,
+  "normalBalance": 1
+}
+
+###
+
+### PUT Update Account - Update non-existent account item
+PUT {{CoreLedger.API_HostAddress}}/api/accounts/999
+Content-Type: application/json
+
+{
+  "code": 9999,
+  "name": "This should fail",
+  "typeId": 1,
+  "status": 1,
+  "normalBalance": 1
+}
+
+###
+
+### PUT Update Account - Update with empty name (should fail validation)
+PUT {{CoreLedger.API_HostAddress}}/api/accounts/1
+Content-Type: application/json
+
+{
+  "code": 1001,
+  "name": "",
+  "typeId": 1,
+  "status": 1,
+  "normalBalance": 1
+}
+
+###
+
+### PUT Update Account - Update with invalid typeId (should fail)
+PUT {{CoreLedger.API_HostAddress}}/api/accounts/1
+Content-Type: application/json
+
+{
+  "code": 1001,
+  "name": "Cash on Hand",
+  "typeId": 999,
+  "status": 1,
+  "normalBalance": 1
+}
+
+###
+
+### DELETE Account - Delete an existing account item
+DELETE {{CoreLedger.API_HostAddress}}/api/accounts/1
+
+###
+
+### DELETE Account - Delete non-existent account item
+DELETE {{CoreLedger.API_HostAddress}}/api/accounts/999
+
+###
+
+# ==================== Accounts Workflow Test Sequence ====================
+
+### Accounts Workflow Step 1: Create a new account
+POST {{CoreLedger.API_HostAddress}}/api/accounts
+Content-Type: application/json
+
+{
+  "code": 3001,
+  "name": "Revenue Account",
+  "typeId": 1,
+  "status": 1,
+  "normalBalance": 2
+}
+
+###
+
+### Accounts Workflow Step 2: Get all accounts to verify creation
+GET {{CoreLedger.API_HostAddress}}/api/accounts
+Accept: application/json
+
+###
+
+### Accounts Workflow Step 3: Get the newly created account by ID (assuming ID 3)
+GET {{CoreLedger.API_HostAddress}}/api/accounts/3
+Accept: application/json
+
+###
+
+### Accounts Workflow Step 4: Update the account
+PUT {{CoreLedger.API_HostAddress}}/api/accounts/3
+Content-Type: application/json
+
+{
+  "code": 3001,
+  "name": "Updated Revenue Account",
+  "typeId": 1,
+  "status": 1,
+  "normalBalance": 2
+}
+
+###
+
+### Accounts Workflow Step 5: Verify the update
+GET {{CoreLedger.API_HostAddress}}/api/accounts/3
+Accept: application/json
+
+###
+
+### Accounts Workflow Step 6: Delete the test account
+DELETE {{CoreLedger.API_HostAddress}}/api/accounts/3
+
+###
+
+### Accounts Workflow Step 7: Verify deletion
+GET {{CoreLedger.API_HostAddress}}/api/accounts/3
+Accept: application/json
+
+###
