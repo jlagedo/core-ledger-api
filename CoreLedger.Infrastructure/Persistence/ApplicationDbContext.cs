@@ -14,6 +14,7 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<ToDo> ToDos => Set<ToDo>();
+    public DbSet<AccountType> AccountTypes => Set<AccountType>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

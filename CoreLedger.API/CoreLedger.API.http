@@ -144,6 +144,235 @@ DELETE {{CoreLedger.API_HostAddress}}/api/ToDos/999
 
 ###
 
+# ==================== Account Types API Tests ====================
+
+### GET All Account Types - Retrieve all account type items
+GET {{CoreLedger.API_HostAddress}}/api/account/types
+Accept: application/json
+
+###
+
+### GET Account Type by ID - Retrieve a specific account type item (valid ID)
+GET {{CoreLedger.API_HostAddress}}/api/account/types/1
+Accept: application/json
+
+###
+
+### GET Account Type by ID - Retrieve a specific account type item (non-existent ID)
+GET {{CoreLedger.API_HostAddress}}/api/account/types/999
+Accept: application/json
+
+###
+
+### POST Create Account Type - Create a new account type item (valid data)
+POST {{CoreLedger.API_HostAddress}}/api/account/types
+Content-Type: application/json
+
+{
+  "description": "Asset Account"
+}
+
+###
+
+### POST Create Account Type - Create a new account type item (valid data - different type)
+POST {{CoreLedger.API_HostAddress}}/api/account/types
+Content-Type: application/json
+
+{
+  "description": "Liability Account"
+}
+
+###
+
+### POST Create Account Type - Create a new account type item (empty description - should fail validation)
+POST {{CoreLedger.API_HostAddress}}/api/account/types
+Content-Type: application/json
+
+{
+  "description": ""
+}
+
+###
+
+### POST Create Account Type - Create a new account type item (null description - should fail validation)
+POST {{CoreLedger.API_HostAddress}}/api/account/types
+Content-Type: application/json
+
+{
+  "description": null
+}
+
+###
+
+### POST Create Account Type - Create a new account type item (missing description - should fail validation)
+POST {{CoreLedger.API_HostAddress}}/api/account/types
+Content-Type: application/json
+
+{
+}
+
+###
+
+### POST Create Account Type - Create a new account type item (description too long - should fail validation)
+POST {{CoreLedger.API_HostAddress}}/api/account/types
+Content-Type: application/json
+
+{
+  "description": "This account type description is way too long and exceeds the maximum allowed length of 100 characters which should trigger a validation error"
+}
+
+###
+
+### POST Create Account Type - Create duplicate account type (should fail uniqueness validation)
+POST {{CoreLedger.API_HostAddress}}/api/account/types
+Content-Type: application/json
+
+{
+  "description": "Asset Account"
+}
+
+###
+
+### PUT Update Account Type - Update an existing account type item
+PUT {{CoreLedger.API_HostAddress}}/api/account/types/1
+Content-Type: application/json
+
+{
+  "description": "Updated Asset Account Type"
+}
+
+###
+
+### PUT Update Account Type - Update an existing account type item (different description)
+PUT {{CoreLedger.API_HostAddress}}/api/account/types/2
+Content-Type: application/json
+
+{
+  "description": "Updated Liability Account Type"
+}
+
+###
+
+### PUT Update Account Type - Update non-existent account type item
+PUT {{CoreLedger.API_HostAddress}}/api/account/types/999
+Content-Type: application/json
+
+{
+  "description": "This should fail"
+}
+
+###
+
+### PUT Update Account Type - Update with empty description (should fail validation)
+PUT {{CoreLedger.API_HostAddress}}/api/account/types/1
+Content-Type: application/json
+
+{
+  "description": ""
+}
+
+###
+
+### PUT Update Account Type - Update with null description (should fail validation)
+PUT {{CoreLedger.API_HostAddress}}/api/account/types/1
+Content-Type: application/json
+
+{
+  "description": null
+}
+
+###
+
+### PUT Update Account Type - Update with missing description (should fail validation)
+PUT {{CoreLedger.API_HostAddress}}/api/account/types/1
+Content-Type: application/json
+
+{
+}
+
+###
+
+### PUT Update Account Type - Update with description too long (should fail validation)
+PUT {{CoreLedger.API_HostAddress}}/api/account/types/1
+Content-Type: application/json
+
+{
+  "description": "This updated account type description is way too long and exceeds the maximum allowed length of 100 characters which should trigger a validation error"
+}
+
+###
+
+### PUT Update Account Type - Update to duplicate description (should fail uniqueness validation)
+PUT {{CoreLedger.API_HostAddress}}/api/account/types/1
+Content-Type: application/json
+
+{
+  "description": "Liability Account"
+}
+
+###
+
+### DELETE Account Type - Delete an existing account type item
+DELETE {{CoreLedger.API_HostAddress}}/api/account/types/1
+
+###
+
+### DELETE Account Type - Delete non-existent account type item
+DELETE {{CoreLedger.API_HostAddress}}/api/account/types/999
+
+###
+
+# ==================== Account Types Workflow Test Sequence ====================
+
+### Account Types Workflow Step 1: Create a new account type
+POST {{CoreLedger.API_HostAddress}}/api/account/types
+Content-Type: application/json
+
+{
+  "description": "Equity Account"
+}
+
+###
+
+### Account Types Workflow Step 2: Get all account types to verify creation
+GET {{CoreLedger.API_HostAddress}}/api/account/types
+Accept: application/json
+
+###
+
+### Account Types Workflow Step 3: Get the newly created account type by ID (assuming ID 3)
+GET {{CoreLedger.API_HostAddress}}/api/account/types/3
+Accept: application/json
+
+###
+
+### Account Types Workflow Step 4: Update the account type
+PUT {{CoreLedger.API_HostAddress}}/api/account/types/3
+Content-Type: application/json
+
+{
+  "description": "Updated Equity Account Type"
+}
+
+###
+
+### Account Types Workflow Step 5: Verify the update
+GET {{CoreLedger.API_HostAddress}}/api/account/types/3
+Accept: application/json
+
+###
+
+### Account Types Workflow Step 6: Delete the test account type
+DELETE {{CoreLedger.API_HostAddress}}/api/account/types/3
+
+###
+
+### Account Types Workflow Step 7: Verify deletion
+GET {{CoreLedger.API_HostAddress}}/api/account/types/3
+Accept: application/json
+
+###
+
 # ==================== Workflow Test Sequence ====================
 
 ### Workflow Step 1: Create a new ToDo
