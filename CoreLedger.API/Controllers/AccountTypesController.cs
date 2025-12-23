@@ -7,16 +7,16 @@ using CoreLedger.Application.UseCases.AccountTypes.Queries;
 namespace CoreLedger.API.Controllers;
 
 /// <summary>
-/// Controller for managing Account resources.
+/// Controller for managing Account Type resources.
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class AccountController : ControllerBase
+public class AccountTypesController : ControllerBase
 {
     private readonly IMediator _mediator;
-    private readonly ILogger<AccountController> _logger;
+    private readonly ILogger<AccountTypesController> _logger;
 
-    public AccountController(IMediator mediator, ILogger<AccountController> logger)
+    public AccountTypesController(IMediator mediator, ILogger<AccountTypesController> logger)
     {
         _mediator = mediator;
         _logger = logger;
@@ -25,9 +25,9 @@ public class AccountController : ControllerBase
     /// <summary>
     /// Retrieves all account types.
     /// </summary>
-    [HttpGet("types")]
+    [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<AccountTypeDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAllAccountTypes(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
         var query = new GetAllAccountTypesQuery();
         var result = await _mediator.Send(query, cancellationToken);
@@ -37,10 +37,10 @@ public class AccountController : ControllerBase
     /// <summary>
     /// Retrieves a specific account type by ID.
     /// </summary>
-    [HttpGet("types/{id}", Name = "GetAccountTypeById")]
+    [HttpGet("{id}", Name = "GetAccountTypeById")]
     [ProducesResponseType(typeof(AccountTypeDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetAccountTypeById(int id, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
         var query = new GetAccountTypeByIdQuery(id);
         var result = await _mediator.Send(query, cancellationToken);
@@ -50,10 +50,10 @@ public class AccountController : ControllerBase
     /// <summary>
     /// Creates a new account type.
     /// </summary>
-    [HttpPost("types")]
+    [HttpPost]
     [ProducesResponseType(typeof(AccountTypeDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CreateAccountType(
+    public async Task<IActionResult> Create(
         [FromBody] CreateAccountTypeDto dto,
         CancellationToken cancellationToken)
     {
@@ -65,11 +65,11 @@ public class AccountController : ControllerBase
     /// <summary>
     /// Updates an existing account type.
     /// </summary>
-    [HttpPut("types/{id}")]
+    [HttpPut("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateAccountType(
+    public async Task<IActionResult> Update(
         int id,
         [FromBody] UpdateAccountTypeDto dto,
         CancellationToken cancellationToken)
@@ -82,10 +82,10 @@ public class AccountController : ControllerBase
     /// <summary>
     /// Deletes an account type.
     /// </summary>
-    [HttpDelete("types/{id}")]
+    [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteAccountType(int id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         var command = new DeleteAccountTypeCommand(id);
         await _mediator.Send(command, cancellationToken);
