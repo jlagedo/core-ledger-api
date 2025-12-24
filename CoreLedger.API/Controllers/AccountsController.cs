@@ -69,7 +69,9 @@ public class AccountsController : ControllerBase
             a.TypeId,
             a.Type?.Description ?? string.Empty,
             a.Status,
+            a.Status.ToString(),
             a.NormalBalance,
+            a.NormalBalance.ToString(),
             a.CreatedAt,
             a.UpdatedAt
         )).ToList();

@@ -12,7 +12,9 @@ public record AccountDto(
     int TypeId,
     string TypeDescription,
     AccountStatus Status,
+    string StatusDescription,
     NormalBalance NormalBalance,
+    string NormalBalanceDescription,
     DateTime CreatedAt,
     DateTime? UpdatedAt
 );
