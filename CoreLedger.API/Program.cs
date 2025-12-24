@@ -92,3 +92,8 @@ finally
 {
     Log.CloseAndFlush();
 }
+
+/// <summary>
+/// Partial Program class to expose entry point for integration tests.
+/// </summary>
+public partial class Program { }

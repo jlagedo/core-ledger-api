@@ -37,7 +37,6 @@ public class AccountsController : ControllerBase
     /// <param name="sortBy">Field to sort by</param>
     /// <param name="sortDirection">Sort direction (asc or desc)</param>
     /// <param name="filter">Filter expression (field=value)</param>
-    /// <param name="fields">Fields to include (comma-separated)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<AccountDto>), StatusCodes.Status200OK)]
@@ -47,7 +46,6 @@ public class AccountsController : ControllerBase
         [FromQuery] string? sortBy = null,
         [FromQuery] string sortDirection = "asc",
         [FromQuery] string? filter = null,
-        [FromQuery] string? fields = null,
         CancellationToken cancellationToken = default)
     {
         var parameters = new QueryParameters
@@ -56,8 +54,7 @@ public class AccountsController : ControllerBase
             Offset = offset,
             SortBy = sortBy,
             SortDirection = sortDirection,
-            Filter = filter,
-            Fields = fields
+            Filter = filter
         };
 
         var (accounts, totalCount) = await _accountRepository.GetWithQueryAsync(parameters, cancellationToken);

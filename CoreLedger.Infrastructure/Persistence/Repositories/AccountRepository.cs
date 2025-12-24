@@ -122,7 +122,7 @@ public class AccountRepository : Repository<Account>, IAccountRepository
 
         // Build the final SQL queries
         var countSql = $@"
-            SELECT COUNT(*) 
+            SELECT COUNT(*)::int AS ""Value""
             FROM accounts a
             {whereClause}";
 
@@ -133,10 +133,10 @@ public class AccountRepository : Repository<Account>, IAccountRepository
             {orderByClause}
             LIMIT {{{limitParam}}} OFFSET {{{offsetParam}}}";
 
-        // Get total count
-        var totalCount = await _context.Set<Account>()
-            .FromSqlRaw(countSql, sqlParameters.Take(limitParam).ToArray())
-            .CountAsync(cancellationToken);
+        // Execute count query to get total without pagination
+        var totalCount = await _context.Database
+            .SqlQueryRaw<int>(countSql, sqlParameters.Take(limitParam).ToArray())
+            .FirstOrDefaultAsync(cancellationToken);
 
         // Get accounts using FromSqlRaw with EF Core materialization
         var accounts = await _context.Set<Account>()

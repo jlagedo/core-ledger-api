@@ -38,11 +38,6 @@ public class QueryParameters
     /// Filter expression (simple field=value format).
     /// </summary>
     public string? Filter { get; set; }
-    
-    /// <summary>
-    /// Fields to include in response (comma-separated).
-    /// </summary>
-    public string? Fields { get; set; }
 }
 
 /// <summary>
