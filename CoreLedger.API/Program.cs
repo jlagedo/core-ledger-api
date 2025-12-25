@@ -79,6 +79,13 @@ try
     app.MapHealthChecks("/health/ready");
     app.MapHealthChecks("/health/live");
 
+    // Log the actual URLs the application is listening on
+    var addresses = app.Urls;
+    foreach (var address in addresses)
+    {
+        Log.Information("Core Ledger API listening on: {Address}", address);
+    }
+
     Log.Information("Core Ledger API started successfully");
 
     app.Run();

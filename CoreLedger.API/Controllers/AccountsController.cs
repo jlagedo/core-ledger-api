@@ -70,7 +70,8 @@ public class AccountsController : ControllerBase
             a.NormalBalance,
             a.NormalBalance.ToString(),
             a.CreatedAt,
-            a.UpdatedAt
+            a.UpdatedAt,
+            a.DeactivatedAt
         )).ToList();
 
         var result = new PagedResult<AccountDto>(accountDtos, totalCount, parameters.Limit, parameters.Offset);
@@ -135,14 +136,15 @@ public class AccountsController : ControllerBase
     }
 
     /// <summary>
-    /// Deletes an account.
+    /// Deactivates an account and records the deactivation date.
     /// </summary>
-    [HttpDelete("{id}")]
+    [HttpPatch("{id}/deactivate")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Deactivate(int id, CancellationToken cancellationToken)
     {
-        var command = new DeleteAccountCommand(id);
+        var command = new DeactivateAccountCommand(id);
         await _mediator.Send(command, cancellationToken);
         return NoContent();
     }

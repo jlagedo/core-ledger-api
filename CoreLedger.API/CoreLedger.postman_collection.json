@@ -869,21 +869,29 @@
 					}
 				},
 				{
-					"name": "DELETE Account",
+					"name": "PATCH Deactivate Account",
 					"request": {
-						"method": "DELETE",
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{CoreLedger_API_HostAddress}}/api/accounts/1",
+							"raw": "{{CoreLedger_API_HostAddress}}/api/accounts/1/deactivate",
 							"host": [
 								"{{CoreLedger_API_HostAddress}}"
 							],
 							"path": [
 								"api",
 								"accounts",
-								"1"
+								"1",
+								"deactivate"
 							]
 						}
-					}
+					},
+					"response": []
 				}
 			]
 		}
@@ -891,7 +899,7 @@
 	"variable": [
 		{
 			"key": "CoreLedger_API_HostAddress",
-			"value": "http://localhost:5071",
+			"value": "https://localhost:7057",
 			"type": "string"
 		}
 	]

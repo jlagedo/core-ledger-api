@@ -16,7 +16,8 @@ public record AccountDto(
     NormalBalance NormalBalance,
     string NormalBalanceDescription,
     DateTime CreatedAt,
-    DateTime? UpdatedAt
+    DateTime? UpdatedAt,
+    DateTime? DeactivatedAt
 );
 
 /// <summary>

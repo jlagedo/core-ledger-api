@@ -14,6 +14,7 @@ public class Account : BaseEntity
     public AccountType? Type { get; private set; }
     public AccountStatus Status { get; private set; }
     public NormalBalance NormalBalance { get; private set; }
+    public DateTime? DeactivatedAt { get; private set; }
 
     private Account() { }
 
@@ -82,6 +83,7 @@ public class Account : BaseEntity
             throw new DomainValidationException("Account is already inactive");
 
         Status = AccountStatus.Inactive;
+        DeactivatedAt = DateTime.UtcNow;
         SetUpdated();
     }
 
