@@ -38,10 +38,6 @@ public class ToDoConfiguration : IEntityTypeConfiguration<ToDo>
         builder.Property(t => t.CompletedAt)
             .HasColumnName("completed_at");
 
-        builder.Property(t => t.RowVersion)
-            .HasColumnName("row_version")
-            .IsRowVersion();
-
         builder.HasIndex(t => t.IsCompleted)
             .HasDatabaseName("ix_todos_is_completed");
     }

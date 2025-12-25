@@ -47,10 +47,6 @@ public class AccountConfiguration : IEntityTypeConfiguration<Account>
         builder.Property(a => a.UpdatedAt)
             .HasColumnName("updated_at");
 
-        builder.Property(a => a.RowVersion)
-            .HasColumnName("row_version")
-            .IsRowVersion();
-
         builder.HasOne(a => a.Type)
             .WithMany()
             .HasForeignKey(a => a.TypeId)

@@ -31,10 +31,6 @@ public class AccountTypeConfiguration : IEntityTypeConfiguration<AccountType>
         builder.Property(at => at.UpdatedAt)
             .HasColumnName("updated_at");
 
-        builder.Property(at => at.RowVersion)
-            .HasColumnName("row_version")
-            .IsRowVersion();
-
         builder.HasIndex(at => at.Description)
             .IsUnique()
             .HasDatabaseName("ix_account_types_description");
