@@ -6,6 +6,8 @@ using Serilog;
 using Serilog.Events;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -34,6 +36,12 @@ try
 
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
+
+    builder.Services.AddHttpsRedirection(options =>
+    {
+        options.RedirectStatusCode = StatusCodes.Status308PermanentRedirect;
+        options.HttpsPort = builder.Configuration.GetValue<int?>("HttpsPort") ?? 7109;
+    });
 
     builder.Services.AddControllers();
     builder.Services.AddFluentValidationAutoValidation();
@@ -79,12 +87,19 @@ try
     app.MapHealthChecks("/health/ready");
     app.MapHealthChecks("/health/live");
 
-    // Log the actual URLs the application is listening on
-    var addresses = app.Urls;
-    foreach (var address in addresses)
+    var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+    lifetime.ApplicationStarted.Register(() =>
     {
-        Log.Information("Core Ledger API listening on: {Address}", address);
-    }
+        var addresses = app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()?.Addresses;
+        if (addresses != null && addresses.Any())
+        {
+            Log.Information("Core Ledger API is now listening on:");
+            foreach (var address in addresses)
+            {
+                Log.Information("  → {Address}", address);
+            }
+        }
+    });
 
     Log.Information("Core Ledger API started successfully");
 
