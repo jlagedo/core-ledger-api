@@ -17,6 +17,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<AccountType> AccountTypes => Set<AccountType>();
     public DbSet<Account> Accounts => Set<Account>();
     public DbSet<Fund> Funds => Set<Fund>();
+    public DbSet<Security> Securities => Set<Security>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
