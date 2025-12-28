@@ -44,7 +44,7 @@ public class RabbitMQPublisher : IMessagePublisher, IDisposable
     /// <summary>
     /// Publishes a message to the specified queue.
     /// </summary>
-    public Task PublishAsync<T>(string queueName, T message, CancellationToken cancellationToken = default) where T : class
+    public Task PublishAsync<T>(string queueName, T message, string? correlationId = null, CancellationToken cancellationToken = default) where T : class
     {
         _channel.QueueDeclare(
             queue: queueName,
@@ -60,13 +60,22 @@ public class RabbitMQPublisher : IMessagePublisher, IDisposable
         properties.Persistent = true;
         properties.ContentType = "application/json";
 
+        // Add correlation ID to message headers for distributed tracing
+        if (!string.IsNullOrWhiteSpace(correlationId))
+        {
+            properties.CorrelationId = correlationId;
+            properties.Headers ??= new Dictionary<string, object>();
+            properties.Headers["X-Correlation-ID"] = correlationId;
+        }
+
         _channel.BasicPublish(
             exchange: string.Empty,
             routingKey: queueName,
             basicProperties: properties,
             body: body);
 
-        _logger.LogInformation("Message published to queue {QueueName}: {Message}", queueName, json);
+        _logger.LogInformation("Message published to queue {QueueName} with CorrelationId {CorrelationId}: {Message}",
+            queueName, correlationId ?? "none", json);
 
         return Task.CompletedTask;
     }

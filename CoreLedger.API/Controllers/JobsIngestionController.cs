@@ -40,6 +40,9 @@ public class JobsIngestionController : ControllerBase
         [FromBody] ImportB3InstructionFileRequest request,
         CancellationToken cancellationToken = default)
     {
+        // Extract correlation ID from HttpContext (set by CorrelationIdMiddleware)
+        var correlationId = HttpContext.Items["CorrelationId"]?.ToString();
+
         _logger.LogInformation("Starting B3 instruction file import for ReferenceId: {ReferenceId}", request.ReferenceId);
 
         var coreJob = CoreJob.Create(
@@ -53,11 +56,13 @@ public class JobsIngestionController : ControllerBase
         var message = new CoreJobB3ImportMessage(
             CoreJobId: coreJob.Id,
             ReferenceId: coreJob.ReferenceId,
-            CommandType: "CoreJobB3Import");
+            CommandType: "CoreJobB3Import",
+            CorrelationId: correlationId);
 
         await _messagePublisher.PublishAsync(
             queueName: "worker.b3.import.queue",
             message: message,
+            correlationId: correlationId,
             cancellationToken: cancellationToken);
 
         _logger.LogInformation("Message published to worker.b3.import.queue for CoreJobId: {CoreJobId}", coreJob.Id);
@@ -67,6 +72,59 @@ public class JobsIngestionController : ControllerBase
             ReferenceId: coreJob.ReferenceId,
             Status: "Accepted",
             Message: "B3 instruction file import job has been queued successfully");
+
+        return AcceptedAtAction(
+            actionName: null,
+            value: response);
+    }
+
+    /// <summary>
+    /// Tests the API -> Queue -> Worker connection by creating a CoreJob and sending a test message.
+    /// The worker will only log the message and update the job status.
+    /// </summary>
+    /// <param name="request">Test connection request containing reference ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Test response with CoreJob details and correlation ID</returns>
+    [HttpPost("test-connection")]
+    [ProducesResponseType(typeof(TestConnectionResponse), StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> TestConnection(
+        [FromBody] TestConnectionRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        // Extract correlation ID from HttpContext (set by CorrelationIdMiddleware)
+        var correlationId = HttpContext.Items["CorrelationId"]?.ToString();
+
+        _logger.LogInformation("Testing API -> Queue -> Worker connection for ReferenceId: {ReferenceId}", request.ReferenceId);
+
+        var coreJob = CoreJob.Create(
+            referenceId: request.ReferenceId,
+            jobDescription: request.JobDescription ?? "Test connection job");
+
+        await _coreJobRepository.AddAsync(coreJob, cancellationToken);
+
+        _logger.LogInformation("Test CoreJob created with Id: {CoreJobId}, Status: {Status}", coreJob.Id, coreJob.Status);
+
+        var message = new TestConnectionMessage(
+            CoreJobId: coreJob.Id,
+            ReferenceId: coreJob.ReferenceId,
+            CommandType: "TestConnection",
+            CorrelationId: correlationId);
+
+        await _messagePublisher.PublishAsync(
+            queueName: "worker.test.queue",
+            message: message,
+            correlationId: correlationId,
+            cancellationToken: cancellationToken);
+
+        _logger.LogInformation("Test message published to worker.test.queue for CoreJobId: {CoreJobId}", coreJob.Id);
+
+        var response = new TestConnectionResponse(
+            CoreJobId: coreJob.Id,
+            ReferenceId: coreJob.ReferenceId,
+            Status: coreJob.Status.ToString(),
+            Message: "Test connection job has been queued successfully. Check worker logs to verify message processing.",
+            CorrelationId: correlationId);
 
         return AcceptedAtAction(
             actionName: null,

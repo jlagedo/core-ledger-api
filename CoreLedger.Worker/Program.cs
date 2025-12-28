@@ -38,6 +38,7 @@ try
         .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy());
 
     builder.Services.AddHostedService<B3ImportConsumer>();
+    builder.Services.AddHostedService<TestConnectionConsumer>();
 
     var host = builder.Build();
 

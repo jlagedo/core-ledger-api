@@ -1,11 +1,12 @@
 namespace CoreLedger.Application.DTOs;
 
 /// <summary>
-/// Message DTO for B3 import job sent to RabbitMQ.
+/// Response DTO for test connection request.
 /// </summary>
-public record CoreJobB3ImportMessage(
+public record TestConnectionResponse(
     int CoreJobId,
     string ReferenceId,
-    string CommandType,
+    string Status,
+    string Message,
     string? CorrelationId = null
 );

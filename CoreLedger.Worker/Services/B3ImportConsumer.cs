@@ -68,37 +68,51 @@ public class B3ImportConsumer : BackgroundService
                 var body = ea.Body.ToArray();
                 var messageJson = Encoding.UTF8.GetString(body);
 
-                _logger.LogInformation("Received message from {QueueName}: {Message}", QueueName, messageJson);
-
-                try
+                // Extract correlation ID from message headers or properties
+                var correlationId = ea.BasicProperties?.CorrelationId;
+                if (string.IsNullOrWhiteSpace(correlationId) && ea.BasicProperties?.Headers != null)
                 {
-                    var message = JsonSerializer.Deserialize<CoreJobB3ImportMessage>(messageJson);
-                    if (message == null)
+                    if (ea.BasicProperties.Headers.TryGetValue("X-Correlation-ID", out var headerValue))
                     {
-                        _logger.LogError("Failed to deserialize message: {MessageJson}", messageJson);
-                        _channel.BasicNack(ea.DeliveryTag, false, false);
-                        return;
+                        correlationId = Encoding.UTF8.GetString((byte[])headerValue);
                     }
-
-                    if (message.CommandType != "CoreJobB3Import")
-                    {
-                        _logger.LogWarning("Unexpected command type: {CommandType}", message.CommandType);
-                        _channel.BasicNack(ea.DeliveryTag, false, false);
-                        return;
-                    }
-
-                    using var scope = _serviceProvider.CreateScope();
-                    var processor = scope.ServiceProvider.GetRequiredService<IB3ImportProcessor>();
-
-                    await processor.ProcessAsync(message.CoreJobId, message.ReferenceId, stoppingToken);
-
-                    _channel.BasicAck(ea.DeliveryTag, false);
-                    _logger.LogInformation("Successfully processed B3 import for CoreJob {CoreJobId}", message.CoreJobId);
                 }
-                catch (Exception ex)
+
+                // Set up Serilog LogContext with correlation ID for distributed tracing
+                using (Serilog.Context.LogContext.PushProperty("CorrelationId", correlationId ?? "unknown"))
                 {
-                    _logger.LogError(ex, "Error processing message: {Message}", messageJson);
-                    _channel.BasicNack(ea.DeliveryTag, false, true);
+                    _logger.LogInformation("Received message from {QueueName}: {Message}", QueueName, messageJson);
+
+                    try
+                    {
+                        var message = JsonSerializer.Deserialize<CoreJobB3ImportMessage>(messageJson);
+                        if (message == null)
+                        {
+                            _logger.LogError("Failed to deserialize message: {MessageJson}", messageJson);
+                            _channel.BasicNack(ea.DeliveryTag, false, false);
+                            return;
+                        }
+
+                        if (message.CommandType != "CoreJobB3Import")
+                        {
+                            _logger.LogWarning("Unexpected command type: {CommandType}", message.CommandType);
+                            _channel.BasicNack(ea.DeliveryTag, false, false);
+                            return;
+                        }
+
+                        using var scope = _serviceProvider.CreateScope();
+                        var processor = scope.ServiceProvider.GetRequiredService<IB3ImportProcessor>();
+
+                        await processor.ProcessAsync(message.CoreJobId, message.ReferenceId, stoppingToken);
+
+                        _channel.BasicAck(ea.DeliveryTag, false);
+                        _logger.LogInformation("Successfully processed B3 import for CoreJob {CoreJobId}", message.CoreJobId);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error processing message: {Message}", messageJson);
+                        _channel.BasicNack(ea.DeliveryTag, false, true);
+                    }
                 }
             };
 
