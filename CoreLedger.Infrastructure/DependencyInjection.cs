@@ -34,6 +34,7 @@ public static class DependencyInjection
         services.AddScoped<IToDoRepository, ToDoRepository>();
         services.AddScoped<IAccountTypeRepository, AccountTypeRepository>();
         services.AddScoped<IAccountRepository, AccountRepository>();
+        services.AddScoped<ICoreJobRepository, CoreJobRepository>();
         services.AddScoped<IFundRepository, FundRepository>();
         services.AddScoped<ISecurityRepository, SecurityRepository>();
 

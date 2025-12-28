@@ -16,6 +16,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<ToDo> ToDos => Set<ToDo>();
     public DbSet<AccountType> AccountTypes => Set<AccountType>();
     public DbSet<Account> Accounts => Set<Account>();
+    public DbSet<CoreJob> CoreJobs => Set<CoreJob>();
     public DbSet<Fund> Funds => Set<Fund>();
     public DbSet<Security> Securities => Set<Security>();
 
