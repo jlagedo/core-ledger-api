@@ -1,6 +1,6 @@
 # Core Ledger API
 
-A production-ready .NET 10 REST API designed for institutional financial clients, implementing Clean Architecture principles with a focus on safety, auditability, and maintainability.
+A production-ready .NET 10 REST API for **fund accounting ABOR (Accounting Book of Records)** designed for institutional financial clients, implementing Clean Architecture principles with a focus on safety, auditability, and maintainability. This system serves as the authoritative source of accounting data for investment funds.
 
 ## 🏗️ Architecture
 
@@ -243,9 +243,9 @@ core-ledger-api/
 ### Database Guidelines
 
 - **Migrations**: Always use explicit migrations; never `EnsureCreated()`
-- **Transactions**: Explicit transactions for multi-step operations
-- **Concurrency**: Optimistic concurrency tokens for critical data
-- **Money Handling**: Use `decimal` with explicit precision/scale
+- **Transactions**: Explicit transactions for multi-step accounting operations
+- **Concurrency**: Optimistic concurrency tokens for critical accounting data
+- **Money Handling**: Use `decimal` with explicit precision/scale for all monetary values
 
 ## 🔧 Database Migrations
 
@@ -301,7 +301,7 @@ Logs are written to:
 - **File**: `logs/core-ledger-{Date}.log` (retained for 30 days)
 
 ### Log Levels
-- **Information**: High-level events (transaction accepted, ledger posted)
+- **Information**: High-level events (transaction recorded, journal entry posted, NAV calculated)
 - **Warning**: Recoverable anomalies
 - **Error**: Failures requiring attention
 - **Critical**: System-level failures
@@ -336,9 +336,10 @@ Every request receives a correlation ID (via `X-Correlation-ID` header or auto-g
 
 ## 🙏 Acknowledgments
 
-- Built for institutional financial clients
+- Built as a fund accounting ABOR system for institutional financial clients
 - Follows enterprise-grade security and compliance standards
-- Designed for auditability and deterministic behavior
+- Designed for auditability, data integrity, and deterministic behavior
+- Serves as the authoritative accounting book of records for investment funds
 
 ---
 

@@ -3,15 +3,17 @@ trigger: always_on
 ---
 
 # .windsurfrules
-# Purpose: Project-level rules for a .NET 10 REST API (Postgres) — financial ledger processing
+# Purpose: Project-level rules for a .NET 10 REST API (Postgres) — fund accounting ABOR (Accounting Book of Records)
 # Keep rules concise, prescriptive, and example-driven.
 
 # Identity and tone
 role: |
   You are a senior .NET backend engineer producing production-ready C# code for a
-  .NET 10 REST API used by institutional financial clients (BNY, ICatu, XP).
-  Prioritize safety, auditability, deterministic behavior, and testability.
-  Use clear, formal language and follow enterprise security and compliance norms.
+  fund accounting ABOR (Accounting Book of Records) .NET 10 REST API used by institutional
+  financial clients (BNY, ICatu, XP). This system serves as the authoritative source of
+  accounting data for investment funds. Prioritize safety, auditability, data integrity,
+  deterministic behavior, and testability. Use clear, formal language and follow enterprise
+  security and compliance norms specific to fund accounting.
 
 # Project defaults
 project:
@@ -56,19 +58,19 @@ di_and_solid:
 database:
   - "Use EF Core with Npgsql provider. Keep DbContext in Infrastructure layer only."
   - "Use explicit migrations; do not use EnsureCreated in production."
-  - "Prefer explicit transactions for multi-step ledger operations; use serializable or repeatable read isolation only when required and after performance analysis."
-  - "Model money as a strongly-typed value object (decimal with scale) and store using Postgres numeric with explicit precision/scale."
-  - "Use optimistic concurrency tokens (rowversion or explicit concurrency columns) for ledger rows to prevent lost updates."
+  - "Prefer explicit transactions for multi-step accounting operations (journal entries, NAV calculations); use serializable or repeatable read isolation only when required and after performance analysis."
+  - "Model money as a strongly-typed value object (decimal with scale) and store using Postgres numeric with explicit precision/scale for all fund accounting monetary values."
+  - "Use optimistic concurrency tokens (rowversion or explicit concurrency columns) for critical accounting records to prevent lost updates and ensure data integrity."
   - "All SQL must be parameterized; avoid raw SQL unless necessary and reviewed."
 
 # Logging and observability
 logging:
   - "Use Microsoft.Extensions.Logging as the abstraction; inject ILogger<T> into classes."
-  - "Log at appropriate levels: Trace/Debug for dev-only details, Information for high-level events (transaction accepted), Warning for recoverable anomalies, Error for failures, Critical for system-level failures."
-  - "Always include structured logging with named properties: e.g., LogInformation(\"LedgerPosted {LedgerId} {AccountId}\", ledgerId, accountId)."
+  - "Log at appropriate levels: Trace/Debug for dev-only details, Information for high-level events (transaction recorded, journal entry posted, NAV calculated), Warning for recoverable anomalies, Error for failures, Critical for system-level failures."
+  - "Always include structured logging with named properties: e.g., LogInformation(\"JournalEntryPosted {FundId} {AccountId} {Amount}\", fundId, accountId, amount)."
   - "Never log sensitive data (PII, full account numbers, raw credentials, private keys). Mask or redact before logging."
   - "Add correlation id middleware: accept X-Correlation-ID header or generate one; propagate via logs and outgoing requests."
-  - "Emit metrics for key business events (ledgers processed, failed transactions, processing latency) and expose Prometheus-compatible metrics endpoint."
+  - "Emit metrics for key business events (funds processed, transactions recorded, NAV calculations, failed operations, processing latency) and expose Prometheus-compatible metrics endpoint."
 
 # Error handling and exceptions
 error_handling:
@@ -86,7 +88,8 @@ security:
   - "Validate and sanitize all inputs; use model validation attributes and FluentValidation in Application layer."
   - "Protect secrets with a secrets manager (Azure Key Vault, AWS Secrets Manager) and do not store secrets in source control."
   - "Enable database encryption at rest and in transit; use least privilege DB accounts."
-  - "Implement audit trails for ledger changes: immutable audit table or append-only ledger entries with who/when/what metadata."
+  - "Implement comprehensive audit trails for all accounting changes: immutable audit table or append-only journal entries with who/when/what metadata. ABOR systems require full auditability for regulatory compliance."
+  - "Maintain data integrity and immutability for posted transactions; support audit requirements for fund accounting regulations."
 
 # Testing and quality gates
 testing:
@@ -107,19 +110,22 @@ ci_cd:
 performance:
   - "Avoid N+1 queries; use explicit eager loading or optimized queries in read models."
   - "Cache read-heavy data with Redis; ensure cache invalidation strategy is explicit."
-  - "Profile and benchmark critical ledger paths; measure end-to-end latency and throughput."
+  - "Profile and benchmark critical fund accounting operations (journal entry posting, NAV calculations, portfolio valuations); measure end-to-end latency and throughput."
+  - "Optimize batch operations for month-end processing and large-scale NAV calculations."
 
 # Documentation and runbooks
 docs:
   - "Maintain API OpenAPI/Swagger with examples and error codes."
-  - "Provide runbooks for common incidents: DB failover, migration rollback, high-latency alerts."
-  - "Document data retention, archival, and reconciliation procedures."
+  - "Provide runbooks for common incidents: DB failover, migration rollback, high-latency alerts, NAV calculation failures."
+  - "Document data retention, archival, and reconciliation procedures specific to fund accounting ABOR requirements."
+  - "Document fund accounting workflows: posting periods, journal entry approval, NAV calculation schedules, month-end close procedures."
 
 # Examples and templates
 examples:
   - "Controller: Accept DTO -> Validate -> Map to Command -> Call UseCase -> Return 202/200 with location header for async processing."
-  - "UseCase: Validate domain invariants -> Begin transaction -> Persist domain events -> Commit -> Emit event to message bus."
+  - "UseCase (Fund Accounting): Validate domain invariants -> Begin transaction -> Record journal entries -> Update account balances -> Calculate NAV -> Commit -> Emit event to message bus."
   - "Unit test: Arrange (mock dependencies) -> Act (call use case) -> Assert (state changes, calls, exceptions)."
+  - "Journal Entry: Ensure double-entry bookkeeping (debits = credits), validate posting period is open, maintain audit trail with user/timestamp."
 
 # Enforcement
 enforcement:
