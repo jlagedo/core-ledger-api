@@ -13,5 +13,14 @@ public enum SecurityType
     ETF = 6,             // Exchange Traded Fund
     REIT = 7,            // Real Estate Investment Trust
     Derivative = 8,
-    Hybrid = 9
+    Hybrid = 9,
+    Future = 10,
+    OptionOnEquity = 11,
+    OptionOnFuture = 12,
+    Forward = 13,
+    Fund = 14,
+    Receipt = 15,
+    FX = 16,             // Foreign Exchange
+    Commodity = 17,
+    Index = 18
 }
