@@ -147,4 +147,31 @@ public class AccountRepository : Repository<Account>, IAccountRepository
 
         return (accounts, totalCount);
     }
+
+    public async Task<IReadOnlyList<(int TypeId, string TypeDescription, int ActiveAccountCount)>> GetActiveAccountsByTypeAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var sql = @"
+            SELECT 
+                at.id AS TypeId,
+                at.description AS TypeDescription,
+                COUNT(a.id)::int AS ActiveAccountCount
+            FROM account_types at
+            LEFT JOIN accounts a ON a.type_id = at.id AND a.status = 1
+            GROUP BY at.id, at.description
+            ORDER BY at.description";
+
+        var results = await _context.Database
+            .SqlQueryRaw<AccountsByTypeReportResult>(sql)
+            .ToListAsync(cancellationToken);
+
+        return results.Select(r => (r.TypeId, r.TypeDescription, r.ActiveAccountCount)).ToList();
+    }
+
+    private class AccountsByTypeReportResult
+    {
+        public int TypeId { get; set; }
+        public string TypeDescription { get; set; } = string.Empty;
+        public int ActiveAccountCount { get; set; }
+    }
 }

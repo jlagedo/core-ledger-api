@@ -841,3 +841,173 @@ GET {{CoreLedger.API_HostAddress}}/api/accounts/3
 Accept: application/json
 
 ###
+
+# ==================== CoreJobs API Tests ====================
+
+### GET All CoreJobs - Retrieve all core job items
+GET {{CoreLedger.API_HostAddress}}/api/corejobs
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Default values
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?limit=100&offset=0
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Pagination (limit 10, offset 0)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?limit=10&offset=0
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Pagination (limit 10, offset 10)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?limit=10&offset=10
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Pagination (limit 20, offset 50)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?limit=20&offset=50
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Limit exceeds 100 (should be capped at 100)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?limit=200&offset=0
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Sort by referenceId (ascending)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?sortBy=referenceId&sortDirection=asc
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Sort by referenceId (descending)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?sortBy=referenceId&sortDirection=desc
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Sort by status (ascending)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?sortBy=status&sortDirection=asc
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Sort by creationDate (ascending)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?sortBy=creationDate&sortDirection=asc
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Sort by creationDate (descending)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?sortBy=creationDate&sortDirection=desc
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Sort by finishedDate (ascending)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?sortBy=finishedDate&sortDirection=asc
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Sort by finishedDate (descending)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?sortBy=finishedDate&sortDirection=desc
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Filter by referenceId (partial match)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?filter=referenceId=REF-00001
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Filter by referenceId (pattern match)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?filter=referenceId=REF-0001
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Filter by status (Complete)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?filter=status=Complete
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Filter by status (Failed)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?filter=status=Failed
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Filter by jobDescription (NAV)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?filter=jobDescription=NAV
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Filter by jobDescription (reconciliation)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?filter=jobDescription=reconciliation
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Filter by jobDescription (processing)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?filter=jobDescription=processing
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Combined filter (Complete) and sort
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?filter=status=Complete&sortBy=creationDate&sortDirection=desc
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Combined filter (Failed) and sort
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?filter=status=Failed&sortBy=creationDate&sortDirection=desc
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Combined filter, sort, and pagination (Recent Complete Jobs)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?filter=status=Complete&sortBy=finishedDate&sortDirection=desc&limit=10&offset=0
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Combined filter, sort, and pagination (Recent Failed Jobs)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?filter=status=Failed&sortBy=finishedDate&sortDirection=desc&limit=10&offset=0
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Complex query with all parameters
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?filter=jobDescription=calculation&sortBy=creationDate&sortDirection=desc&limit=15&offset=0
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Jobs from last 3 days sorted by date
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?sortBy=creationDate&sortDirection=desc&limit=50
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Invalid filter format (should be ignored)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?filter=invalidformat
+Accept: application/json
+
+###
+
+### GET All CoreJobs with RFC-8040 Query Parameters - Invalid sort field (should default to Id)
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?sortBy=invalidfield&sortDirection=asc
+Accept: application/json
+
+###

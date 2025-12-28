@@ -29,4 +29,10 @@ public interface IAccountRepository : IRepository<Account>
     Task<(IReadOnlyList<Account> Accounts, int TotalCount)> GetWithQueryAsync(
         QueryParameters parameters, 
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the count of active accounts grouped by account type.
+    /// </summary>
+    Task<IReadOnlyList<(int TypeId, string TypeDescription, int ActiveAccountCount)>> GetActiveAccountsByTypeAsync(
+        CancellationToken cancellationToken = default);
 }

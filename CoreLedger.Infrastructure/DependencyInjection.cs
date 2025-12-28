@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using CoreLedger.Application.Interfaces;
 using CoreLedger.Domain.Interfaces;
 using CoreLedger.Infrastructure.Persistence;
 using CoreLedger.Infrastructure.Persistence.Repositories;
+using CoreLedger.Infrastructure.Services;
 
 namespace CoreLedger.Infrastructure;
 
@@ -34,6 +36,12 @@ public static class DependencyInjection
         services.AddScoped<IToDoRepository, ToDoRepository>();
         services.AddScoped<IAccountTypeRepository, AccountTypeRepository>();
         services.AddScoped<IAccountRepository, AccountRepository>();
+        services.AddScoped<ICoreJobRepository, CoreJobRepository>();
+        services.AddScoped<IFundRepository, FundRepository>();
+        services.AddScoped<ISecurityRepository, SecurityRepository>();
+
+        services.AddSingleton<IMessagePublisher, RabbitMQPublisher>();
+        services.AddScoped<IB3ImportProcessor, B3ImportProcessor>();
 
         return services;
     }

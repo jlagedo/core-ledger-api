@@ -30,6 +30,18 @@ public class AccountsController : ControllerBase
     }
 
     /// <summary>
+    /// Gets a report of total active accounts grouped by account type.
+    /// </summary>
+    [HttpGet("reports/by-type")]
+    [ProducesResponseType(typeof(IReadOnlyList<AccountsByTypeReportDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAccountsByTypeReport(CancellationToken cancellationToken)
+    {
+        var query = new GetAccountsByTypeReportQuery();
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Retrieves all accounts with optional filtering, sorting, and pagination.
     /// </summary>
     /// <param name="limit">Maximum number of items to return (max 100)</param>
