@@ -10,6 +10,7 @@ public interface IB3ImportProcessor
     /// </summary>
     /// <param name="coreJobId">The CoreJob ID to process</param>
     /// <param name="referenceId">Reference ID for the job</param>
+    /// <param name="correlationId">Optional correlation ID for distributed tracing</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    Task ProcessAsync(int coreJobId, string referenceId, CancellationToken cancellationToken = default);
+    Task ProcessAsync(int coreJobId, string referenceId, string? correlationId = null, CancellationToken cancellationToken = default);
 }

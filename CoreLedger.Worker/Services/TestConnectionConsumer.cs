@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using CoreLedger.Application.DTOs;
+using CoreLedger.Application.Interfaces;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Enums;
 using CoreLedger.Domain.Interfaces;
@@ -19,6 +20,7 @@ public class TestConnectionConsumer : BackgroundService
     private readonly ILogger<TestConnectionConsumer> _logger;
     private readonly IServiceProvider _serviceProvider;
     private readonly IConfiguration _configuration;
+    private readonly IJobNotificationService _jobNotificationService;
     private IConnection? _connection;
     private IModel? _channel;
     private const string QueueName = "worker.test.queue";
@@ -26,11 +28,13 @@ public class TestConnectionConsumer : BackgroundService
     public TestConnectionConsumer(
         ILogger<TestConnectionConsumer> logger,
         IServiceProvider serviceProvider,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IJobNotificationService jobNotificationService)
     {
         _logger = logger;
         _serviceProvider = serviceProvider;
         _configuration = configuration;
+        _jobNotificationService = jobNotificationService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -127,6 +131,9 @@ public class TestConnectionConsumer : BackgroundService
                         await coreJobRepository.UpdateAsync(coreJob, stoppingToken);
                         _logger.LogInformation("CoreJob status updated to Running");
 
+                        // Notify Redis pub/sub
+                        await _jobNotificationService.NotifyJobStatusChangeAsync(coreJob, correlationId, stoppingToken);
+
                         // Simulate processing
                         _logger.LogInformation("Simulating processing for 2 seconds...");
                         await Task.Delay(2000, stoppingToken);
@@ -135,6 +142,9 @@ public class TestConnectionConsumer : BackgroundService
                         coreJob.UpdateStatus(JobStatus.Complete, finishedDate: DateTime.UtcNow);
                         await coreJobRepository.UpdateAsync(coreJob, stoppingToken);
                         _logger.LogInformation("CoreJob status updated to Complete");
+
+                        // Notify Redis pub/sub
+                        await _jobNotificationService.NotifyJobStatusChangeAsync(coreJob, correlationId, stoppingToken);
 
                         _channel.BasicAck(ea.DeliveryTag, false);
 
@@ -162,6 +172,9 @@ public class TestConnectionConsumer : BackgroundService
                                     coreJob.UpdateStatus(JobStatus.Failed, finishedDate: DateTime.UtcNow);
                                     await coreJobRepository.UpdateAsync(coreJob, stoppingToken);
                                     _logger.LogInformation("CoreJob status updated to Failed");
+
+                                    // Notify Redis pub/sub
+                                    await _jobNotificationService.NotifyJobStatusChangeAsync(coreJob, correlationId, stoppingToken);
                                 }
                             }
                         }

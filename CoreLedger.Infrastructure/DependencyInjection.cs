@@ -6,6 +6,7 @@ using CoreLedger.Domain.Interfaces;
 using CoreLedger.Infrastructure.Persistence;
 using CoreLedger.Infrastructure.Persistence.Repositories;
 using CoreLedger.Infrastructure.Services;
+using StackExchange.Redis;
 
 namespace CoreLedger.Infrastructure;
 
@@ -42,6 +43,16 @@ public static class DependencyInjection
 
         services.AddSingleton<IMessagePublisher, RabbitMQPublisher>();
         services.AddScoped<IB3ImportProcessor, B3ImportProcessor>();
+
+        // Register Redis connection as singleton (thread-safe, connection pooling)
+        services.AddSingleton<IConnectionMultiplexer>(sp =>
+        {
+            var connectionString = configuration["Redis:ConnectionString"] ?? "localhost:6379";
+            return ConnectionMultiplexer.Connect(connectionString);
+        });
+
+        // Register job notification service as singleton (stateless, thread-safe)
+        services.AddSingleton<IJobNotificationService, RedisJobNotificationService>();
 
         return services;
     }

@@ -103,7 +103,7 @@ public class B3ImportConsumer : BackgroundService
                         using var scope = _serviceProvider.CreateScope();
                         var processor = scope.ServiceProvider.GetRequiredService<IB3ImportProcessor>();
 
-                        await processor.ProcessAsync(message.CoreJobId, message.ReferenceId, stoppingToken);
+                        await processor.ProcessAsync(message.CoreJobId, message.ReferenceId, correlationId, stoppingToken);
 
                         _channel.BasicAck(ea.DeliveryTag, false);
                         _logger.LogInformation("Successfully processed B3 import for CoreJob {CoreJobId}", message.CoreJobId);

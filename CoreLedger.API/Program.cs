@@ -36,6 +36,7 @@ try
 
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
+    builder.Services.AddNotificationServices(builder.Configuration);
 
     builder.Services.AddHttpsRedirection(options =>
     {

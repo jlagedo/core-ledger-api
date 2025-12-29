@@ -18,17 +18,20 @@ public class B3ImportProcessor : IB3ImportProcessor
     private readonly ICoreJobRepository _coreJobRepository;
     private readonly ISecurityRepository _securityRepository;
     private readonly ApplicationDbContext _dbContext;
+    private readonly IJobNotificationService _jobNotificationService;
 
     public B3ImportProcessor(
         ILogger<B3ImportProcessor> logger,
         ICoreJobRepository coreJobRepository,
         ISecurityRepository securityRepository,
-        ApplicationDbContext dbContext)
+        ApplicationDbContext dbContext,
+        IJobNotificationService jobNotificationService)
     {
         _logger = logger;
         _coreJobRepository = coreJobRepository;
         _securityRepository = securityRepository;
         _dbContext = dbContext;
+        _jobNotificationService = jobNotificationService;
     }
 
     /// <summary>
@@ -36,7 +39,7 @@ public class B3ImportProcessor : IB3ImportProcessor
     /// Uses efficient database strategies: streaming/chunked processing, batch operations, single transaction.
     /// Processes instruments in batches to handle large datasets without excessive memory consumption.
     /// </summary>
-    public async Task ProcessAsync(int coreJobId, string referenceId, CancellationToken cancellationToken = default)
+    public async Task ProcessAsync(int coreJobId, string referenceId, string? correlationId = null, CancellationToken cancellationToken = default)
     {
         const int BatchSize = 1000;
 
@@ -62,6 +65,9 @@ public class B3ImportProcessor : IB3ImportProcessor
             coreJob.UpdateStatus(JobStatus.Running, runningDate: DateTime.UtcNow);
             await _coreJobRepository.UpdateAsync(coreJob, cancellationToken);
             _logger.LogInformation("CoreJob status updated to Running");
+
+            // Notify Redis pub/sub
+            await _jobNotificationService.NotifyJobStatusChangeAsync(coreJob, correlationId, cancellationToken);
 
             _logger.LogInformation("Querying total instrument count from b3_instruments_enriched...");
             var totalCount = await _dbContext.Database
@@ -188,6 +194,9 @@ public class B3ImportProcessor : IB3ImportProcessor
             await transaction.CommitAsync(cancellationToken);
             _logger.LogInformation("Transaction committed successfully");
 
+            // Notify Redis pub/sub after successful commit
+            await _jobNotificationService.NotifyJobStatusChangeAsync(coreJob, correlationId, cancellationToken);
+
             var totalDuration = DateTime.UtcNow - startTime;
             var avgBatchTime = batchNumber > 0 ? totalDuration.TotalMilliseconds / batchNumber : 0;
 
@@ -221,6 +230,9 @@ public class B3ImportProcessor : IB3ImportProcessor
                 coreJob.UpdateStatus(JobStatus.Failed, finishedDate: DateTime.UtcNow);
                 await _coreJobRepository.UpdateAsync(coreJob, cancellationToken);
                 _logger.LogInformation("CoreJob status updated to Failed");
+
+                // Notify Redis pub/sub after failed state is persisted
+                await _jobNotificationService.NotifyJobStatusChangeAsync(coreJob, correlationId, cancellationToken);
 
                 throw;
             }
