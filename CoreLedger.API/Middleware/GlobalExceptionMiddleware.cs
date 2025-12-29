@@ -54,6 +54,12 @@ public class GlobalExceptionMiddleware
                         g => g.Key,
                         g => g.Select(e => e.ErrorMessage).ToArray())),
 
+            ArgumentException argumentException =>
+                ((HttpStatusCode)HttpStatusCode.BadRequest,
+                 "ERR-VALIDATION-002",
+                 argumentException.Message,
+                 (Dictionary<string, string[]>?)null),
+
             EntityNotFoundException notFound =>
                 ((HttpStatusCode)HttpStatusCode.NotFound, notFound.ErrorCode, notFound.Message, (Dictionary<string, string[]>?)null),
 
