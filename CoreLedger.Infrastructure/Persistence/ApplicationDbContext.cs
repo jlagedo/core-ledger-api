@@ -19,6 +19,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<CoreJob> CoreJobs => Set<CoreJob>();
     public DbSet<Fund> Funds => Set<Fund>();
     public DbSet<Security> Securities => Set<Security>();
+    public DbSet<TransactionStatus> TransactionStatuses => Set<TransactionStatus>();
+    public DbSet<TransactionType> TransactionTypes => Set<TransactionType>();
+    public DbSet<TransactionSubType> TransactionSubTypes => Set<TransactionSubType>();
+    public DbSet<Transaction> Transactions => Set<Transaction>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

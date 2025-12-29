@@ -322,9 +322,260 @@ namespace CoreLedger.Infrastructure.Migrations
                     b.ToTable("todos", (string)null);
                 });
 
+            modelBuilder.Entity("CoreLedger.Domain.Entities.Transaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<int>("FundId")
+                        .HasColumnType("integer")
+                        .HasColumnName("fund_id");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 8)
+                        .HasColumnType("numeric(18,8)")
+                        .HasColumnName("price");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 8)
+                        .HasColumnType("numeric(18,8)")
+                        .HasColumnName("quantity");
+
+                    b.Property<int?>("SecurityId")
+                        .HasColumnType("integer")
+                        .HasColumnName("security_id");
+
+                    b.Property<DateTime>("SettleDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("settle_date");
+
+                    b.Property<int>("StatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("status_id");
+
+                    b.Property<DateTime>("TradeDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("trade_date");
+
+                    b.Property<int>("TransactionSubTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("transaction_subtype_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FundId")
+                        .HasDatabaseName("ix_transactions_fund_id");
+
+                    b.HasIndex("SecurityId")
+                        .HasDatabaseName("ix_transactions_security_id");
+
+                    b.HasIndex("SettleDate")
+                        .HasDatabaseName("ix_transactions_settle_date");
+
+                    b.HasIndex("StatusId")
+                        .HasDatabaseName("ix_transactions_status_id");
+
+                    b.HasIndex("TradeDate")
+                        .HasDatabaseName("ix_transactions_trade_date");
+
+                    b.HasIndex("TransactionSubTypeId")
+                        .HasDatabaseName("ix_transactions_transaction_subtype_id");
+
+                    b.HasIndex("FundId", "TradeDate")
+                        .HasDatabaseName("ix_transactions_fund_trade_date");
+
+                    b.ToTable("transactions", (string)null);
+                });
+
+            modelBuilder.Entity("CoreLedger.Domain.Entities.TransactionStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("LongDescription")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("long_description");
+
+                    b.Property<string>("ShortDescription")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("short_description");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShortDescription")
+                        .HasDatabaseName("ix_transaction_statuses_short_description");
+
+                    b.ToTable("transaction_statuses", (string)null);
+                });
+
+            modelBuilder.Entity("CoreLedger.Domain.Entities.TransactionSubType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("LongDescription")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("long_description");
+
+                    b.Property<string>("ShortDescription")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("short_description");
+
+                    b.Property<int>("TypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("type_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShortDescription")
+                        .HasDatabaseName("ix_transaction_subtypes_short_description");
+
+                    b.HasIndex("TypeId")
+                        .HasDatabaseName("ix_transaction_subtypes_type_id");
+
+                    b.ToTable("transaction_subtypes", (string)null);
+                });
+
+            modelBuilder.Entity("CoreLedger.Domain.Entities.TransactionType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("LongDescription")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("long_description");
+
+                    b.Property<string>("ShortDescription")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("short_description");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShortDescription")
+                        .HasDatabaseName("ix_transaction_types_short_description");
+
+                    b.ToTable("transaction_types", (string)null);
+                });
+
             modelBuilder.Entity("CoreLedger.Domain.Entities.Account", b =>
                 {
                     b.HasOne("CoreLedger.Domain.Entities.AccountType", "Type")
+                        .WithMany()
+                        .HasForeignKey("TypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Type");
+                });
+
+            modelBuilder.Entity("CoreLedger.Domain.Entities.Transaction", b =>
+                {
+                    b.HasOne("CoreLedger.Domain.Entities.Fund", "Fund")
+                        .WithMany()
+                        .HasForeignKey("FundId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CoreLedger.Domain.Entities.Security", "Security")
+                        .WithMany()
+                        .HasForeignKey("SecurityId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("CoreLedger.Domain.Entities.TransactionStatus", "Status")
+                        .WithMany()
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CoreLedger.Domain.Entities.TransactionSubType", "TransactionSubType")
+                        .WithMany()
+                        .HasForeignKey("TransactionSubTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Fund");
+
+                    b.Navigation("Security");
+
+                    b.Navigation("Status");
+
+                    b.Navigation("TransactionSubType");
+                });
+
+            modelBuilder.Entity("CoreLedger.Domain.Entities.TransactionSubType", b =>
+                {
+                    b.HasOne("CoreLedger.Domain.Entities.TransactionType", "Type")
                         .WithMany()
                         .HasForeignKey("TypeId")
                         .OnDelete(DeleteBehavior.Restrict)

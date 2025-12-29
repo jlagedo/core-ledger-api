@@ -1,4 +1,5 @@
 using CoreLedger.Domain.Exceptions;
+using FluentValidation;
 using System.Net;
 using System.Text.Json;
 
@@ -43,16 +44,26 @@ public class GlobalExceptionMiddleware
 
         var (statusCode, errorCode, message, errors) = exception switch
         {
-            EntityNotFoundException notFound => 
+            ValidationException validationException =>
+                ((HttpStatusCode)HttpStatusCode.BadRequest,
+                 "ERR-VALIDATION-001",
+                 "One or more validation errors occurred",
+                 validationException.Errors
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(e => e.ErrorMessage).ToArray())),
+
+            EntityNotFoundException notFound =>
                 ((HttpStatusCode)HttpStatusCode.NotFound, notFound.ErrorCode, notFound.Message, (Dictionary<string, string[]>?)null),
-            
-            DomainValidationException validation => 
+
+            DomainValidationException validation =>
                 ((HttpStatusCode)HttpStatusCode.BadRequest, validation.ErrorCode, validation.Message, (Dictionary<string, string[]>?)null),
-            
-            DomainException domain => 
+
+            DomainException domain =>
                 ((HttpStatusCode)HttpStatusCode.BadRequest, domain.ErrorCode, domain.Message, (Dictionary<string, string[]>?)null),
-            
-            _ => ((HttpStatusCode)HttpStatusCode.InternalServerError, "ERR-INTERNAL-001", 
+
+            _ => ((HttpStatusCode)HttpStatusCode.InternalServerError, "ERR-INTERNAL-001",
                   "An internal server error occurred", (Dictionary<string, string[]>?)null)
         };
 
