@@ -57,8 +57,8 @@ public class CoreJob : BaseEntity
         if (string.IsNullOrWhiteSpace(referenceId))
             throw new DomainValidationException("Reference ID cannot be empty");
 
-        if (referenceId.Length > 20)
-            throw new DomainValidationException("Reference ID cannot exceed 20 characters");
+        if (referenceId.Length > 50)
+            throw new DomainValidationException("Reference ID cannot exceed 50 characters");
     }
 
     private static void ValidateJobDescription(string jobDescription)

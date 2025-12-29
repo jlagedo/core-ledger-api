@@ -21,7 +21,7 @@ public class CoreJobConfiguration : IEntityTypeConfiguration<CoreJob>
 
         builder.Property(j => j.ReferenceId)
             .HasColumnName("reference_id")
-            .HasMaxLength(20)
+            .HasMaxLength(50)
             .IsRequired();
 
         builder.Property(j => j.Status)

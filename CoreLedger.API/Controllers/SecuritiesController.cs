@@ -57,6 +57,11 @@ public class SecuritiesController : ControllerBase
             Filter = filter
         };
 
+        // ARCHITECTURAL DECISION: Clean Architecture pattern intentionally bypassed for performance
+        // This controller directly calls the repository for query operations with filters, ordering, and pagination.
+        // Rationale: Avoiding the overhead of MediatR handlers and additional mapping layers for read-heavy operations
+        // that require dynamic SQL generation. The performance benefit of direct repository access outweighs
+        // the architectural purity in this specific use case. Write operations should still follow CQRS pattern.
         var (securities, totalCount) = await _securityRepository.GetWithQueryAsync(parameters, cancellationToken);
 
         var securityDtos = securities.Select(s => new SecurityDto(

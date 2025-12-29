@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using CoreLedger.Application.Constants;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Enums;
@@ -21,7 +22,6 @@ public class TestConnectionConsumer : BackgroundService
     private readonly IConfiguration _configuration;
     private IConnection? _connection;
     private IModel? _channel;
-    private const string QueueName = "worker.test.queue";
 
     public TestConnectionConsumer(
         ILogger<TestConnectionConsumer> logger,
@@ -57,7 +57,7 @@ public class TestConnectionConsumer : BackgroundService
             _channel = _connection.CreateModel();
 
             _channel.QueueDeclare(
-                queue: QueueName,
+                queue: QueueNames.TestConnection,
                 durable: true,
                 exclusive: false,
                 autoDelete: false,
@@ -87,7 +87,7 @@ public class TestConnectionConsumer : BackgroundService
                     _logger.LogInformation("========================================");
                     _logger.LogInformation("TEST CONNECTION MESSAGE RECEIVED");
                     _logger.LogInformation("========================================");
-                    _logger.LogInformation("Queue: {QueueName}", QueueName);
+                    _logger.LogInformation("Queue: {QueueNames.TestConnection}", QueueNames.TestConnection);
                     _logger.LogInformation("Correlation ID: {CorrelationId}", correlationId ?? "none");
                     _logger.LogInformation("Message: {Message}", messageJson);
 
@@ -175,9 +175,9 @@ public class TestConnectionConsumer : BackgroundService
                 }
             };
 
-            _channel.BasicConsume(queue: QueueName, autoAck: false, consumer: consumer);
+            _channel.BasicConsume(queue: QueueNames.TestConnection, autoAck: false, consumer: consumer);
 
-            _logger.LogInformation("TestConnectionConsumer started and listening on queue: {QueueName}", QueueName);
+            _logger.LogInformation("TestConnectionConsumer started and listening on queue: {QueueNames.TestConnection}", QueueNames.TestConnection);
 
             await Task.Delay(Timeout.Infinite, stoppingToken);
         }

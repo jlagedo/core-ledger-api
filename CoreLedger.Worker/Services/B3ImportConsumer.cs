@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using CoreLedger.Application.Constants;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +19,6 @@ public class B3ImportConsumer : BackgroundService
     private readonly IConfiguration _configuration;
     private IConnection? _connection;
     private IModel? _channel;
-    private const string QueueName = "worker.b3.import.queue";
 
     public B3ImportConsumer(
         ILogger<B3ImportConsumer> logger,
@@ -54,7 +54,7 @@ public class B3ImportConsumer : BackgroundService
             _channel = _connection.CreateModel();
 
             _channel.QueueDeclare(
-                queue: QueueName,
+                queue: QueueNames.B3Import,
                 durable: true,
                 exclusive: false,
                 autoDelete: false,
@@ -81,7 +81,7 @@ public class B3ImportConsumer : BackgroundService
                 // Set up Serilog LogContext with correlation ID for distributed tracing
                 using (Serilog.Context.LogContext.PushProperty("CorrelationId", correlationId ?? "unknown"))
                 {
-                    _logger.LogInformation("Received message from {QueueName}: {Message}", QueueName, messageJson);
+                    _logger.LogInformation("Received message from {QueueName}: {Message}", QueueNames.B3Import, messageJson);
 
                     try
                     {
@@ -116,9 +116,9 @@ public class B3ImportConsumer : BackgroundService
                 }
             };
 
-            _channel.BasicConsume(queue: QueueName, autoAck: false, consumer: consumer);
+            _channel.BasicConsume(queue: QueueNames.B3Import, autoAck: false, consumer: consumer);
 
-            _logger.LogInformation("B3ImportConsumer started and listening on queue: {QueueName}", QueueName);
+            _logger.LogInformation("B3ImportConsumer started and listening on queue: {QueueName}", QueueNames.B3Import);
 
             await Task.Delay(Timeout.Infinite, stoppingToken);
         }

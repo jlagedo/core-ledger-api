@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using CoreLedger.Application.Constants;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.Interfaces;
 using CoreLedger.Domain.Entities;
@@ -42,9 +43,10 @@ public class JobsIngestionController : ControllerBase
         // Extract correlation ID from HttpContext (set by CorrelationIdMiddleware)
         var correlationId = HttpContext.Items["CorrelationId"]?.ToString();
 
-        // Auto-generate reference ID in format: CJB3-YYYYMMDDHHMMSS
+        // Auto-generate reference ID in format: CJB3-YYYYMMDDHHMMSS-XXXXXX (with unique suffix to prevent collisions)
         var now = DateTime.UtcNow;
-        var referenceId = $"CJB3-{now:yyyyMMddHHmmss}";
+        var uniqueSuffix = Guid.NewGuid().ToString("N")[..6]; // 6-character unique suffix
+        var referenceId = $"CJB3-{now:yyyyMMddHHmmss}-{uniqueSuffix}";
 
         // Auto-generate job description with current datetime
         var jobDescription = $"B3 import initialization started at {now:yyyy-MM-dd HH:mm:ss} UTC";
@@ -66,12 +68,12 @@ public class JobsIngestionController : ControllerBase
             CorrelationId: correlationId);
 
         await _messagePublisher.PublishAsync(
-            queueName: "worker.b3.import.queue",
+            queueName: QueueNames.B3Import,
             message: message,
             correlationId: correlationId,
             cancellationToken: cancellationToken);
 
-        _logger.LogInformation("Message published to worker.b3.import.queue for CoreJobId: {CoreJobId}", coreJob.Id);
+        _logger.LogInformation("Message published to {QueueName} for CoreJobId: {CoreJobId}", QueueNames.B3Import, coreJob.Id);
 
         var response = new ImportB3InstructionFileResponse(
             CoreJobId: coreJob.Id,
@@ -118,12 +120,12 @@ public class JobsIngestionController : ControllerBase
             CorrelationId: correlationId);
 
         await _messagePublisher.PublishAsync(
-            queueName: "worker.test.queue",
+            queueName: QueueNames.TestConnection,
             message: message,
             correlationId: correlationId,
             cancellationToken: cancellationToken);
 
-        _logger.LogInformation("Test message published to worker.test.queue for CoreJobId: {CoreJobId}", coreJob.Id);
+        _logger.LogInformation("Test message published to {QueueName} for CoreJobId: {CoreJobId}", QueueNames.TestConnection, coreJob.Id);
 
         var response = new TestConnectionResponse(
             CoreJobId: coreJob.Id,
