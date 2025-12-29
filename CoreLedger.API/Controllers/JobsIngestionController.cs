@@ -29,25 +29,31 @@ public class JobsIngestionController : ControllerBase
 
     /// <summary>
     /// Imports a B3 instruction file by creating a CoreJob and sending a message to RabbitMQ.
+    /// The job reference ID and description are auto-generated with the current datetime.
     /// </summary>
-    /// <param name="request">B3 import request containing reference ID and job description</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Import response with CoreJob details</returns>
     [HttpPost("import-b3-instruction-file")]
     [ProducesResponseType(typeof(ImportB3InstructionFileResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ImportB3InstructionFile(
-        [FromBody] ImportB3InstructionFileRequest request,
         CancellationToken cancellationToken = default)
     {
         // Extract correlation ID from HttpContext (set by CorrelationIdMiddleware)
         var correlationId = HttpContext.Items["CorrelationId"]?.ToString();
 
-        _logger.LogInformation("Starting B3 instruction file import for ReferenceId: {ReferenceId}", request.ReferenceId);
+        // Auto-generate reference ID in format: CJB3-YYYYMMDDHHMMSS
+        var now = DateTime.UtcNow;
+        var referenceId = $"CJB3-{now:yyyyMMddHHmmss}";
+
+        // Auto-generate job description with current datetime
+        var jobDescription = $"B3 import initialization started at {now:yyyy-MM-dd HH:mm:ss} UTC";
+
+        _logger.LogInformation("Starting B3 instruction file import for ReferenceId: {ReferenceId}", referenceId);
 
         var coreJob = CoreJob.Create(
-            referenceId: request.ReferenceId,
-            jobDescription: request.JobDescription);
+            referenceId: referenceId,
+            jobDescription: jobDescription);
 
         await _coreJobRepository.AddAsync(coreJob, cancellationToken);
 
