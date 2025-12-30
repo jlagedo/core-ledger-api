@@ -23,6 +23,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<TransactionType> TransactionTypes => Set<TransactionType>();
     public DbSet<TransactionSubType> TransactionSubTypes => Set<TransactionSubType>();
     public DbSet<Transaction> Transactions => Set<Transaction>();
+    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

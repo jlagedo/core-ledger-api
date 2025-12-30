@@ -43,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<ITransactionTypeRepository, TransactionTypeRepository>();
         services.AddScoped<ITransactionSubTypeRepository, TransactionSubTypeRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
 
         services.AddSingleton<IMessagePublisher, RabbitMQPublisher>();
         services.AddScoped<IB3ImportProcessor, B3ImportProcessor>();
