@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace CoreLedger.API.Extensions;
 
@@ -15,6 +16,9 @@ public static class AuthenticationExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        // Clear default claim type mappings to preserve original JWT claim names
+        // Without this, "sub" gets mapped to "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
         var domain = configuration["Auth0:Domain"]
             ?? throw new InvalidOperationException("Auth0:Domain configuration is missing");
         var audience = configuration["Auth0:Audience"]
@@ -47,7 +51,9 @@ public static class AuthenticationExtensions
                 ValidAudience = audience,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
-                ClockSkew = TimeSpan.FromMinutes(5)
+                ClockSkew = TimeSpan.FromMinutes(5),
+                // Map Auth0's claim names to standard .NET claim types
+                NameClaimType = "sub"
             };
 
             // Optional: Log authentication failures for debugging
@@ -66,10 +72,21 @@ public static class AuthenticationExtensions
                 {
                     var logger = context.HttpContext.RequestServices
                         .GetRequiredService<ILogger<Program>>();
+
+                    // Log the sub claim (user ID)
                     var userId = context.Principal?.FindFirst("sub")?.Value;
                     logger.LogInformation(
                         "JWT token validated for user: {UserId}",
                         userId);
+
+                    // Debug: Log all claims to help troubleshoot
+                    if (userId == null && context.Principal?.Claims != null)
+                    {
+                        logger.LogWarning(
+                            "Sub claim not found. Available claims: {Claims}",
+                            string.Join(", ", context.Principal.Claims.Select(c => $"{c.Type}={c.Value}")));
+                    }
+
                     return Task.CompletedTask;
                 }
             };

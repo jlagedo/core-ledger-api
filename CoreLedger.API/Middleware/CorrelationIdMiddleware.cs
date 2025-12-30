@@ -23,17 +23,13 @@ public class CorrelationIdMiddleware
         context.Items["CorrelationId"] = correlationId;
         context.Response.Headers.Append(CorrelationIdHeaderName, correlationId);
 
-        // Extract user information from authentication context
+        // Extract user information from authentication context (only 'sub' claim available in access token)
         var userId = context.User?.FindFirst("sub")?.Value ?? "anonymous";
-        var userEmail = context.User?.FindFirst("email")?.Value;
-        var userName = context.User?.FindFirst("name")?.Value;
         var isAuthenticated = context.User?.Identity?.IsAuthenticated ?? false;
 
         // Push all context properties to Serilog
         using (LogContext.PushProperty("CorrelationId", correlationId))
         using (LogContext.PushProperty("UserId", userId))
-        using (LogContext.PushProperty("UserEmail", userEmail ?? "not-provided"))
-        using (LogContext.PushProperty("UserName", userName ?? "not-provided"))
         using (LogContext.PushProperty("IsAuthenticated", isAuthenticated))
         {
             await _next(context);

@@ -78,15 +78,11 @@ try
             diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
             diagnosticContext.Set("RemoteIP", httpContext.Connection.RemoteIpAddress);
 
-            // Add authenticated user information to request logs
+            // Add authenticated user information to request logs (only 'sub' claim available in access token)
             var userId = httpContext.User?.FindFirst("sub")?.Value;
-            var userEmail = httpContext.User?.FindFirst("email")?.Value;
-            var userName = httpContext.User?.FindFirst("name")?.Value;
             var isAuthenticated = httpContext.User?.Identity?.IsAuthenticated ?? false;
 
             diagnosticContext.Set("UserId", userId ?? "anonymous");
-            diagnosticContext.Set("UserEmail", userEmail ?? "not-provided");
-            diagnosticContext.Set("UserName", userName ?? "not-provided");
             diagnosticContext.Set("IsAuthenticated", isAuthenticated);
         };
     });
