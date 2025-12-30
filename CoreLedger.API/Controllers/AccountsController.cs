@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.UseCases.Accounts.Commands;
 using CoreLedger.Application.UseCases.Accounts.Queries;
@@ -11,6 +12,7 @@ namespace CoreLedger.API.Controllers;
 /// <summary>
 /// Controller for managing Account resources.
 /// </summary>
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class AccountsController : ControllerBase

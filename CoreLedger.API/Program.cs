@@ -48,6 +48,7 @@ try
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
     builder.Services.AddSwaggerDocumentation();
+    builder.Services.AddAuth0Authentication(builder.Configuration);
 
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     builder.Services.AddHealthChecks()
@@ -64,6 +65,9 @@ try
     app.UseHttpsRedirection();
     app.UseSecurityHeaders();
     app.UseGlobalExceptionHandler();
+
+    // Authentication must come before correlation ID middleware to ensure user claims are available
+    app.UseAuthentication();
     app.UseCorrelationId();
 
     app.UseSerilogRequestLogging(options =>
@@ -73,6 +77,17 @@ try
             diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
             diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
             diagnosticContext.Set("RemoteIP", httpContext.Connection.RemoteIpAddress);
+
+            // Add authenticated user information to request logs
+            var userId = httpContext.User?.FindFirst("sub")?.Value;
+            var userEmail = httpContext.User?.FindFirst("email")?.Value;
+            var userName = httpContext.User?.FindFirst("name")?.Value;
+            var isAuthenticated = httpContext.User?.Identity?.IsAuthenticated ?? false;
+
+            diagnosticContext.Set("UserId", userId ?? "anonymous");
+            diagnosticContext.Set("UserEmail", userEmail ?? "not-provided");
+            diagnosticContext.Set("UserName", userName ?? "not-provided");
+            diagnosticContext.Set("IsAuthenticated", isAuthenticated);
         };
     });
 
@@ -80,6 +95,8 @@ try
     {
         app.UseSwaggerDocumentation();
     }
+
+    app.UseAuthorization();
 
     app.MapControllers();
 

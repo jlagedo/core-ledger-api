@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.UseCases.TransactionStatuses.Queries;
 
@@ -8,6 +9,7 @@ namespace CoreLedger.API.Controllers;
 /// <summary>
 /// Controller for managing TransactionStatus resources.
 /// </summary>
+[Authorize]
 [ApiController]
 [Route("api/transactions/status")]
 public class TransactionStatusesController : ControllerBase

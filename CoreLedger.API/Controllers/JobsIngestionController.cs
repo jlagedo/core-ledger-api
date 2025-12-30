@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using CoreLedger.Application.Constants;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.Interfaces;
@@ -10,6 +11,7 @@ namespace CoreLedger.API.Controllers;
 /// <summary>
 /// Controller for job ingestion operations.
 /// </summary>
+[Authorize]
 [ApiController]
 [Route("api/jobs-ingestion")]
 public class JobsIngestionController : ControllerBase

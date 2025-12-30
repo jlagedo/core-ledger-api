@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.UseCases.TransactionSubTypes.Queries;
 
@@ -8,6 +9,7 @@ namespace CoreLedger.API.Controllers;
 /// <summary>
 /// Controller for managing TransactionSubType resources.
 /// </summary>
+[Authorize]
 [ApiController]
 [Route("api/transactions/subtypes")]
 public class TransactionSubTypesController : ControllerBase

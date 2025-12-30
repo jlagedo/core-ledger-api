@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.UseCases.Securities.Queries;
 
@@ -8,6 +9,7 @@ namespace CoreLedger.API.Controllers;
 /// <summary>
 /// Controller for retrieving SecurityType enum values.
 /// </summary>
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class SecurityTypesController : ControllerBase

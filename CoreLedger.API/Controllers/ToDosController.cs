@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.UseCases.ToDos.Commands;
 using CoreLedger.Application.UseCases.ToDos.Queries;
@@ -9,6 +10,7 @@ namespace CoreLedger.API.Controllers;
 /// <summary>
 /// Controller for managing ToDo items.
 /// </summary>
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ToDosController : ControllerBase

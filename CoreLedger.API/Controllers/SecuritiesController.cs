@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.UseCases.Securities.Commands;
 using CoreLedger.Application.UseCases.Securities.Queries;
@@ -11,6 +12,7 @@ namespace CoreLedger.API.Controllers;
 /// <summary>
 /// Controller for managing Security resources.
 /// </summary>
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class SecuritiesController : ControllerBase

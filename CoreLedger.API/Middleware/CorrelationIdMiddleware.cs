@@ -1,5 +1,10 @@
+using Serilog.Context;
+
 namespace CoreLedger.API.Middleware;
 
+/// <summary>
+/// Middleware that adds correlation ID and authenticated user information to the log context.
+/// </summary>
 public class CorrelationIdMiddleware
 {
     private readonly RequestDelegate _next;
@@ -18,7 +23,18 @@ public class CorrelationIdMiddleware
         context.Items["CorrelationId"] = correlationId;
         context.Response.Headers.Append(CorrelationIdHeaderName, correlationId);
 
-        using (Serilog.Context.LogContext.PushProperty("CorrelationId", correlationId))
+        // Extract user information from authentication context
+        var userId = context.User?.FindFirst("sub")?.Value ?? "anonymous";
+        var userEmail = context.User?.FindFirst("email")?.Value;
+        var userName = context.User?.FindFirst("name")?.Value;
+        var isAuthenticated = context.User?.Identity?.IsAuthenticated ?? false;
+
+        // Push all context properties to Serilog
+        using (LogContext.PushProperty("CorrelationId", correlationId))
+        using (LogContext.PushProperty("UserId", userId))
+        using (LogContext.PushProperty("UserEmail", userEmail ?? "not-provided"))
+        using (LogContext.PushProperty("UserName", userName ?? "not-provided"))
+        using (LogContext.PushProperty("IsAuthenticated", isAuthenticated))
         {
             await _next(context);
         }
