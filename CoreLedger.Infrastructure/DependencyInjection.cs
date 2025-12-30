@@ -45,6 +45,16 @@ public static class DependencyInjection
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
 
+        // HttpClient for Auth0 API calls
+        services.AddHttpClient<IAuth0Service, Auth0Service>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(30);
+            client.DefaultRequestHeaders.Add("User-Agent", "CoreLedgerAPI/1.0");
+        });
+
+        // User management service
+        services.AddScoped<IUserService, UserService>();
+
         services.AddSingleton<IMessagePublisher, RabbitMQPublisher>();
         services.AddScoped<IB3ImportProcessor, B3ImportProcessor>();
 

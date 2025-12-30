@@ -29,8 +29,28 @@ public class DomainValidationException : DomainException
 /// </summary>
 public class EntityNotFoundException : DomainException
 {
-    public EntityNotFoundException(string entityName, object id) 
+    public EntityNotFoundException(string entityName, object id)
         : base($"{entityName} with id {id} not found", "ERR-NOTFOUND-001")
     {
+    }
+}
+
+/// <summary>
+/// Exception thrown when an external service (like Auth0) fails.
+/// </summary>
+public class ExternalServiceException : DomainException
+{
+    public string ServiceName { get; }
+
+    public ExternalServiceException(string serviceName, string message)
+        : base($"{serviceName} service error: {message}", "ERR-EXTERNAL-001")
+    {
+        ServiceName = serviceName;
+    }
+
+    public ExternalServiceException(string serviceName, string message, Exception innerException)
+        : base($"{serviceName} service error: {message}", "ERR-EXTERNAL-001")
+    {
+        ServiceName = serviceName;
     }
 }

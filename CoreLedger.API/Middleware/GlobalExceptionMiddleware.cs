@@ -66,6 +66,12 @@ public class GlobalExceptionMiddleware
             DomainValidationException validation =>
                 ((HttpStatusCode)HttpStatusCode.BadRequest, validation.ErrorCode, validation.Message, (Dictionary<string, string[]>?)null),
 
+            ExternalServiceException externalService =>
+                ((HttpStatusCode)HttpStatusCode.ServiceUnavailable,
+                 externalService.ErrorCode,
+                 $"{externalService.ServiceName} is currently unavailable. Please try again later.",
+                 (Dictionary<string, string[]>?)null),
+
             DomainException domain =>
                 ((HttpStatusCode)HttpStatusCode.BadRequest, domain.ErrorCode, domain.Message, (Dictionary<string, string[]>?)null),
 
