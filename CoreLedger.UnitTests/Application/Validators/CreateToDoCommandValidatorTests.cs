@@ -4,8 +4,8 @@ using CoreLedger.Application.Validators;
 namespace CoreLedger.UnitTests.Application.Validators;
 
 /// <summary>
-/// Unit tests for CreateToDoCommandValidator.
-/// Tests FluentValidation rules for CreateToDoCommand.
+///     Unit tests for CreateToDoCommandValidator.
+///     Tests FluentValidation rules for CreateToDoCommand.
 /// </summary>
 public class CreateToDoCommandValidatorTests
 {
@@ -20,7 +20,7 @@ public class CreateToDoCommandValidatorTests
     public void Validate_WithValidDescription_ShouldPass()
     {
         // Arrange
-        var command = new CreateToDoCommand("Valid task description");
+        var command = new CreateToDoCommand("Valid task description", "test-user");
 
         // Act
         var result = _validator.Validate(command);
@@ -37,7 +37,7 @@ public class CreateToDoCommandValidatorTests
     public void Validate_WithEmptyDescription_ShouldFail(string? description)
     {
         // Arrange
-        var command = new CreateToDoCommand(description!);
+        var command = new CreateToDoCommand(description!, "test-user");
 
         // Act
         var result = _validator.Validate(command);
@@ -53,7 +53,7 @@ public class CreateToDoCommandValidatorTests
     public void Validate_WithDescriptionExceeding500Characters_ShouldFail()
     {
         // Arrange
-        var command = new CreateToDoCommand(new string('x', 501));
+        var command = new CreateToDoCommand(new string('x', 501), "test-user");
 
         // Act
         var result = _validator.Validate(command);
@@ -69,7 +69,7 @@ public class CreateToDoCommandValidatorTests
     public void Validate_WithDescriptionExactly500Characters_ShouldPass()
     {
         // Arrange
-        var command = new CreateToDoCommand(new string('x', 500));
+        var command = new CreateToDoCommand(new string('x', 500), "test-user");
 
         // Act
         var result = _validator.Validate(command);
@@ -86,7 +86,7 @@ public class CreateToDoCommandValidatorTests
     public void Validate_WithDescriptionWithinValidRange_ShouldPass(int length)
     {
         // Arrange
-        var command = new CreateToDoCommand(new string('x', length));
+        var command = new CreateToDoCommand(new string('x', length), "test-user");
 
         // Act
         var result = _validator.Validate(command);

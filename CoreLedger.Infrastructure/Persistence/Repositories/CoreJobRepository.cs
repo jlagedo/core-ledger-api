@@ -1,12 +1,13 @@
-using Microsoft.EntityFrameworkCore;
 using CoreLedger.Domain.Entities;
+using CoreLedger.Domain.Enums;
 using CoreLedger.Domain.Interfaces;
 using CoreLedger.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CoreLedger.Infrastructure.Persistence.Repositories;
 
 /// <summary>
-/// Repository implementation for CoreJob entity with specific queries.
+///     Repository implementation for CoreJob entity with specific queries.
 /// </summary>
 public class CoreJobRepository : Repository<CoreJob>, ICoreJobRepository
 {
@@ -47,17 +48,11 @@ public class CoreJobRepository : Repository<CoreJob>, ICoreJobRepository
                 if (!string.IsNullOrEmpty(whereClause))
                 {
                     if (field == "referenceId" || field == "jobDescription")
-                    {
                         sqlParameters.Add($"%{value}%");
-                    }
-                    else if (field == "status" && Enum.TryParse(typeof(CoreLedger.Domain.Enums.JobStatus), value, true, out var statusEnum))
-                    {
+                    else if (field == "status" && Enum.TryParse(typeof(JobStatus), value, true, out var statusEnum))
                         sqlParameters.Add((int)statusEnum!);
-                    }
                     else
-                    {
                         whereClause = string.Empty;
-                    }
                 }
             }
         }
@@ -65,7 +60,9 @@ public class CoreJobRepository : Repository<CoreJob>, ICoreJobRepository
         var orderByClause = string.Empty;
         if (!string.IsNullOrWhiteSpace(parameters.SortBy))
         {
-            var direction = parameters.SortDirection.Equals("desc", StringComparison.OrdinalIgnoreCase) ? "DESC" : "ASC";
+            var direction = parameters.SortDirection.Equals("desc", StringComparison.OrdinalIgnoreCase)
+                ? "DESC"
+                : "ASC";
             orderByClause = parameters.SortBy.ToLower() switch
             {
                 "referenceid" => $"ORDER BY j.reference_id {direction}",

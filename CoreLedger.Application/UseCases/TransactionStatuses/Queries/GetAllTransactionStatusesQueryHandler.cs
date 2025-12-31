@@ -1,17 +1,18 @@
-using Microsoft.Extensions.Logging;
-
 using AutoMapper;
-using MediatR;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Domain.Interfaces;
+using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.TransactionStatuses.Queries;
 
-public class GetAllTransactionStatusesQueryHandler : IRequestHandler<GetAllTransactionStatusesQuery, IReadOnlyList<TransactionStatusDto>>
+public class
+    GetAllTransactionStatusesQueryHandler : IRequestHandler<GetAllTransactionStatusesQuery,
+    IReadOnlyList<TransactionStatusDto>>
 {
-    private readonly ITransactionStatusRepository _repository;
-    private readonly IMapper _mapper;
     private readonly ILogger<GetAllTransactionStatusesQueryHandler> _logger;
+    private readonly IMapper _mapper;
+    private readonly ITransactionStatusRepository _repository;
 
     public GetAllTransactionStatusesQueryHandler(
         ITransactionStatusRepository repository,
@@ -23,7 +24,8 @@ public class GetAllTransactionStatusesQueryHandler : IRequestHandler<GetAllTrans
         _logger = logger;
     }
 
-    public async Task<IReadOnlyList<TransactionStatusDto>> Handle(GetAllTransactionStatusesQuery request, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<TransactionStatusDto>> Handle(GetAllTransactionStatusesQuery request,
+        CancellationToken cancellationToken)
     {
         _logger.LogInformation("Retrieving all transaction statuses");
         var statuses = await _repository.GetAllAsync(cancellationToken);

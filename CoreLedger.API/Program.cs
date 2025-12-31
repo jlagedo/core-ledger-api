@@ -1,20 +1,20 @@
+using CoreLedger.API.Extensions;
+using CoreLedger.API.Middleware;
 using CoreLedger.Application;
 using CoreLedger.Application.Configuration;
 using CoreLedger.Infrastructure;
-using CoreLedger.API.Middleware;
-using CoreLedger.API.Extensions;
-using Serilog;
-using Serilog.Events;
-using FluentValidation;
-using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Serilog;
+using Serilog.Events;
 
 // Build configuration to read Serilog settings before creating logger
 var configuration = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", optional: true, reloadOnChange: true)
+    .AddJsonFile("appsettings.json", false, true)
+    .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json",
+        true, true)
     .AddEnvironmentVariables()
     .Build();
 
@@ -37,6 +37,9 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
+    // Use mock authentication in development (bypasses Auth0)
+    var useMockAuth = builder.Configuration.GetValue<bool>("Auth:UseMock");
+
     builder.Host.UseSerilog();
 
     builder.Services.AddApplication();
@@ -44,48 +47,39 @@ try
 
     // Configure pagination options
     builder.Services.Configure<PaginationOptions>(builder.Configuration.GetSection("Pagination"));
-    var paginationOptions = builder.Configuration.GetSection("Pagination").Get<PaginationOptions>() ?? new PaginationOptions();
+    var paginationOptions = builder.Configuration.GetSection("Pagination").Get<PaginationOptions>() ??
+                            new PaginationOptions();
     PaginationDefaults.Initialize(paginationOptions);
 
     builder.Services.AddControllers();
-    builder.Services.AddFluentValidationAutoValidation();
-    builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-    
+
     builder.Services.AddSwaggerDocumentation();
-    
-    if(!builder.Environment.IsDevelopment())
-        builder.Services.AddAuth0Authentication(builder.Configuration);
-    else
+
+    if (useMockAuth)
+    {
+        Log.Warning("Starting with mock auth");
         builder.Services.AddDevelopmentAuthentication(builder.Configuration);
+    }
+    else
+    {
+        builder.Services.AddAuth0Authentication(builder.Configuration);
+    }
 
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     builder.Services.AddHealthChecks()
         .AddNpgSql(connectionString ?? throw new InvalidOperationException("DefaultConnection not configured"))
-        .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy());
+        .AddCheck("self", () => HealthCheckResult.Healthy());
 
     var app = builder.Build();
 
-    if (!app.Environment.IsDevelopment())
-    {
-        app.UseHsts();
-    }
+    if (!app.Environment.IsDevelopment()) app.UseHsts();
 
     app.UseHttpsRedirection();
     app.UseSecurityHeaders();
     app.UseGlobalExceptionHandler();
 
-    if (app.Environment.IsDevelopment())
-    {
-        app.Use(async (ctx, next) =>
-        {
-            var auth = ctx.Request.Headers["Authorization"].FirstOrDefault();
-            Console.WriteLine($"Raw Authorization header: {auth}");
-            await next();
-        });
-    }
-
     // Authentication must come before correlation ID middleware to ensure user claims are available
-    //app.UseAuthentication();
+    app.UseAuthentication();
     app.UseCorrelationId();
 
     app.UseSerilogRequestLogging(options =>
@@ -105,13 +99,10 @@ try
         };
     });
 
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwaggerDocumentation();
-    }
+    if (app.Environment.IsDevelopment()) app.UseSwaggerDocumentation();
 
     app.UseAuthorization();
-    
+
     app.MapControllers();
     app.MapHealthChecks("/health");
     app.MapHealthChecks("/health/ready");
@@ -124,10 +115,7 @@ try
         if (addresses != null && addresses.Any())
         {
             Log.Information("Core Ledger API is now listening on:");
-            foreach (var address in addresses)
-            {
-                Log.Information("  → {Address}", address);
-            }
+            foreach (var address in addresses) Log.Information("  → {Address}", address);
         }
     });
 
@@ -147,7 +135,9 @@ finally
 }
 
 /// <summary>
-/// Partial Program class to expose entry point for integration tests.
+///     Partial Program class to expose entry point for integration tests.
 /// </summary>
 // ReSharper disable once ClassNeverInstantiated.Global
-public partial class Program { }
+public partial class Program
+{
+}

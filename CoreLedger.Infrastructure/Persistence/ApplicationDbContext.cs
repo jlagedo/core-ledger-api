@@ -1,10 +1,10 @@
-using Microsoft.EntityFrameworkCore;
 using CoreLedger.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace CoreLedger.Infrastructure.Persistence;
 
 /// <summary>
-/// Application database context with proper configuration for PostgreSQL.
+///     Application database context with proper configuration for PostgreSQL.
 /// </summary>
 public class ApplicationDbContext : DbContext
 {
@@ -24,6 +24,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<TransactionSubType> TransactionSubTypes => Set<TransactionSubType>();
     public DbSet<Transaction> Transactions => Set<Transaction>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -4,7 +4,7 @@ using CoreLedger.Domain.Exceptions;
 namespace CoreLedger.UnitTests.Domain.Entities;
 
 /// <summary>
-/// Unit tests for TransactionStatus domain entity business rules and invariants.
+///     Unit tests for TransactionStatus domain entity business rules and invariants.
 /// </summary>
 public class TransactionStatusTests
 {
@@ -48,7 +48,8 @@ public class TransactionStatusTests
     [InlineData(null, "Valid long description")]
     [InlineData("", "Valid long description")]
     [InlineData("   ", "Valid long description")]
-    public void Create_WithEmptyShortDescription_ShouldThrowDomainValidationException(string? shortDescription, string longDescription)
+    public void Create_WithEmptyShortDescription_ShouldThrowDomainValidationException(string? shortDescription,
+        string longDescription)
     {
         // Act & Assert
         var exception = Assert.Throws<DomainValidationException>(() =>
@@ -60,7 +61,8 @@ public class TransactionStatusTests
     [InlineData("Valid short", null)]
     [InlineData("Valid short", "")]
     [InlineData("Valid short", "   ")]
-    public void Create_WithEmptyLongDescription_ShouldThrowDomainValidationException(string shortDescription, string? longDescription)
+    public void Create_WithEmptyLongDescription_ShouldThrowDomainValidationException(string shortDescription,
+        string? longDescription)
     {
         // Act & Assert
         var exception = Assert.Throws<DomainValidationException>(() =>

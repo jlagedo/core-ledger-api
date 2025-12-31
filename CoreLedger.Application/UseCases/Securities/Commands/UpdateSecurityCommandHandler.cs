@@ -1,18 +1,17 @@
-
+using CoreLedger.Domain.Exceptions;
+using CoreLedger.Domain.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using CoreLedger.Domain.Interfaces;
-using CoreLedger.Domain.Exceptions;
 
 namespace CoreLedger.Application.UseCases.Securities.Commands;
 
 /// <summary>
-/// Handler for updating an existing Security.
+///     Handler for updating an existing Security.
 /// </summary>
 public class UpdateSecurityCommandHandler : IRequestHandler<UpdateSecurityCommand>
 {
-    private readonly ISecurityRepository _securityRepository;
     private readonly ILogger<UpdateSecurityCommandHandler> _logger;
+    private readonly ISecurityRepository _securityRepository;
 
     public UpdateSecurityCommandHandler(
         ISecurityRepository securityRepository,
@@ -27,17 +26,12 @@ public class UpdateSecurityCommandHandler : IRequestHandler<UpdateSecurityComman
         _logger.LogInformation("Updating Security with ID: {SecurityId}", request.Id);
 
         var security = await _securityRepository.GetByIdAsync(request.Id, cancellationToken);
-        if (security == null)
-        {
-            throw new EntityNotFoundException("Security", request.Id);
-        }
+        if (security == null) throw new EntityNotFoundException("Security", request.Id);
 
         // Check if another security with the same ticker already exists
         var existing = await _securityRepository.GetByTickerAsync(request.Ticker, cancellationToken);
         if (existing != null && existing.Id != request.Id)
-        {
             throw new DomainValidationException("Security with this ticker already exists");
-        }
 
         security.Update(
             request.Name,

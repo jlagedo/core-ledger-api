@@ -1,13 +1,18 @@
+using System.Text.RegularExpressions;
 using CoreLedger.Domain.Enums;
 using CoreLedger.Domain.Exceptions;
 
 namespace CoreLedger.Domain.Entities;
 
 /// <summary>
-/// Security domain entity with business rules and invariants.
+///     Security domain entity with business rules and invariants.
 /// </summary>
 public class Security : BaseEntity
 {
+    private Security()
+    {
+    }
+
     public string Name { get; private set; } = string.Empty;
     public string Ticker { get; private set; } = string.Empty;
     public string? Isin { get; private set; }
@@ -16,22 +21,27 @@ public class Security : BaseEntity
     public SecurityStatus Status { get; private set; }
     public DateTime? DeactivatedAt { get; private set; }
 
-    private Security() { }
+    /// <summary>
+    ///     Identifier of the user who created this security.
+    /// </summary>
+    public string CreatedByUserId { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Factory method to create a new Security with validation.
+    ///     Factory method to create a new Security with validation.
     /// </summary>
     public static Security Create(
         string name,
         string ticker,
         string? isin,
         SecurityType type,
-        string currency)
+        string currency,
+        string createdByUserId)
     {
         ValidateName(name);
         ValidateTicker(ticker);
         ValidateIsin(isin);
         ValidateCurrency(currency);
+        ValidateCreatedByUserId(createdByUserId);
 
         return new Security
         {
@@ -40,12 +50,13 @@ public class Security : BaseEntity
             Isin = isin?.Trim().ToUpperInvariant(),
             Type = type,
             Currency = currency.Trim().ToUpperInvariant(),
-            Status = SecurityStatus.Active
+            Status = SecurityStatus.Active,
+            CreatedByUserId = createdByUserId.Trim()
         };
     }
 
     /// <summary>
-    /// Updates the security with validation.
+    ///     Updates the security with validation.
     /// </summary>
     public void Update(
         string name,
@@ -68,7 +79,7 @@ public class Security : BaseEntity
     }
 
     /// <summary>
-    /// Deactivates the security.
+    ///     Deactivates the security.
     /// </summary>
     public void Deactivate()
     {
@@ -97,8 +108,9 @@ public class Security : BaseEntity
         if (ticker.Length > 20)
             throw new DomainValidationException("Ticker cannot exceed 20 characters");
 
-        if (!System.Text.RegularExpressions.Regex.IsMatch(ticker, "^[A-Z0-9-]+$", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
-            throw new DomainValidationException("Ticker must contain only alphanumeric characters and hyphens (A-Z, 0-9, -)");
+        if (!Regex.IsMatch(ticker, "^[A-Z0-9-]+$", RegexOptions.IgnoreCase))
+            throw new DomainValidationException(
+                "Ticker must contain only alphanumeric characters and hyphens (A-Z, 0-9, -)");
     }
 
     private static void ValidateIsin(string? isin)
@@ -115,7 +127,13 @@ public class Security : BaseEntity
         if (currency.Length != 3)
             throw new DomainValidationException("Currency must be a 3-letter ISO code");
 
-        if (!System.Text.RegularExpressions.Regex.IsMatch(currency, "^[A-Z]{3}$", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+        if (!Regex.IsMatch(currency, "^[A-Z]{3}$", RegexOptions.IgnoreCase))
             throw new DomainValidationException("Currency must contain only letters (A-Z)");
+    }
+
+    private static void ValidateCreatedByUserId(string createdByUserId)
+    {
+        if (string.IsNullOrWhiteSpace(createdByUserId))
+            throw new DomainValidationException("CreatedByUserId cannot be empty");
     }
 }

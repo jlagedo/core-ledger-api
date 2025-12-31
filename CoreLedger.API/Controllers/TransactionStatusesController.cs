@@ -1,21 +1,21 @@
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.UseCases.TransactionStatuses.Queries;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CoreLedger.API.Controllers;
 
 /// <summary>
-/// Controller for managing TransactionStatus resources.
+///     Controller for managing TransactionStatus resources.
 /// </summary>
 [Authorize]
 [ApiController]
 [Route("api/transactions/status")]
 public class TransactionStatusesController : ControllerBase
 {
-    private readonly IMediator _mediator;
     private readonly ILogger<TransactionStatusesController> _logger;
+    private readonly IMediator _mediator;
 
     public TransactionStatusesController(IMediator mediator, ILogger<TransactionStatusesController> logger)
     {
@@ -24,7 +24,7 @@ public class TransactionStatusesController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all transaction statuses.
+    ///     Retrieves all transaction statuses.
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<TransactionStatusDto>), StatusCodes.Status200OK)]
@@ -36,7 +36,7 @@ public class TransactionStatusesController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves a specific transaction status by ID.
+    ///     Retrieves a specific transaction status by ID.
     /// </summary>
     [HttpGet("{id}", Name = "GetTransactionStatusById")]
     [ProducesResponseType(typeof(TransactionStatusDto), StatusCodes.Status200OK)]

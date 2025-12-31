@@ -3,15 +3,16 @@ using CoreLedger.Infrastructure;
 using CoreLedger.Infrastructure.Configuration;
 using CoreLedger.Worker.Configuration;
 using CoreLedger.Worker.Services;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
 using Serilog.Events;
 
 // Build configuration to read Serilog settings before creating logger
 var configuration = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production"}.json", optional: true, reloadOnChange: true)
+    .AddJsonFile("appsettings.json", false, true)
+    .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production"}.json", true,
+        true)
     .AddEnvironmentVariables()
     .Build();
 
@@ -46,7 +47,7 @@ try
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     builder.Services.AddHealthChecks()
         .AddNpgSql(connectionString ?? throw new InvalidOperationException("DefaultConnection not configured"))
-        .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy());
+        .AddCheck("self", () => HealthCheckResult.Healthy());
 
     builder.Services.AddHostedService<B3ImportConsumer>();
     builder.Services.AddHostedService<TestConnectionConsumer>();

@@ -8,13 +8,13 @@ using NSubstitute;
 namespace CoreLedger.UnitTests.Application.UseCases.Commands;
 
 /// <summary>
-/// Unit tests for DeleteToDoCommandHandler.
+///     Unit tests for DeleteToDoCommandHandler.
 /// </summary>
 public class DeleteToDoCommandHandlerTests
 {
-    private readonly IToDoRepository _mockRepository;
-    private readonly ILogger<DeleteToDoCommandHandler> _mockLogger;
     private readonly DeleteToDoCommandHandler _handler;
+    private readonly ILogger<DeleteToDoCommandHandler> _mockLogger;
+    private readonly IToDoRepository _mockRepository;
 
     public DeleteToDoCommandHandlerTests()
     {
@@ -28,7 +28,7 @@ public class DeleteToDoCommandHandlerTests
     {
         // Arrange
         var command = new DeleteToDoCommand(1);
-        var existingToDo = ToDo.Create("Task to delete");
+        var existingToDo = ToDo.Create("Task to delete", "test-user");
 
         _mockRepository.GetByIdAsync(command.Id, Arg.Any<CancellationToken>())
             .Returns(existingToDo);
@@ -67,7 +67,7 @@ public class DeleteToDoCommandHandlerTests
     {
         // Arrange
         var command = new DeleteToDoCommand(1);
-        var existingToDo = ToDo.Create("Task to delete");
+        var existingToDo = ToDo.Create("Task to delete", "test-user");
         var cancellationToken = new CancellationToken();
 
         _mockRepository.GetByIdAsync(command.Id, Arg.Any<CancellationToken>())

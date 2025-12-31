@@ -1,6 +1,5 @@
-using Swashbuckle.AspNetCore.SwaggerGen;
-using Microsoft.OpenApi;
 using System.Reflection;
+using Microsoft.OpenApi;
 
 namespace CoreLedger.API.Extensions;
 
@@ -9,7 +8,7 @@ public static class SwaggerExtensions
     public static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services)
     {
         services.AddEndpointsApiExplorer();
-        
+
         services.AddSwaggerGen(options =>
         {
             options.SwaggerDoc("v1", new OpenApiInfo
@@ -31,7 +30,8 @@ public static class SwaggerExtensions
                 Scheme = "bearer",
                 BearerFormat = "JWT",
                 In = ParameterLocation.Header,
-                Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.\n\nExample: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\""
+                Description =
+                    "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.\n\nExample: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\""
             });
 
             options.AddSecurityRequirement(doc =>
@@ -45,10 +45,7 @@ public static class SwaggerExtensions
 
             var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-            if (File.Exists(xmlPath))
-            {
-                options.IncludeXmlComments(xmlPath);
-            }
+            if (File.Exists(xmlPath)) options.IncludeXmlComments(xmlPath);
 
             options.CustomSchemaIds(type => type.FullName?.Replace("+", "."));
         });

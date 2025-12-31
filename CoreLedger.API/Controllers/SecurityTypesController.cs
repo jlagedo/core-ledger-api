@@ -1,21 +1,21 @@
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.UseCases.Securities.Queries;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CoreLedger.API.Controllers;
 
 /// <summary>
-/// Controller for retrieving SecurityType enum values.
+///     Controller for retrieving SecurityType enum values.
 /// </summary>
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class SecurityTypesController : ControllerBase
 {
-    private readonly IMediator _mediator;
     private readonly ILogger<SecurityTypesController> _logger;
+    private readonly IMediator _mediator;
 
     public SecurityTypesController(IMediator mediator, ILogger<SecurityTypesController> logger)
     {
@@ -24,7 +24,7 @@ public class SecurityTypesController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all SecurityType enum values.
+    ///     Retrieves all SecurityType enum values.
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<SecurityTypeDto>), StatusCodes.Status200OK)]

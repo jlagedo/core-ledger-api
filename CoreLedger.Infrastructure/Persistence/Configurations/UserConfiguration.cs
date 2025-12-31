@@ -1,11 +1,11 @@
+using CoreLedger.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using CoreLedger.Domain.Entities;
 
 namespace CoreLedger.Infrastructure.Persistence.Configurations;
 
 /// <summary>
-/// EF Core configuration for User entity.
+///     EF Core configuration for User entity.
 /// </summary>
 public class UserConfiguration : IEntityTypeConfiguration<User>
 {
@@ -46,6 +46,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(u => u.LastLoginAt)
             .HasColumnName("last_login_at")
+            .IsRequired();
+
+        builder.Property(u => u.CreatedByUserId)
+            .HasColumnName("created_by_user_id")
             .IsRequired();
 
         // Unique constraint on AuthProviderId and Provider combination

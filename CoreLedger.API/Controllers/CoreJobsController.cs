@@ -1,21 +1,21 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Domain.Interfaces;
 using CoreLedger.Domain.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CoreLedger.API.Controllers;
 
 /// <summary>
-/// Controller for managing CoreJob resources.
+///     Controller for managing CoreJob resources.
 /// </summary>
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class CoreJobsController : ControllerBase
 {
-    private readonly ILogger<CoreJobsController> _logger;
     private readonly ICoreJobRepository _coreJobRepository;
+    private readonly ILogger<CoreJobsController> _logger;
 
     public CoreJobsController(
         ILogger<CoreJobsController> logger,
@@ -26,7 +26,7 @@ public class CoreJobsController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all core jobs with optional filtering, sorting, and pagination.
+    ///     Retrieves all core jobs with optional filtering, sorting, and pagination.
     /// </summary>
     /// <param name="limit">Maximum number of items to return (max 100)</param>
     /// <param name="offset">Number of items to skip</param>

@@ -4,7 +4,7 @@ using CoreLedger.Domain.Interfaces;
 namespace CoreLedger.Infrastructure.Persistence.Repositories;
 
 /// <summary>
-/// Repository implementation for TransactionStatus entity.
+///     Repository implementation for TransactionStatus entity.
 /// </summary>
 public class TransactionStatusRepository : Repository<TransactionStatus>, ITransactionStatusRepository
 {

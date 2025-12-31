@@ -1,23 +1,22 @@
-
-using MediatR;
 using AutoMapper;
-using Microsoft.Extensions.Logging;
-using CoreLedger.Domain.Entities;
-using CoreLedger.Domain.Interfaces;
-using CoreLedger.Domain.Exceptions;
 using CoreLedger.Application.DTOs;
+using CoreLedger.Domain.Entities;
+using CoreLedger.Domain.Exceptions;
+using CoreLedger.Domain.Interfaces;
+using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.Accounts.Commands;
 
 /// <summary>
-/// Handler for creating a new Account.
+///     Handler for creating a new Account.
 /// </summary>
 public class CreateAccountCommandHandler : IRequestHandler<CreateAccountCommand, AccountDto>
 {
     private readonly IAccountRepository _accountRepository;
     private readonly IAccountTypeRepository _accountTypeRepository;
-    private readonly IMapper _mapper;
     private readonly ILogger<CreateAccountCommandHandler> _logger;
+    private readonly IMapper _mapper;
 
     public CreateAccountCommandHandler(
         IAccountRepository accountRepository,
@@ -39,24 +38,19 @@ public class CreateAccountCommandHandler : IRequestHandler<CreateAccountCommand,
 
         // Validate that the account type exists
         var accountType = await _accountTypeRepository.GetByIdAsync(request.TypeId, cancellationToken);
-        if (accountType == null)
-        {
-            throw new EntityNotFoundException("AccountType", request.TypeId);
-        }
+        if (accountType == null) throw new EntityNotFoundException("AccountType", request.TypeId);
 
         // Check if account with same code already exists
         var existing = await _accountRepository.GetByCodeAsync(request.Code, cancellationToken);
-        if (existing != null)
-        {
-            throw new DomainValidationException("Account with this code already exists");
-        }
+        if (existing != null) throw new DomainValidationException("Account with this code already exists");
 
         var account = Account.Create(
             request.Code,
             request.Name,
             request.TypeId,
             request.Status,
-            request.NormalBalance);
+            request.NormalBalance,
+            request.CreatedByUserId);
 
         var created = await _accountRepository.AddAsync(account, cancellationToken);
 

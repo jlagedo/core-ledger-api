@@ -1,22 +1,21 @@
-
-using MediatR;
 using AutoMapper;
-using Microsoft.Extensions.Logging;
-using CoreLedger.Domain.Entities;
-using CoreLedger.Domain.Interfaces;
-using CoreLedger.Domain.Exceptions;
 using CoreLedger.Application.DTOs;
+using CoreLedger.Domain.Entities;
+using CoreLedger.Domain.Exceptions;
+using CoreLedger.Domain.Interfaces;
+using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.Funds.Commands;
 
 /// <summary>
-/// Handler for creating a new Fund.
+///     Handler for creating a new Fund.
 /// </summary>
 public class CreateFundCommandHandler : IRequestHandler<CreateFundCommand, FundDto>
 {
     private readonly IFundRepository _fundRepository;
-    private readonly IMapper _mapper;
     private readonly ILogger<CreateFundCommandHandler> _logger;
+    private readonly IMapper _mapper;
 
     public CreateFundCommandHandler(
         IFundRepository fundRepository,
@@ -35,17 +34,15 @@ public class CreateFundCommandHandler : IRequestHandler<CreateFundCommand, FundD
         _logger.LogInformation("Creating new Fund with name: {Name}", request.Name);
 
         var existing = await _fundRepository.GetByNameAsync(request.Name, cancellationToken);
-        if (existing != null)
-        {
-            throw new DomainValidationException("Fund with this name already exists");
-        }
+        if (existing != null) throw new DomainValidationException("Fund with this name already exists");
 
         var fund = Fund.Create(
             request.Code,
             request.Name,
             request.BaseCurrency,
             request.InceptionDate,
-            request.ValuationFrequency);
+            request.ValuationFrequency,
+            request.CreatedByUserId);
 
         var created = await _fundRepository.AddAsync(fund, cancellationToken);
 

@@ -4,10 +4,103 @@ using CoreLedger.Domain.Exceptions;
 namespace CoreLedger.UnitTests.Domain.Entities;
 
 /// <summary>
-/// Unit tests for Transaction domain entity business rules and invariants.
+///     Unit tests for Transaction domain entity business rules and invariants.
 /// </summary>
 public class TransactionTests
 {
+    #region Create Tests - FundId Validation
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(-100)]
+    public void Create_WithInvalidFundId_ShouldThrowDomainValidationException(int fundId)
+    {
+        // Arrange
+        var tradeDate = DateTime.UtcNow.Date;
+        var settleDate = tradeDate.AddDays(2);
+
+        // Act & Assert
+        var exception = Assert.Throws<DomainValidationException>(() =>
+            Transaction.Create(
+                fundId, 10, 5,
+                tradeDate, settleDate,
+                100m, 50m, 5000m,
+                "USD", 1, "test-user"));
+        Assert.Equal("FundId must be a positive number", exception.Message);
+    }
+
+    #endregion
+
+    #region Create Tests - TransactionSubTypeId Validation
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(-100)]
+    public void Create_WithInvalidTransactionSubTypeId_ShouldThrowDomainValidationException(int transactionSubTypeId)
+    {
+        // Arrange
+        var tradeDate = DateTime.UtcNow.Date;
+        var settleDate = tradeDate.AddDays(2);
+
+        // Act & Assert
+        var exception = Assert.Throws<DomainValidationException>(() =>
+            Transaction.Create(
+                1, 10, transactionSubTypeId,
+                tradeDate, settleDate,
+                100m, 50m, 5000m,
+                "USD", 1, "test-user"));
+        Assert.Equal("TransactionSubTypeId must be a positive number", exception.Message);
+    }
+
+    #endregion
+
+    #region Create Tests - StatusId Validation
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(-100)]
+    public void Create_WithInvalidStatusId_ShouldThrowDomainValidationException(int statusId)
+    {
+        // Arrange
+        var tradeDate = DateTime.UtcNow.Date;
+        var settleDate = tradeDate.AddDays(2);
+
+        // Act & Assert
+        var exception = Assert.Throws<DomainValidationException>(() =>
+            Transaction.Create(
+                1, 10, 5,
+                tradeDate, settleDate,
+                100m, 50m, 5000m,
+                "USD", statusId, "test-user"));
+        Assert.Equal("StatusId must be a positive number", exception.Message);
+    }
+
+    #endregion
+
+    #region Create Tests - Price Validation
+
+    [Fact]
+    public void Create_WithNegativePrice_ShouldThrowDomainValidationException()
+    {
+        // Arrange
+        var tradeDate = DateTime.UtcNow.Date;
+        var settleDate = tradeDate.AddDays(2);
+
+        // Act & Assert
+        var exception = Assert.Throws<DomainValidationException>(() =>
+            Transaction.Create(
+                1, 10, 5,
+                tradeDate, settleDate,
+                100m, -0.01m, 5000m,
+                "USD", 1, "test-user"));
+        Assert.Equal("Price cannot be negative", exception.Message);
+    }
+
+    #endregion
+
     #region Create Tests - Happy Path
 
     [Fact]
@@ -29,7 +122,7 @@ public class TransactionTests
         var transaction = Transaction.Create(
             fundId, securityId, transactionSubTypeId,
             tradeDate, settleDate, quantity, price, amount,
-            currency, statusId);
+            currency, statusId, "test-user");
 
         // Assert
         Assert.NotNull(transaction);
@@ -56,10 +149,10 @@ public class TransactionTests
 
         // Act
         var transaction = Transaction.Create(
-            fundId: 1, securityId: null, transactionSubTypeId: 5,
+            1, null, 5,
             tradeDate, settleDate,
-            quantity: 100m, price: 50m, amount: 5000m,
-            currency: "USD", statusId: 1);
+            100m, 50m, 5000m,
+            "USD", 1, "test-user");
 
         // Assert
         Assert.NotNull(transaction);
@@ -74,10 +167,10 @@ public class TransactionTests
 
         // Act
         var transaction = Transaction.Create(
-            fundId: 1, securityId: 10, transactionSubTypeId: 5,
-            tradeDate: date, settleDate: date,
-            quantity: 100m, price: 50m, amount: 5000m,
-            currency: "EUR", statusId: 1);
+            1, 10, 5,
+            date, date,
+            100m, 50m, 5000m,
+            "EUR", 1, "test-user");
 
         // Assert
         Assert.NotNull(transaction);
@@ -94,86 +187,14 @@ public class TransactionTests
 
         // Act
         var transaction = Transaction.Create(
-            fundId: 1, securityId: 10, transactionSubTypeId: 5,
+            1, 10, 5,
             tradeDate, settleDate,
-            quantity: 100m, price: 0m, amount: 0m,
-            currency: "GBP", statusId: 1);
+            100m, 0m, 0m,
+            "GBP", 1, "test-user");
 
         // Assert
         Assert.NotNull(transaction);
         Assert.Equal(0m, transaction.Price);
-    }
-
-    #endregion
-
-    #region Create Tests - FundId Validation
-
-    [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    [InlineData(-100)]
-    public void Create_WithInvalidFundId_ShouldThrowDomainValidationException(int fundId)
-    {
-        // Arrange
-        var tradeDate = DateTime.UtcNow.Date;
-        var settleDate = tradeDate.AddDays(2);
-
-        // Act & Assert
-        var exception = Assert.Throws<DomainValidationException>(() =>
-            Transaction.Create(
-                fundId, securityId: 10, transactionSubTypeId: 5,
-                tradeDate, settleDate,
-                quantity: 100m, price: 50m, amount: 5000m,
-                currency: "USD", statusId: 1));
-        Assert.Equal("FundId must be a positive number", exception.Message);
-    }
-
-    #endregion
-
-    #region Create Tests - TransactionSubTypeId Validation
-
-    [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    [InlineData(-100)]
-    public void Create_WithInvalidTransactionSubTypeId_ShouldThrowDomainValidationException(int transactionSubTypeId)
-    {
-        // Arrange
-        var tradeDate = DateTime.UtcNow.Date;
-        var settleDate = tradeDate.AddDays(2);
-
-        // Act & Assert
-        var exception = Assert.Throws<DomainValidationException>(() =>
-            Transaction.Create(
-                fundId: 1, securityId: 10, transactionSubTypeId,
-                tradeDate, settleDate,
-                quantity: 100m, price: 50m, amount: 5000m,
-                currency: "USD", statusId: 1));
-        Assert.Equal("TransactionSubTypeId must be a positive number", exception.Message);
-    }
-
-    #endregion
-
-    #region Create Tests - StatusId Validation
-
-    [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    [InlineData(-100)]
-    public void Create_WithInvalidStatusId_ShouldThrowDomainValidationException(int statusId)
-    {
-        // Arrange
-        var tradeDate = DateTime.UtcNow.Date;
-        var settleDate = tradeDate.AddDays(2);
-
-        // Act & Assert
-        var exception = Assert.Throws<DomainValidationException>(() =>
-            Transaction.Create(
-                fundId: 1, securityId: 10, transactionSubTypeId: 5,
-                tradeDate, settleDate,
-                quantity: 100m, price: 50m, amount: 5000m,
-                currency: "USD", statusId));
-        Assert.Equal("StatusId must be a positive number", exception.Message);
     }
 
     #endregion
@@ -190,10 +211,10 @@ public class TransactionTests
         // Act & Assert
         var exception = Assert.Throws<DomainValidationException>(() =>
             Transaction.Create(
-                fundId: 1, securityId: 10, transactionSubTypeId: 5,
+                1, 10, 5,
                 tradeDate, settleDate,
-                quantity: 100m, price: 50m, amount: 5000m,
-                currency: "USD", statusId: 1));
+                100m, 50m, 5000m,
+                "USD", 1, "test-user"));
         Assert.Equal("Trade date must be on or before settle date", exception.Message);
     }
 
@@ -207,10 +228,10 @@ public class TransactionTests
         // Act & Assert
         var exception = Assert.Throws<DomainValidationException>(() =>
             Transaction.Create(
-                fundId: 1, securityId: 10, transactionSubTypeId: 5,
+                1, 10, 5,
                 tradeDate, settleDate,
-                quantity: 100m, price: 50m, amount: 5000m,
-                currency: "USD", statusId: 1));
+                100m, 50m, 5000m,
+                "USD", 1, "test-user"));
         Assert.Equal("Settle date cannot be more than 1 year in the future", exception.Message);
     }
 
@@ -223,35 +244,14 @@ public class TransactionTests
 
         // Act
         var transaction = Transaction.Create(
-            fundId: 1, securityId: 10, transactionSubTypeId: 5,
+            1, 10, 5,
             tradeDate, settleDate,
-            quantity: 100m, price: 50m, amount: 5000m,
-            currency: "USD", statusId: 1);
+            100m, 50m, 5000m,
+            "USD", 1, "test-user");
 
         // Assert
         Assert.NotNull(transaction);
         Assert.Equal(settleDate, transaction.SettleDate);
-    }
-
-    #endregion
-
-    #region Create Tests - Price Validation
-
-    [Fact]
-    public void Create_WithNegativePrice_ShouldThrowDomainValidationException()
-    {
-        // Arrange
-        var tradeDate = DateTime.UtcNow.Date;
-        var settleDate = tradeDate.AddDays(2);
-
-        // Act & Assert
-        var exception = Assert.Throws<DomainValidationException>(() =>
-            Transaction.Create(
-                fundId: 1, securityId: 10, transactionSubTypeId: 5,
-                tradeDate, settleDate,
-                quantity: 100m, price: -0.01m, amount: 5000m,
-                currency: "USD", statusId: 1));
-        Assert.Equal("Price cannot be negative", exception.Message);
     }
 
     #endregion
@@ -271,10 +271,10 @@ public class TransactionTests
         // Act & Assert
         var exception = Assert.Throws<DomainValidationException>(() =>
             Transaction.Create(
-                fundId: 1, securityId: 10, transactionSubTypeId: 5,
+                1, 10, 5,
                 tradeDate, settleDate,
-                quantity: 100m, price: 50m, amount: 5000m,
-                currency: currency!, statusId: 1));
+                100m, 50m, 5000m,
+                currency!, 1, "test-user"));
         Assert.Equal("Currency cannot be empty", exception.Message);
     }
 
@@ -292,10 +292,10 @@ public class TransactionTests
         // Act & Assert
         var exception = Assert.Throws<DomainValidationException>(() =>
             Transaction.Create(
-                fundId: 1, securityId: 10, transactionSubTypeId: 5,
+                1, 10, 5,
                 tradeDate, settleDate,
-                quantity: 100m, price: 50m, amount: 5000m,
-                currency, statusId: 1));
+                100m, 50m, 5000m,
+                currency, 1, "test-user"));
         Assert.Equal("Currency must be a 3-letter ISO code", exception.Message);
     }
 
@@ -312,10 +312,10 @@ public class TransactionTests
         // Act & Assert
         var exception = Assert.Throws<DomainValidationException>(() =>
             Transaction.Create(
-                fundId: 1, securityId: 10, transactionSubTypeId: 5,
+                1, 10, 5,
                 tradeDate, settleDate,
-                quantity: 100m, price: 50m, amount: 5000m,
-                currency, statusId: 1));
+                100m, 50m, 5000m,
+                currency, 1, "test-user"));
         Assert.Equal("Currency must contain only letters (A-Z)", exception.Message);
     }
 
@@ -333,10 +333,10 @@ public class TransactionTests
 
         // Act
         var transaction = Transaction.Create(
-            fundId: 1, securityId: 10, transactionSubTypeId: 5,
+            1, 10, 5,
             tradeDate, settleDate,
-            quantity: 100m, price: 50m, amount: 5000m,
-            currency, statusId: 1);
+            100m, 50m, 5000m,
+            currency, 1, "test-user");
 
         // Assert
         Assert.NotNull(transaction);
@@ -354,10 +354,10 @@ public class TransactionTests
         var tradeDate = DateTime.UtcNow.Date;
         var settleDate = tradeDate.AddDays(2);
         var transaction = Transaction.Create(
-            fundId: 1, securityId: 10, transactionSubTypeId: 5,
+            1, 10, 5,
             tradeDate, settleDate,
-            quantity: 100m, price: 50m, amount: 5000m,
-            currency: "USD", statusId: 1);
+            100m, 50m, 5000m,
+            "USD", 1, "test-user");
 
         var originalCreatedAt = transaction.CreatedAt;
         var newFundId = 2;
@@ -370,8 +370,8 @@ public class TransactionTests
         transaction.Update(
             newFundId, newSecurityId, newSubTypeId,
             newTradeDate, newSettleDate,
-            quantity: 200m, price: 75m, amount: 15000m,
-            currency: "EUR", statusId: 2);
+            200m, 75m, 15000m,
+            "EUR", 2);
 
         // Assert
         Assert.Equal(newFundId, transaction.FundId);
@@ -396,18 +396,18 @@ public class TransactionTests
         var tradeDate = DateTime.UtcNow.Date;
         var settleDate = tradeDate.AddDays(2);
         var transaction = Transaction.Create(
-            fundId: 1, securityId: 10, transactionSubTypeId: 5,
+            1, 10, 5,
             tradeDate, settleDate,
-            quantity: 100m, price: 50m, amount: 5000m,
-            currency: "USD", statusId: 1);
+            100m, 50m, 5000m,
+            "USD", 1, "test-user");
 
         // Act & Assert - Invalid FundId
         var exception = Assert.Throws<DomainValidationException>(() =>
             transaction.Update(
-                fundId: 0, securityId: 10, transactionSubTypeId: 5,
+                0, 10, 5,
                 tradeDate, settleDate,
-                quantity: 100m, price: 50m, amount: 5000m,
-                currency: "USD", statusId: 1));
+                100m, 50m, 5000m,
+                "USD", 1));
         Assert.Equal("FundId must be a positive number", exception.Message);
     }
 

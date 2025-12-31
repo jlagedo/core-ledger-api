@@ -1,28 +1,28 @@
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.UseCases.Accounts.Commands;
 using CoreLedger.Application.UseCases.Accounts.Queries;
 using CoreLedger.Domain.Interfaces;
 using CoreLedger.Domain.Models;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CoreLedger.API.Controllers;
 
 /// <summary>
-/// Controller for managing Account resources.
+///     Controller for managing Account resources.
 /// </summary>
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class AccountsController : ControllerBase
 {
-    private readonly IMediator _mediator;
-    private readonly ILogger<AccountsController> _logger;
     private readonly IAccountRepository _accountRepository;
+    private readonly ILogger<AccountsController> _logger;
+    private readonly IMediator _mediator;
 
     public AccountsController(
-        IMediator mediator, 
+        IMediator mediator,
         ILogger<AccountsController> logger,
         IAccountRepository accountRepository)
     {
@@ -32,7 +32,7 @@ public class AccountsController : ControllerBase
     }
 
     /// <summary>
-    /// Gets a report of total active accounts grouped by account type.
+    ///     Gets a report of total active accounts grouped by account type.
     /// </summary>
     [HttpGet("reports/by-type")]
     [ProducesResponseType(typeof(IReadOnlyList<AccountsByTypeReportDto>), StatusCodes.Status200OK)]
@@ -44,7 +44,7 @@ public class AccountsController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all accounts with optional filtering, sorting, and pagination.
+    ///     Retrieves all accounts with optional filtering, sorting, and pagination.
     /// </summary>
     /// <param name="limit">Maximum number of items to return (max 100)</param>
     /// <param name="offset">Number of items to skip</param>
@@ -77,7 +77,7 @@ public class AccountsController : ControllerBase
         // that require dynamic SQL generation. The performance benefit of direct repository access outweighs
         // the architectural purity in this specific use case. Write operations should still follow CQRS pattern.
         var (accounts, totalCount) = await _accountRepository.GetWithQueryAsync(parameters, cancellationToken);
-        
+
         var accountDtos = accounts.Select(a => new AccountDto(
             a.Id,
             a.Code,
@@ -94,12 +94,12 @@ public class AccountsController : ControllerBase
         )).ToList();
 
         var result = new PagedResult<AccountDto>(accountDtos, totalCount, parameters.Limit, parameters.Offset);
-        
+
         return Ok(result);
     }
 
     /// <summary>
-    /// Retrieves a specific account by ID.
+    ///     Retrieves a specific account by ID.
     /// </summary>
     [HttpGet("{id}", Name = "GetAccountsById")]
     [ProducesResponseType(typeof(AccountDto), StatusCodes.Status200OK)]
@@ -112,27 +112,36 @@ public class AccountsController : ControllerBase
     }
 
     /// <summary>
-    /// Creates a new account.
+    ///     Creates a new account.
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(AccountDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Create(
         [FromBody] CreateAccountDto dto,
         CancellationToken cancellationToken)
     {
+        var userId = User.FindFirst("sub")?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            _logger.LogWarning("User claim 'sub' not found in token");
+            return Unauthorized(new { message = "Invalid authentication token" });
+        }
+
         var command = new CreateAccountCommand(
             dto.Code,
             dto.Name,
             dto.TypeId,
             dto.Status,
-            dto.NormalBalance);
+            dto.NormalBalance,
+            userId);
         var result = await _mediator.Send(command, cancellationToken);
         return CreatedAtRoute("GetAccountsById", new { id = result.Id }, result);
     }
 
     /// <summary>
-    /// Updates an existing account.
+    ///     Updates an existing account.
     /// </summary>
     [HttpPut("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -155,7 +164,7 @@ public class AccountsController : ControllerBase
     }
 
     /// <summary>
-    /// Deactivates an account and records the deactivation date.
+    ///     Deactivates an account and records the deactivation date.
     /// </summary>
     [HttpPatch("{id}/deactivate")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

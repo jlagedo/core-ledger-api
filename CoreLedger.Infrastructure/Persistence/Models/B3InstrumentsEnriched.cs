@@ -1,8 +1,8 @@
 namespace CoreLedger.Infrastructure.Persistence.Models;
 
 /// <summary>
-/// Raw ETL data model for b3_instruments_enriched table.
-/// This is NOT a domain entity - it represents external ETL process output.
+///     Raw ETL data model for b3_instruments_enriched table.
+///     This is NOT a domain entity - it represents external ETL process output.
 /// </summary>
 public class B3InstrumentsEnriched
 {

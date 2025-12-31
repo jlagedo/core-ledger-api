@@ -1,12 +1,12 @@
-using Microsoft.EntityFrameworkCore;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Interfaces;
 using CoreLedger.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CoreLedger.Infrastructure.Persistence.Repositories;
 
 /// <summary>
-/// Repository implementation for Transaction entity with specialized queries.
+///     Repository implementation for Transaction entity with specialized queries.
 /// </summary>
 public class TransactionRepository : Repository<Transaction>, ITransactionRepository
 {
@@ -20,7 +20,7 @@ public class TransactionRepository : Repository<Transaction>, ITransactionReposi
             .Include(t => t.Fund)
             .Include(t => t.Security)
             .Include(t => t.TransactionSubType!)
-                .ThenInclude(tst => tst.Type)
+            .ThenInclude(tst => tst.Type)
             .Include(t => t.Status)
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
     }
@@ -62,13 +62,9 @@ public class TransactionRepository : Repository<Transaction>, ITransactionReposi
                     else if (field == "tradeDate" || field == "settleDate")
                     {
                         if (DateTime.TryParse(value, out var dateValue))
-                        {
                             sqlParameters.Add(dateValue.Date);
-                        }
                         else
-                        {
                             whereClause = string.Empty;
-                        }
                     }
                     else if (int.TryParse(value, out var intValue))
                     {
@@ -86,7 +82,9 @@ public class TransactionRepository : Repository<Transaction>, ITransactionReposi
         var orderByClause = string.Empty;
         if (!string.IsNullOrWhiteSpace(parameters.SortBy))
         {
-            var direction = parameters.SortDirection.Equals("desc", StringComparison.OrdinalIgnoreCase) ? "DESC" : "ASC";
+            var direction = parameters.SortDirection.Equals("desc", StringComparison.OrdinalIgnoreCase)
+                ? "DESC"
+                : "ASC";
             orderByClause = parameters.SortBy.ToLower() switch
             {
                 "fundid" => $"ORDER BY t.fund_id {direction}",
@@ -139,7 +137,7 @@ public class TransactionRepository : Repository<Transaction>, ITransactionReposi
             .Include(t => t.Fund)
             .Include(t => t.Security)
             .Include(t => t.TransactionSubType!)
-                .ThenInclude(tst => tst.Type)
+            .ThenInclude(tst => tst.Type)
             .Include(t => t.Status)
             .AsNoTracking()
             .ToListAsync(cancellationToken);

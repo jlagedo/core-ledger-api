@@ -1,20 +1,20 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CoreLedger.API.Controllers;
 
 /// <summary>
-/// Controller for managing authenticated user profile.
+///     Controller for managing authenticated user profile.
 /// </summary>
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class UsersController : ControllerBase
 {
-    private readonly IUserService _userService;
     private readonly ILogger<UsersController> _logger;
+    private readonly IUserService _userService;
 
     public UsersController(
         IUserService userService,
@@ -25,8 +25,8 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves the current authenticated user's profile.
-    /// Creates user record if first login, or updates profile from Auth0 on subsequent logins.
+    ///     Retrieves the current authenticated user's profile.
+    ///     Creates user record if first login, or updates profile from Auth0 on subsequent logins.
     /// </summary>
     /// <response code="200">User profile retrieved successfully</response>
     /// <response code="401">User not authenticated</response>

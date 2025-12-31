@@ -1,21 +1,21 @@
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.UseCases.TransactionTypes.Queries;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CoreLedger.API.Controllers;
 
 /// <summary>
-/// Controller for managing TransactionType resources.
+///     Controller for managing TransactionType resources.
 /// </summary>
 [Authorize]
 [ApiController]
 [Route("api/transactions/types")]
 public class TransactionTypesController : ControllerBase
 {
-    private readonly IMediator _mediator;
     private readonly ILogger<TransactionTypesController> _logger;
+    private readonly IMediator _mediator;
 
     public TransactionTypesController(IMediator mediator, ILogger<TransactionTypesController> logger)
     {
@@ -24,7 +24,7 @@ public class TransactionTypesController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all transaction types.
+    ///     Retrieves all transaction types.
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<TransactionTypeDto>), StatusCodes.Status200OK)]
@@ -36,7 +36,7 @@ public class TransactionTypesController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves a specific transaction type by ID.
+    ///     Retrieves a specific transaction type by ID.
     /// </summary>
     [HttpGet("{id}", Name = "GetTransactionTypeById")]
     [ProducesResponseType(typeof(TransactionTypeDto), StatusCodes.Status200OK)]

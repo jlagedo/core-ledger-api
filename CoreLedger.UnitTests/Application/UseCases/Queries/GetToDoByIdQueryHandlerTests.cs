@@ -10,14 +10,14 @@ using NSubstitute;
 namespace CoreLedger.UnitTests.Application.UseCases.Queries;
 
 /// <summary>
-/// Unit tests for GetToDoByIdQueryHandler.
+///     Unit tests for GetToDoByIdQueryHandler.
 /// </summary>
 public class GetToDoByIdQueryHandlerTests
 {
-    private readonly IToDoRepository _mockRepository;
-    private readonly IMapper _mockMapper;
-    private readonly ILogger<GetToDoByIdQueryHandler> _mockLogger;
     private readonly GetToDoByIdQueryHandler _handler;
+    private readonly ILogger<GetToDoByIdQueryHandler> _mockLogger;
+    private readonly IMapper _mockMapper;
+    private readonly IToDoRepository _mockRepository;
 
     public GetToDoByIdQueryHandlerTests()
     {
@@ -32,13 +32,13 @@ public class GetToDoByIdQueryHandlerTests
     {
         // Arrange
         var query = new GetToDoByIdQuery(1);
-        var todo = ToDo.Create("Existing task");
+        var todo = ToDo.Create("Existing task", "test-user");
         var expectedDto = new ToDoDto(
-            Id: 1,
-            Description: "Existing task",
-            IsCompleted: false,
-            CreatedAt: DateTime.UtcNow,
-            CompletedAt: null
+            1,
+            "Existing task",
+            false,
+            DateTime.UtcNow,
+            null
         );
 
         _mockRepository.GetByIdAsync(query.Id, Arg.Any<CancellationToken>())
@@ -79,7 +79,7 @@ public class GetToDoByIdQueryHandlerTests
     {
         // Arrange
         var query = new GetToDoByIdQuery(1);
-        var todo = ToDo.Create("Task with logging");
+        var todo = ToDo.Create("Task with logging", "test-user");
         var expectedDto = new ToDoDto(1, "Task with logging", false, DateTime.UtcNow, null);
 
         _mockRepository.GetByIdAsync(query.Id, Arg.Any<CancellationToken>())
@@ -111,7 +111,7 @@ public class GetToDoByIdQueryHandlerTests
 
         // Act & Assert
         await Assert.ThrowsAsync<EntityNotFoundException>(() => _handler.Handle(query, CancellationToken.None));
-        
+
         _mockLogger.Received().Log(
             LogLevel.Warning,
             Arg.Any<EventId>(),
@@ -126,7 +126,7 @@ public class GetToDoByIdQueryHandlerTests
         // Arrange
         var query = new GetToDoByIdQuery(1);
         var cancellationToken = new CancellationToken();
-        var todo = ToDo.Create("Task");
+        var todo = ToDo.Create("Task", "test-user");
         var dto = new ToDoDto(1, "Task", false, DateTime.UtcNow, null);
 
         _mockRepository.GetByIdAsync(query.Id, Arg.Any<CancellationToken>())

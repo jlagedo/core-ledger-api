@@ -4,23 +4,23 @@ using CoreLedger.Application.Constants;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.Interfaces;
 using CoreLedger.Infrastructure.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Serilog.Context;
 
 namespace CoreLedger.Worker.Services;
 
 /// <summary>
-/// Background service that consumes B3 import messages from RabbitMQ.
+///     Background service that consumes B3 import messages from RabbitMQ.
 /// </summary>
 public class B3ImportConsumer : BackgroundService
 {
     private readonly ILogger<B3ImportConsumer> _logger;
-    private readonly IServiceProvider _serviceProvider;
     private readonly RabbitMQOptions _rabbitMQOptions;
-    private IConnection? _connection;
+    private readonly IServiceProvider _serviceProvider;
     private IModel? _channel;
+    private IConnection? _connection;
 
     public B3ImportConsumer(
         ILogger<B3ImportConsumer> logger,
@@ -51,16 +51,16 @@ public class B3ImportConsumer : BackgroundService
             _channel = _connection.CreateModel();
 
             _channel.QueueDeclare(
-                queue: QueueNames.B3Import,
-                durable: _rabbitMQOptions.QueueDurable,
-                exclusive: _rabbitMQOptions.QueueExclusive,
-                autoDelete: _rabbitMQOptions.QueueAutoDelete,
-                arguments: null);
+                QueueNames.B3Import,
+                _rabbitMQOptions.QueueDurable,
+                _rabbitMQOptions.QueueExclusive,
+                _rabbitMQOptions.QueueAutoDelete,
+                null);
 
             _channel.BasicQos(
-                prefetchSize: _rabbitMQOptions.PrefetchSize,
-                prefetchCount: _rabbitMQOptions.PrefetchCount,
-                global: false);
+                _rabbitMQOptions.PrefetchSize,
+                _rabbitMQOptions.PrefetchCount,
+                false);
 
             var consumer = new AsyncEventingBasicConsumer(_channel);
             consumer.Received += async (model, ea) =>
@@ -71,17 +71,14 @@ public class B3ImportConsumer : BackgroundService
                 // Extract correlation ID from message headers or properties
                 var correlationId = ea.BasicProperties?.CorrelationId;
                 if (string.IsNullOrWhiteSpace(correlationId) && ea.BasicProperties?.Headers != null)
-                {
                     if (ea.BasicProperties.Headers.TryGetValue("X-Correlation-ID", out var headerValue))
-                    {
                         correlationId = Encoding.UTF8.GetString((byte[])headerValue);
-                    }
-                }
 
                 // Set up Serilog LogContext with correlation ID for distributed tracing
-                using (Serilog.Context.LogContext.PushProperty("CorrelationId", correlationId ?? "unknown"))
+                using (LogContext.PushProperty("CorrelationId", correlationId ?? "unknown"))
                 {
-                    _logger.LogInformation("Received message from {QueueName}: {Message}", QueueNames.B3Import, messageJson);
+                    _logger.LogInformation("Received message from {QueueName}: {Message}", QueueNames.B3Import,
+                        messageJson);
 
                     try
                     {
@@ -106,7 +103,8 @@ public class B3ImportConsumer : BackgroundService
                         await processor.ProcessAsync(message.CoreJobId, message.ReferenceId, stoppingToken);
 
                         _channel.BasicAck(ea.DeliveryTag, false);
-                        _logger.LogInformation("Successfully processed B3 import for CoreJob {CoreJobId}", message.CoreJobId);
+                        _logger.LogInformation("Successfully processed B3 import for CoreJob {CoreJobId}",
+                            message.CoreJobId);
                     }
                     catch (Exception ex)
                     {
@@ -116,7 +114,7 @@ public class B3ImportConsumer : BackgroundService
                 }
             };
 
-            _channel.BasicConsume(queue: QueueNames.B3Import, autoAck: false, consumer: consumer);
+            _channel.BasicConsume(QueueNames.B3Import, false, consumer);
 
             _logger.LogInformation("B3ImportConsumer started and listening on queue: {QueueName}", QueueNames.B3Import);
 

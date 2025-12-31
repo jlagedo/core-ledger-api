@@ -1,11 +1,11 @@
-using Microsoft.EntityFrameworkCore;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace CoreLedger.Infrastructure.Persistence.Repositories;
 
 /// <summary>
-/// Repository implementation for AccountType entity with specific queries.
+///     Repository implementation for AccountType entity with specific queries.
 /// </summary>
 public class AccountTypeRepository : Repository<AccountType>, IAccountTypeRepository
 {
@@ -13,7 +13,8 @@ public class AccountTypeRepository : Repository<AccountType>, IAccountTypeReposi
     {
     }
 
-    public async Task<AccountType?> GetByDescriptionAsync(string description, CancellationToken cancellationToken = default)
+    public async Task<AccountType?> GetByDescriptionAsync(string description,
+        CancellationToken cancellationToken = default)
     {
         return await _dbSet
             .AsNoTracking()

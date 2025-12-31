@@ -3,12 +3,12 @@ using CoreLedger.Domain.Exceptions;
 namespace CoreLedger.Application.Interfaces;
 
 /// <summary>
-/// Service for interacting with Auth0 Management API.
+///     Service for interacting with Auth0 Management API.
 /// </summary>
 public interface IAuth0Service
 {
     /// <summary>
-    /// Retrieves user profile information from Auth0 /userinfo endpoint.
+    ///     Retrieves user profile information from Auth0 /userinfo endpoint.
     /// </summary>
     /// <param name="accessToken">The user's access token</param>
     /// <param name="cancellationToken">Cancellation token</param>
@@ -20,7 +20,7 @@ public interface IAuth0Service
 }
 
 /// <summary>
-/// Auth0 user profile response.
+///     Auth0 user profile response.
 /// </summary>
 public record Auth0UserProfile(
     string Sub,

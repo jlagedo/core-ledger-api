@@ -9,15 +9,15 @@ using NSubstitute;
 namespace CoreLedger.UnitTests.Application.UseCases.Commands;
 
 /// <summary>
-/// Unit tests for CreateToDoCommandHandler.
-/// Tests command handling logic with mocked dependencies.
+///     Unit tests for CreateToDoCommandHandler.
+///     Tests command handling logic with mocked dependencies.
 /// </summary>
 public class CreateToDoCommandHandlerTests
 {
-    private readonly IToDoRepository _mockRepository;
-    private readonly IMapper _mockMapper;
-    private readonly ILogger<CreateToDoCommandHandler> _mockLogger;
     private readonly CreateToDoCommandHandler _handler;
+    private readonly ILogger<CreateToDoCommandHandler> _mockLogger;
+    private readonly IMapper _mockMapper;
+    private readonly IToDoRepository _mockRepository;
 
     public CreateToDoCommandHandlerTests()
     {
@@ -31,14 +31,14 @@ public class CreateToDoCommandHandlerTests
     public async Task Handle_WithValidCommand_ShouldCreateToDoAndReturnDto()
     {
         // Arrange
-        var command = new CreateToDoCommand("New task");
-        var createdToDo = ToDo.Create(command.Description);
+        var command = new CreateToDoCommand("New task", "test-user");
+        var createdToDo = ToDo.Create(command.Description, command.CreatedByUserId);
         var expectedDto = new ToDoDto(
-            Id: 1,
-            Description: command.Description,
-            IsCompleted: false,
-            CreatedAt: DateTime.UtcNow,
-            CompletedAt: null
+            1,
+            command.Description,
+            false,
+            DateTime.UtcNow,
+            null
         );
 
         _mockRepository.AddAsync(Arg.Any<ToDo>(), Arg.Any<CancellationToken>())
@@ -66,17 +66,17 @@ public class CreateToDoCommandHandlerTests
     public async Task Handle_WithValidCommand_ShouldSetCreatedAtTimestamp()
     {
         // Arrange
-        var command = new CreateToDoCommand("Task with timestamp");
+        var command = new CreateToDoCommand("Task with timestamp", "test-user");
         var expectedDto = new ToDoDto(
-            Id: 1,
-            Description: command.Description,
-            IsCompleted: false,
-            CreatedAt: DateTime.UtcNow,
-            CompletedAt: null
+            1,
+            command.Description,
+            false,
+            DateTime.UtcNow,
+            null
         );
 
-        var createdToDo = ToDo.Create(command.Description);
-        
+        var createdToDo = ToDo.Create(command.Description, command.CreatedByUserId);
+
         _mockRepository.AddAsync(Arg.Any<ToDo>(), Arg.Any<CancellationToken>())
             .Returns(createdToDo);
 
@@ -100,9 +100,9 @@ public class CreateToDoCommandHandlerTests
     public async Task Handle_WithCancellationToken_ShouldPassTokenToRepository()
     {
         // Arrange
-        var command = new CreateToDoCommand("Cancellable task");
+        var command = new CreateToDoCommand("Cancellable task", "test-user");
         var cancellationToken = new CancellationToken();
-        var createdToDo = ToDo.Create(command.Description);
+        var createdToDo = ToDo.Create(command.Description, command.CreatedByUserId);
         var expectedDto = new ToDoDto(1, command.Description, false, DateTime.UtcNow, null);
 
         _mockRepository.AddAsync(Arg.Any<ToDo>(), Arg.Any<CancellationToken>())

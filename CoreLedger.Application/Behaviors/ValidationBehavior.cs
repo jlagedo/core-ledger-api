@@ -5,13 +5,13 @@ using Microsoft.Extensions.Logging;
 namespace CoreLedger.Application.Behaviors;
 
 /// <summary>
-/// MediatR pipeline behavior that validates requests using FluentValidation before handling.
+///     MediatR pipeline behavior that validates requests using FluentValidation before handling.
 /// </summary>
 public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
-    private readonly IEnumerable<IValidator<TRequest>> _validators;
     private readonly ILogger<ValidationBehavior<TRequest, TResponse>> _logger;
+    private readonly IEnumerable<IValidator<TRequest>> _validators;
 
     public ValidationBehavior(
         IEnumerable<IValidator<TRequest>> validators,

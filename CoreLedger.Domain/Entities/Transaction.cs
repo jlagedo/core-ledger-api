@@ -1,12 +1,17 @@
+using System.Text.RegularExpressions;
 using CoreLedger.Domain.Exceptions;
 
 namespace CoreLedger.Domain.Entities;
 
 /// <summary>
-/// Transaction domain entity representing trade transactions with business rules and invariants.
+///     Transaction domain entity representing trade transactions with business rules and invariants.
 /// </summary>
 public class Transaction : BaseEntity
 {
+    private Transaction()
+    {
+    }
+
     public int FundId { get; private set; }
     public Fund? Fund { get; private set; }
     public int? SecurityId { get; private set; }
@@ -22,10 +27,13 @@ public class Transaction : BaseEntity
     public int StatusId { get; private set; }
     public TransactionStatus? Status { get; private set; }
 
-    private Transaction() { }
+    /// <summary>
+    ///     Identifier of the user who created this transaction.
+    /// </summary>
+    public string CreatedByUserId { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Factory method to create a new Transaction with validation.
+    ///     Factory method to create a new Transaction with validation.
     /// </summary>
     public static Transaction Create(
         int fundId,
@@ -37,7 +45,8 @@ public class Transaction : BaseEntity
         decimal price,
         decimal amount,
         string currency,
-        int statusId)
+        int statusId,
+        string createdByUserId)
     {
         ValidateFundId(fundId);
         ValidateTransactionSubTypeId(transactionSubTypeId);
@@ -47,6 +56,7 @@ public class Transaction : BaseEntity
         ValidatePrice(price);
         ValidateAmount(amount);
         ValidateCurrency(currency);
+        ValidateCreatedByUserId(createdByUserId);
 
         return new Transaction
         {
@@ -59,12 +69,13 @@ public class Transaction : BaseEntity
             Price = price,
             Amount = amount,
             Currency = currency.Trim().ToUpperInvariant(),
-            StatusId = statusId
+            StatusId = statusId,
+            CreatedByUserId = createdByUserId.Trim()
         };
     }
 
     /// <summary>
-    /// Updates the transaction with validation.
+    ///     Updates the transaction with validation.
     /// </summary>
     public void Update(
         int fundId,
@@ -156,7 +167,13 @@ public class Transaction : BaseEntity
         if (currency.Length != 3)
             throw new DomainValidationException("Currency must be a 3-letter ISO code");
 
-        if (!System.Text.RegularExpressions.Regex.IsMatch(currency, "^[A-Z]{3}$", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+        if (!Regex.IsMatch(currency, "^[A-Z]{3}$", RegexOptions.IgnoreCase))
             throw new DomainValidationException("Currency must contain only letters (A-Z)");
+    }
+
+    private static void ValidateCreatedByUserId(string createdByUserId)
+    {
+        if (string.IsNullOrWhiteSpace(createdByUserId))
+            throw new DomainValidationException("CreatedByUserId cannot be empty");
     }
 }

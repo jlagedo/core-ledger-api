@@ -1,11 +1,11 @@
+using CoreLedger.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using CoreLedger.Domain.Entities;
 
 namespace CoreLedger.Infrastructure.Persistence.Configurations;
 
 /// <summary>
-/// Entity Framework configuration for Transaction entity.
+///     Entity Framework configuration for Transaction entity.
 /// </summary>
 public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
 {
@@ -68,6 +68,10 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
 
         builder.Property(t => t.UpdatedAt)
             .HasColumnName("updated_at");
+
+        builder.Property(t => t.CreatedByUserId)
+            .HasColumnName("created_by_user_id")
+            .IsRequired();
 
         // Foreign key relationships
         builder.HasOne(t => t.Fund)

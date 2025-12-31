@@ -1,21 +1,21 @@
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.UseCases.TransactionSubTypes.Queries;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CoreLedger.API.Controllers;
 
 /// <summary>
-/// Controller for managing TransactionSubType resources.
+///     Controller for managing TransactionSubType resources.
 /// </summary>
 [Authorize]
 [ApiController]
 [Route("api/transactions/subtypes")]
 public class TransactionSubTypesController : ControllerBase
 {
-    private readonly IMediator _mediator;
     private readonly ILogger<TransactionSubTypesController> _logger;
+    private readonly IMediator _mediator;
 
     public TransactionSubTypesController(IMediator mediator, ILogger<TransactionSubTypesController> logger)
     {
@@ -24,7 +24,7 @@ public class TransactionSubTypesController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all transaction subtypes with optional filtering by type ID.
+    ///     Retrieves all transaction subtypes with optional filtering by type ID.
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<TransactionSubTypeDto>), StatusCodes.Status200OK)]
@@ -36,7 +36,7 @@ public class TransactionSubTypesController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves a specific transaction subtype by ID.
+    ///     Retrieves a specific transaction subtype by ID.
     /// </summary>
     [HttpGet("{id}", Name = "GetTransactionSubTypeById")]
     [ProducesResponseType(typeof(TransactionSubTypeDto), StatusCodes.Status200OK)]

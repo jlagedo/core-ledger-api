@@ -8,13 +8,13 @@ using NSubstitute;
 namespace CoreLedger.UnitTests.Application.UseCases.Commands;
 
 /// <summary>
-/// Unit tests for UpdateToDoCommandHandler.
+///     Unit tests for UpdateToDoCommandHandler.
 /// </summary>
 public class UpdateToDoCommandHandlerTests
 {
-    private readonly IToDoRepository _mockRepository;
-    private readonly ILogger<UpdateToDoCommandHandler> _mockLogger;
     private readonly UpdateToDoCommandHandler _handler;
+    private readonly ILogger<UpdateToDoCommandHandler> _mockLogger;
+    private readonly IToDoRepository _mockRepository;
 
     public UpdateToDoCommandHandlerTests()
     {
@@ -29,7 +29,7 @@ public class UpdateToDoCommandHandlerTests
         // Arrange
         var command = new UpdateToDoCommand(1, "Updated description", true);
 
-        var existingToDo = ToDo.Create("Original description");
+        var existingToDo = ToDo.Create("Original description", "test-user");
 
         _mockRepository.GetByIdAsync(command.Id, Arg.Any<CancellationToken>())
             .Returns(existingToDo);
@@ -67,7 +67,7 @@ public class UpdateToDoCommandHandlerTests
         // Arrange
         var command = new UpdateToDoCommand(1, "Task to complete", true);
 
-        var existingToDo = ToDo.Create("Task to complete");
+        var existingToDo = ToDo.Create("Task to complete", "test-user");
 
         _mockRepository.GetByIdAsync(command.Id, Arg.Any<CancellationToken>())
             .Returns(existingToDo);
@@ -90,7 +90,7 @@ public class UpdateToDoCommandHandlerTests
         // Arrange
         var command = new UpdateToDoCommand(1, "Completed task", false);
 
-        var existingToDo = ToDo.Create("Completed task");
+        var existingToDo = ToDo.Create("Completed task", "test-user");
         existingToDo.MarkAsCompleted();
 
         _mockRepository.GetByIdAsync(command.Id, Arg.Any<CancellationToken>())

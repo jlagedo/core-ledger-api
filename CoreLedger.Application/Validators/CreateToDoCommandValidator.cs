@@ -1,10 +1,10 @@
-using FluentValidation;
 using CoreLedger.Application.UseCases.ToDos.Commands;
+using FluentValidation;
 
 namespace CoreLedger.Application.Validators;
 
 /// <summary>
-/// Validator for CreateToDoCommand.
+///     Validator for CreateToDoCommand.
 /// </summary>
 public class CreateToDoCommandValidator : AbstractValidator<CreateToDoCommand>
 {

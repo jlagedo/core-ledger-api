@@ -1,20 +1,19 @@
-
-using MediatR;
 using AutoMapper;
-using Microsoft.Extensions.Logging;
-using CoreLedger.Domain.Interfaces;
 using CoreLedger.Application.DTOs;
+using CoreLedger.Domain.Interfaces;
+using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.Accounts.Queries;
 
 /// <summary>
-/// Handler for retrieving all Account items.
+///     Handler for retrieving all Account items.
 /// </summary>
 public class GetAllAccountsQueryHandler : IRequestHandler<GetAllAccountsQuery, IReadOnlyList<AccountDto>>
 {
-    private readonly IAccountRepository _repository;
-    private readonly IMapper _mapper;
     private readonly ILogger<GetAllAccountsQueryHandler> _logger;
+    private readonly IMapper _mapper;
+    private readonly IAccountRepository _repository;
 
     public GetAllAccountsQueryHandler(
         IAccountRepository repository,

@@ -1,21 +1,20 @@
-
-using MediatR;
 using AutoMapper;
-using Microsoft.Extensions.Logging;
-using CoreLedger.Domain.Interfaces;
-using CoreLedger.Domain.Exceptions;
 using CoreLedger.Application.DTOs;
+using CoreLedger.Domain.Exceptions;
+using CoreLedger.Domain.Interfaces;
+using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.Funds.Queries;
 
 /// <summary>
-/// Handler for retrieving a specific Fund by ID.
+///     Handler for retrieving a specific Fund by ID.
 /// </summary>
 public class GetFundByIdQueryHandler : IRequestHandler<GetFundByIdQuery, FundDto>
 {
-    private readonly IFundRepository _repository;
-    private readonly IMapper _mapper;
     private readonly ILogger<GetFundByIdQueryHandler> _logger;
+    private readonly IMapper _mapper;
+    private readonly IFundRepository _repository;
 
     public GetFundByIdQueryHandler(
         IFundRepository repository,
@@ -34,10 +33,7 @@ public class GetFundByIdQueryHandler : IRequestHandler<GetFundByIdQuery, FundDto
         _logger.LogInformation("Retrieving Fund with ID: {FundId}", request.Id);
 
         var fund = await _repository.GetByIdAsync(request.Id, cancellationToken);
-        if (fund == null)
-        {
-            throw new EntityNotFoundException("Fund", request.Id);
-        }
+        if (fund == null) throw new EntityNotFoundException("Fund", request.Id);
 
         var result = _mapper.Map<FundDto>(fund);
 

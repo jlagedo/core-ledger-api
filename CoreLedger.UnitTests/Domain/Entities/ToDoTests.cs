@@ -1,14 +1,39 @@
-using System.Diagnostics;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Exceptions;
 
 namespace CoreLedger.UnitTests.Domain.Entities;
 
 /// <summary>
-/// Unit tests for ToDo domain entity business rules and invariants.
+///     Unit tests for ToDo domain entity business rules and invariants.
 /// </summary>
 public class ToDoTests
 {
+    #region State Transition Tests
+
+    [Fact]
+    public void StateMachine_CompleteThenIncompleteThenComplete_ShouldWorkCorrectly()
+    {
+        // Arrange
+        var todo = ToDo.Create("Test task", "test-user");
+
+        // Act & Assert - Complete
+        todo.MarkAsCompleted();
+        Assert.True(todo.IsCompleted);
+        Assert.NotNull(todo.CompletedAt);
+
+        // Act & Assert - Incomplete
+        todo.MarkAsIncomplete();
+        Assert.False(todo.IsCompleted);
+        Assert.Null(todo.CompletedAt);
+
+        // Act & Assert - Complete again
+        todo.MarkAsCompleted();
+        Assert.True(todo.IsCompleted);
+        Assert.NotNull(todo.CompletedAt);
+    }
+
+    #endregion
+
     #region Create Tests
 
     [Fact]
@@ -18,7 +43,7 @@ public class ToDoTests
         var description = "Valid task description";
 
         // Act
-        var todo = ToDo.Create(description);
+        var todo = ToDo.Create(description, "test-user");
 
         // Assert
         Assert.NotNull(todo);
@@ -35,7 +60,7 @@ public class ToDoTests
     public void Create_WithEmptyDescription_ShouldThrowDomainValidationException(string? description)
     {
         // Act & Assert
-        var exception = Assert.Throws<DomainValidationException>(() => ToDo.Create(description!));
+        var exception = Assert.Throws<DomainValidationException>(() => ToDo.Create(description!, "test-user"));
         Assert.Equal("Description cannot be empty", exception.Message);
     }
 
@@ -46,7 +71,7 @@ public class ToDoTests
         var description = new string('x', 501);
 
         // Act & Assert
-        var exception = Assert.Throws<DomainValidationException>(() => ToDo.Create(description));
+        var exception = Assert.Throws<DomainValidationException>(() => ToDo.Create(description, "test-user"));
         Assert.Equal("Description cannot exceed 500 characters", exception.Message);
     }
 
@@ -57,7 +82,7 @@ public class ToDoTests
         var description = new string('x', 500);
 
         // Act
-        var todo = ToDo.Create(description);
+        var todo = ToDo.Create(description, "test-user");
 
         // Assert
         Assert.NotNull(todo);
@@ -72,7 +97,7 @@ public class ToDoTests
     public void UpdateDescription_WithValidDescription_ShouldUpdateAndSetUpdatedAt()
     {
         // Arrange
-        var todo = ToDo.Create("Original description");
+        var todo = ToDo.Create("Original description", "test-user");
         var originalCreatedAt = todo.CreatedAt;
         var newDescription = "Updated description";
 
@@ -93,7 +118,7 @@ public class ToDoTests
     public void UpdateDescription_WithEmptyDescription_ShouldThrowDomainValidationException(string? description)
     {
         // Arrange
-        var todo = ToDo.Create("Original description");
+        var todo = ToDo.Create("Original description", "test-user");
 
         // Act & Assert
         var exception = Assert.Throws<DomainValidationException>(() => todo.UpdateDescription(description!));
@@ -104,7 +129,7 @@ public class ToDoTests
     public void UpdateDescription_WithDescriptionExceeding500Characters_ShouldThrowDomainValidationException()
     {
         // Arrange
-        var todo = ToDo.Create("Original description");
+        var todo = ToDo.Create("Original description", "test-user");
         var description = new string('x', 501);
 
         // Act & Assert
@@ -120,7 +145,7 @@ public class ToDoTests
     public void MarkAsCompleted_WhenNotCompleted_ShouldSetIsCompletedAndCompletedAt()
     {
         // Arrange
-        var todo = ToDo.Create("Test task");
+        var todo = ToDo.Create("Test task", "test-user");
 
         // Act
         todo.MarkAsCompleted();
@@ -137,7 +162,7 @@ public class ToDoTests
     public void MarkAsCompleted_WhenAlreadyCompleted_ShouldThrowDomainValidationException()
     {
         // Arrange
-        var todo = ToDo.Create("Test task");
+        var todo = ToDo.Create("Test task", "test-user");
         todo.MarkAsCompleted();
 
         // Act & Assert
@@ -153,7 +178,7 @@ public class ToDoTests
     public void MarkAsIncomplete_WhenCompleted_ShouldClearIsCompletedAndCompletedAt()
     {
         // Arrange
-        var todo = ToDo.Create("Test task");
+        var todo = ToDo.Create("Test task", "test-user");
         todo.MarkAsCompleted();
 
         // Act
@@ -170,37 +195,11 @@ public class ToDoTests
     public void MarkAsIncomplete_WhenNotCompleted_ShouldThrowDomainValidationException()
     {
         // Arrange
-        var todo = ToDo.Create("Test task");
+        var todo = ToDo.Create("Test task", "test-user");
 
         // Act & Assert
         var exception = Assert.Throws<DomainValidationException>(() => todo.MarkAsIncomplete());
         Assert.Equal("ToDo is already incomplete", exception.Message);
-    }
-
-    #endregion
-
-    #region State Transition Tests
-
-    [Fact]
-    public void StateMachine_CompleteThenIncompleteThenComplete_ShouldWorkCorrectly()
-    {
-        // Arrange
-        var todo = ToDo.Create("Test task");
-
-        // Act & Assert - Complete
-        todo.MarkAsCompleted();
-        Assert.True(todo.IsCompleted);
-        Assert.NotNull(todo.CompletedAt);
-
-        // Act & Assert - Incomplete
-        todo.MarkAsIncomplete();
-        Assert.False(todo.IsCompleted);
-        Assert.Null(todo.CompletedAt);
-
-        // Act & Assert - Complete again
-        todo.MarkAsCompleted();
-        Assert.True(todo.IsCompleted);
-        Assert.NotNull(todo.CompletedAt);
     }
 
     #endregion

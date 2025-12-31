@@ -1,6 +1,6 @@
-using MediatR;
 using CoreLedger.Application.DTOs;
+using MediatR;
 
 namespace CoreLedger.Application.UseCases.TransactionTypes.Queries;
 
-public record GetAllTransactionTypesQuery() : IRequest<IReadOnlyList<TransactionTypeDto>>;
+public record GetAllTransactionTypesQuery : IRequest<IReadOnlyList<TransactionTypeDto>>;

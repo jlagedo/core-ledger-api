@@ -1,15 +1,16 @@
-
+using CoreLedger.Application.DTOs;
+using CoreLedger.Domain.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using CoreLedger.Domain.Interfaces;
-using CoreLedger.Application.DTOs;
 
 namespace CoreLedger.Application.UseCases.Accounts.Queries;
 
-public class GetAccountsByTypeReportQueryHandler : IRequestHandler<GetAccountsByTypeReportQuery, IReadOnlyList<AccountsByTypeReportDto>>
+public class
+    GetAccountsByTypeReportQueryHandler : IRequestHandler<GetAccountsByTypeReportQuery,
+    IReadOnlyList<AccountsByTypeReportDto>>
 {
-    private readonly IAccountRepository _repository;
     private readonly ILogger<GetAccountsByTypeReportQueryHandler> _logger;
+    private readonly IAccountRepository _repository;
 
     public GetAccountsByTypeReportQueryHandler(
         IAccountRepository repository,

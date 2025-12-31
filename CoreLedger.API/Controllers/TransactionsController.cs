@@ -1,24 +1,24 @@
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.UseCases.Transactions.Commands;
 using CoreLedger.Application.UseCases.Transactions.Queries;
 using CoreLedger.Domain.Interfaces;
 using CoreLedger.Domain.Models;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CoreLedger.API.Controllers;
 
 /// <summary>
-/// Controller for managing Transaction resources.
+///     Controller for managing Transaction resources.
 /// </summary>
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class TransactionsController : ControllerBase
 {
-    private readonly IMediator _mediator;
     private readonly ILogger<TransactionsController> _logger;
+    private readonly IMediator _mediator;
     private readonly ITransactionRepository _transactionRepository;
 
     public TransactionsController(
@@ -32,7 +32,7 @@ public class TransactionsController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all transactions with optional filtering, sorting, and pagination.
+    ///     Retrieves all transactions with optional filtering, sorting, and pagination.
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<TransactionDto>), StatusCodes.Status200OK)]
@@ -90,7 +90,7 @@ public class TransactionsController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves a specific transaction by ID.
+    ///     Retrieves a specific transaction by ID.
     /// </summary>
     [HttpGet("{id}", Name = "GetTransactionById")]
     [ProducesResponseType(typeof(TransactionDto), StatusCodes.Status200OK)]
@@ -103,15 +103,23 @@ public class TransactionsController : ControllerBase
     }
 
     /// <summary>
-    /// Creates a new transaction.
+    ///     Creates a new transaction.
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(TransactionDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Create(
         [FromBody] CreateTransactionDto dto,
         CancellationToken cancellationToken)
     {
+        var userId = User.FindFirst("sub")?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            _logger.LogWarning("User claim 'sub' not found in token");
+            return Unauthorized(new { message = "Invalid authentication token" });
+        }
+
         var command = new CreateTransactionCommand(
             dto.FundId,
             dto.SecurityId,
@@ -122,13 +130,14 @@ public class TransactionsController : ControllerBase
             dto.Price,
             dto.Amount,
             dto.Currency,
-            dto.StatusId);
+            dto.StatusId,
+            userId);
         var result = await _mediator.Send(command, cancellationToken);
         return CreatedAtRoute("GetTransactionById", new { id = result.Id }, result);
     }
 
     /// <summary>
-    /// Updates an existing transaction.
+    ///     Updates an existing transaction.
     /// </summary>
     [HttpPut("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

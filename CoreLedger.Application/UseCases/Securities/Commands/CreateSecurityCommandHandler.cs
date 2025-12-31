@@ -1,22 +1,21 @@
-
-using MediatR;
 using AutoMapper;
-using Microsoft.Extensions.Logging;
-using CoreLedger.Domain.Entities;
-using CoreLedger.Domain.Interfaces;
-using CoreLedger.Domain.Exceptions;
 using CoreLedger.Application.DTOs;
+using CoreLedger.Domain.Entities;
+using CoreLedger.Domain.Exceptions;
+using CoreLedger.Domain.Interfaces;
+using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.Securities.Commands;
 
 /// <summary>
-/// Handler for creating a new Security.
+///     Handler for creating a new Security.
 /// </summary>
 public class CreateSecurityCommandHandler : IRequestHandler<CreateSecurityCommand, SecurityDto>
 {
-    private readonly ISecurityRepository _securityRepository;
-    private readonly IMapper _mapper;
     private readonly ILogger<CreateSecurityCommandHandler> _logger;
+    private readonly IMapper _mapper;
+    private readonly ISecurityRepository _securityRepository;
 
     public CreateSecurityCommandHandler(
         ISecurityRepository securityRepository,
@@ -34,17 +33,15 @@ public class CreateSecurityCommandHandler : IRequestHandler<CreateSecurityComman
 
         // Check if security with same ticker already exists
         var existing = await _securityRepository.GetByTickerAsync(request.Ticker, cancellationToken);
-        if (existing != null)
-        {
-            throw new DomainValidationException("Security with this ticker already exists");
-        }
+        if (existing != null) throw new DomainValidationException("Security with this ticker already exists");
 
         var security = Security.Create(
             request.Name,
             request.Ticker,
             request.Isin,
             request.Type,
-            request.Currency);
+            request.Currency,
+            request.CreatedByUserId);
 
         var created = await _securityRepository.AddAsync(security, cancellationToken);
 

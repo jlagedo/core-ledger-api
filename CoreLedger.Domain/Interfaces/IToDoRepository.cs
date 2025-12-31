@@ -3,7 +3,7 @@ using CoreLedger.Domain.Entities;
 namespace CoreLedger.Domain.Interfaces;
 
 /// <summary>
-/// Repository interface for ToDo-specific operations.
+///     Repository interface for ToDo-specific operations.
 /// </summary>
 public interface IToDoRepository : IRepository<ToDo>
 {

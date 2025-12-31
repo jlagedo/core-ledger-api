@@ -4,10 +4,14 @@ using CoreLedger.Domain.Exceptions;
 namespace CoreLedger.Domain.Entities;
 
 /// <summary>
-/// Account domain entity with business rules and invariants.
+///     Account domain entity with business rules and invariants.
 /// </summary>
 public class Account : BaseEntity
 {
+    private Account()
+    {
+    }
+
     public long Code { get; private set; }
     public string Name { get; private set; } = string.Empty;
     public int TypeId { get; private set; }
@@ -16,20 +20,25 @@ public class Account : BaseEntity
     public NormalBalance NormalBalance { get; private set; }
     public DateTime? DeactivatedAt { get; private set; }
 
-    private Account() { }
+    /// <summary>
+    ///     Identifier of the user who created this account.
+    /// </summary>
+    public string CreatedByUserId { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Factory method to create a new Account with validation.
+    ///     Factory method to create a new Account with validation.
     /// </summary>
     public static Account Create(
         long code,
         string name,
         int typeId,
         AccountStatus status,
-        NormalBalance normalBalance)
+        NormalBalance normalBalance,
+        string createdByUserId)
     {
         ValidateCode(code);
         ValidateName(name);
+        ValidateCreatedByUserId(createdByUserId);
 
         return new Account
         {
@@ -37,12 +46,13 @@ public class Account : BaseEntity
             Name = name.Trim(),
             TypeId = typeId,
             Status = status,
-            NormalBalance = normalBalance
+            NormalBalance = normalBalance,
+            CreatedByUserId = createdByUserId.Trim()
         };
     }
 
     /// <summary>
-    /// Updates the account with validation.
+    ///     Updates the account with validation.
     /// </summary>
     public void Update(
         long code,
@@ -63,7 +73,7 @@ public class Account : BaseEntity
     }
 
     /// <summary>
-    /// Activates the account.
+    ///     Activates the account.
     /// </summary>
     public void Activate()
     {
@@ -75,7 +85,7 @@ public class Account : BaseEntity
     }
 
     /// <summary>
-    /// Deactivates the account.
+    ///     Deactivates the account.
     /// </summary>
     public void Deactivate()
     {
@@ -103,5 +113,11 @@ public class Account : BaseEntity
 
         if (name.Length > 200)
             throw new DomainValidationException("Name cannot exceed 200 characters");
+    }
+
+    private static void ValidateCreatedByUserId(string createdByUserId)
+    {
+        if (string.IsNullOrWhiteSpace(createdByUserId))
+            throw new DomainValidationException("CreatedByUserId cannot be empty");
     }
 }

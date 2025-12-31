@@ -1,28 +1,28 @@
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.UseCases.Funds.Commands;
 using CoreLedger.Application.UseCases.Funds.Queries;
 using CoreLedger.Domain.Interfaces;
 using CoreLedger.Domain.Models;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CoreLedger.API.Controllers;
 
 /// <summary>
-/// Controller for managing Fund resources.
+///     Controller for managing Fund resources.
 /// </summary>
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class FundsController : ControllerBase
 {
-    private readonly IMediator _mediator;
-    private readonly ILogger<FundsController> _logger;
     private readonly IFundRepository _fundRepository;
+    private readonly ILogger<FundsController> _logger;
+    private readonly IMediator _mediator;
 
     public FundsController(
-        IMediator mediator, 
+        IMediator mediator,
         ILogger<FundsController> logger,
         IFundRepository fundRepository)
     {
@@ -32,7 +32,7 @@ public class FundsController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all funds with optional filtering, sorting, and pagination.
+    ///     Retrieves all funds with optional filtering, sorting, and pagination.
     /// </summary>
     /// <param name="limit">Maximum number of items to return (max 100)</param>
     /// <param name="offset">Number of items to skip</param>
@@ -66,7 +66,7 @@ public class FundsController : ControllerBase
         // that require dynamic SQL generation. The performance benefit of direct repository access outweighs
         // the architectural purity in this specific use case. Write operations should still follow CQRS pattern.
         var (funds, totalCount) = await _fundRepository.GetWithQueryAsync(parameters, cancellationToken);
-        
+
         var fundDtos = funds.Select(f => new FundDto(
             f.Id,
             f.Code,
@@ -80,12 +80,12 @@ public class FundsController : ControllerBase
         )).ToList();
 
         var result = new PagedResult<FundDto>(fundDtos, totalCount, parameters.Limit, parameters.Offset);
-        
+
         return Ok(result);
     }
 
     /// <summary>
-    /// Retrieves a specific fund by ID.
+    ///     Retrieves a specific fund by ID.
     /// </summary>
     [HttpGet("{id}", Name = "GetFundById")]
     [ProducesResponseType(typeof(FundDto), StatusCodes.Status200OK)]
@@ -98,27 +98,36 @@ public class FundsController : ControllerBase
     }
 
     /// <summary>
-    /// Creates a new fund.
+    ///     Creates a new fund.
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(FundDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Create(
         [FromBody] CreateFundDto dto,
         CancellationToken cancellationToken)
     {
+        var userId = User.FindFirst("sub")?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            _logger.LogWarning("User claim 'sub' not found in token");
+            return Unauthorized(new { message = "Invalid authentication token" });
+        }
+
         var command = new CreateFundCommand(
             dto.Code,
             dto.Name,
             dto.BaseCurrency,
             dto.InceptionDate,
-            dto.ValuationFrequency);
+            dto.ValuationFrequency,
+            userId);
         var result = await _mediator.Send(command, cancellationToken);
         return CreatedAtRoute("GetFundById", new { id = result.Id }, result);
     }
 
     /// <summary>
-    /// Updates an existing fund.
+    ///     Updates an existing fund.
     /// </summary>
     [HttpPut("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

@@ -1,12 +1,13 @@
-using Microsoft.EntityFrameworkCore;
 using CoreLedger.Domain.Entities;
+using CoreLedger.Domain.Enums;
 using CoreLedger.Domain.Interfaces;
 using CoreLedger.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CoreLedger.Infrastructure.Persistence.Repositories;
 
 /// <summary>
-/// Repository implementation for Fund entity with specific queries.
+///     Repository implementation for Fund entity with specific queries.
 /// </summary>
 public class FundRepository : Repository<Fund>, IFundRepository
 {
@@ -22,7 +23,7 @@ public class FundRepository : Repository<Fund>, IFundRepository
     }
 
     public async Task<(IReadOnlyList<Fund> Funds, int TotalCount)> GetWithQueryAsync(
-        QueryParameters parameters, 
+        QueryParameters parameters,
         CancellationToken cancellationToken = default)
     {
         var whereClause = string.Empty;
@@ -47,21 +48,14 @@ public class FundRepository : Repository<Fund>, IFundRepository
                 if (!string.IsNullOrEmpty(whereClause))
                 {
                     if (field == "name")
-                    {
                         sqlParameters.Add($"%{value}%");
-                    }
                     else if (field == "baseCurrency")
-                    {
                         sqlParameters.Add(value.ToUpperInvariant());
-                    }
-                    else if (field == "valuationFrequency" && Enum.TryParse(typeof(CoreLedger.Domain.Enums.ValuationFrequency), value, true, out var frequencyEnum))
-                    {
+                    else if (field == "valuationFrequency" &&
+                             Enum.TryParse(typeof(ValuationFrequency), value, true, out var frequencyEnum))
                         sqlParameters.Add((int)frequencyEnum!);
-                    }
                     else
-                    {
                         whereClause = string.Empty;
-                    }
                 }
             }
         }
@@ -69,7 +63,9 @@ public class FundRepository : Repository<Fund>, IFundRepository
         var orderByClause = string.Empty;
         if (!string.IsNullOrWhiteSpace(parameters.SortBy))
         {
-            var direction = parameters.SortDirection.Equals("desc", StringComparison.OrdinalIgnoreCase) ? "DESC" : "ASC";
+            var direction = parameters.SortDirection.Equals("desc", StringComparison.OrdinalIgnoreCase)
+                ? "DESC"
+                : "ASC";
             orderByClause = parameters.SortBy.ToLower() switch
             {
                 "name" => $"ORDER BY f.name {direction}",

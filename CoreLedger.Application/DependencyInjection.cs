@@ -1,13 +1,12 @@
-using Microsoft.Extensions.DependencyInjection;
-using FluentValidation;
 using System.Reflection;
 using CoreLedger.Application.Behaviors;
-using MediatR;
+using FluentValidation;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CoreLedger.Application;
 
 /// <summary>
-/// Extension methods for registering Application layer services.
+///     Extension methods for registering Application layer services.
 /// </summary>
 public static class DependencyInjection
 {

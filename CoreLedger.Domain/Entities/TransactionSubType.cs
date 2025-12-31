@@ -3,19 +3,21 @@ using CoreLedger.Domain.Exceptions;
 namespace CoreLedger.Domain.Entities;
 
 /// <summary>
-/// TransactionSubType domain entity representing specific transaction operations within a type.
+///     TransactionSubType domain entity representing specific transaction operations within a type.
 /// </summary>
 public class TransactionSubType : BaseEntity
 {
+    private TransactionSubType()
+    {
+    }
+
     public int TypeId { get; private set; }
     public TransactionType? Type { get; private set; }
     public string ShortDescription { get; private set; } = string.Empty;
     public string LongDescription { get; private set; } = string.Empty;
 
-    private TransactionSubType() { }
-
     /// <summary>
-    /// Factory method to create a new TransactionSubType with validation.
+    ///     Factory method to create a new TransactionSubType with validation.
     /// </summary>
     public static TransactionSubType Create(int typeId, string shortDescription, string longDescription)
     {
@@ -31,7 +33,7 @@ public class TransactionSubType : BaseEntity
     }
 
     /// <summary>
-    /// Updates the transaction subtype with validation.
+    ///     Updates the transaction subtype with validation.
     /// </summary>
     public void Update(int typeId, string shortDescription, string longDescription)
     {

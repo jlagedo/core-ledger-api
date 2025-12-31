@@ -3,16 +3,18 @@ using CoreLedger.Domain.Exceptions;
 namespace CoreLedger.Domain.Entities;
 
 /// <summary>
-/// AccountType domain entity with business rules and invariants.
+///     AccountType domain entity with business rules and invariants.
 /// </summary>
 public class AccountType : BaseEntity
 {
+    private AccountType()
+    {
+    }
+
     public string Description { get; private set; } = string.Empty;
 
-    private AccountType() { }
-
     /// <summary>
-    /// Factory method to create a new AccountType with validation.
+    ///     Factory method to create a new AccountType with validation.
     /// </summary>
     public static AccountType Create(string description)
     {
@@ -29,7 +31,7 @@ public class AccountType : BaseEntity
     }
 
     /// <summary>
-    /// Updates the description with validation.
+    ///     Updates the description with validation.
     /// </summary>
     public void UpdateDescription(string description)
     {

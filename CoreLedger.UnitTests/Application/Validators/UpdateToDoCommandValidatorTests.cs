@@ -4,8 +4,8 @@ using CoreLedger.Application.Validators;
 namespace CoreLedger.UnitTests.Application.Validators;
 
 /// <summary>
-/// Unit tests for UpdateToDoCommandValidator.
-/// Tests FluentValidation rules for UpdateToDoCommand.
+///     Unit tests for UpdateToDoCommandValidator.
+///     Tests FluentValidation rules for UpdateToDoCommand.
 /// </summary>
 public class UpdateToDoCommandValidatorTests
 {

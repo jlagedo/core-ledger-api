@@ -1,20 +1,19 @@
-
-using MediatR;
 using AutoMapper;
-using Microsoft.Extensions.Logging;
-using CoreLedger.Domain.Interfaces;
 using CoreLedger.Application.DTOs;
+using CoreLedger.Domain.Interfaces;
+using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.ToDos.Queries;
 
 /// <summary>
-/// Handler for retrieving all ToDo items.
+///     Handler for retrieving all ToDo items.
 /// </summary>
 public class GetAllToDosQueryHandler : IRequestHandler<GetAllToDosQuery, IReadOnlyList<ToDoDto>>
 {
-    private readonly IToDoRepository _repository;
-    private readonly IMapper _mapper;
     private readonly ILogger<GetAllToDosQueryHandler> _logger;
+    private readonly IMapper _mapper;
+    private readonly IToDoRepository _repository;
 
     public GetAllToDosQueryHandler(
         IToDoRepository repository,
@@ -27,7 +26,7 @@ public class GetAllToDosQueryHandler : IRequestHandler<GetAllToDosQuery, IReadOn
     }
 
     public async Task<IReadOnlyList<ToDoDto>> Handle(
-        GetAllToDosQuery request, 
+        GetAllToDosQuery request,
         CancellationToken cancellationToken)
     {
         _logger.LogInformation("Retrieving all ToDo items");

@@ -1,7 +1,7 @@
 namespace CoreLedger.Application.DTOs;
 
 /// <summary>
-/// Data transfer object for Transaction entity.
+///     Data transfer object for Transaction entity.
 /// </summary>
 public record TransactionDto(
     int Id,
@@ -27,7 +27,7 @@ public record TransactionDto(
     DateTime? UpdatedAt);
 
 /// <summary>
-/// DTO for creating a new Transaction.
+///     DTO for creating a new Transaction.
 /// </summary>
 public record CreateTransactionDto(
     int FundId,
@@ -42,7 +42,7 @@ public record CreateTransactionDto(
     int StatusId);
 
 /// <summary>
-/// DTO for updating an existing Transaction.
+///     DTO for updating an existing Transaction.
 /// </summary>
 public record UpdateTransactionDto(
     int FundId,

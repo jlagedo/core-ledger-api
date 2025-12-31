@@ -1,15 +1,15 @@
-using CoreLedger.Domain.Exceptions;
-using FluentValidation;
 using System.Net;
 using System.Text.Json;
+using CoreLedger.Domain.Exceptions;
+using FluentValidation;
 
 namespace CoreLedger.API.Middleware;
 
 public class GlobalExceptionMiddleware
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<GlobalExceptionMiddleware> _logger;
     private readonly IHostEnvironment _environment;
+    private readonly ILogger<GlobalExceptionMiddleware> _logger;
+    private readonly RequestDelegate _next;
 
     public GlobalExceptionMiddleware(
         RequestDelegate next,
@@ -38,53 +38,53 @@ public class GlobalExceptionMiddleware
         var correlationId = context.Items["CorrelationId"]?.ToString();
         var traceId = context.TraceIdentifier;
 
-        _logger.LogError(exception, 
+        _logger.LogError(exception,
             "Unhandled exception occurred. CorrelationId: {CorrelationId}, TraceId: {TraceId}",
             correlationId, traceId);
 
         var (statusCode, errorCode, message, errors) = exception switch
         {
             ValidationException validationException =>
-                ((HttpStatusCode)HttpStatusCode.BadRequest,
-                 "ERR-VALIDATION-001",
-                 "One or more validation errors occurred",
-                 validationException.Errors
-                    .GroupBy(e => e.PropertyName)
-                    .ToDictionary(
-                        g => g.Key,
-                        g => g.Select(e => e.ErrorMessage).ToArray())),
+                (HttpStatusCode.BadRequest,
+                    "ERR-VALIDATION-001",
+                    "One or more validation errors occurred",
+                    validationException.Errors
+                        .GroupBy(e => e.PropertyName)
+                        .ToDictionary(
+                            g => g.Key,
+                            g => g.Select(e => e.ErrorMessage).ToArray())),
 
             ArgumentException argumentException =>
-                ((HttpStatusCode)HttpStatusCode.BadRequest,
-                 "ERR-VALIDATION-002",
-                 argumentException.Message,
-                 (Dictionary<string, string[]>?)null),
+                (HttpStatusCode.BadRequest,
+                    "ERR-VALIDATION-002",
+                    argumentException.Message,
+                    null),
 
             EntityNotFoundException notFound =>
-                ((HttpStatusCode)HttpStatusCode.NotFound, notFound.ErrorCode, notFound.Message, (Dictionary<string, string[]>?)null),
+                (HttpStatusCode.NotFound, notFound.ErrorCode, notFound.Message, null),
 
             DomainValidationException validation =>
-                ((HttpStatusCode)HttpStatusCode.BadRequest, validation.ErrorCode, validation.Message, (Dictionary<string, string[]>?)null),
+                (HttpStatusCode.BadRequest, validation.ErrorCode, validation.Message, null),
 
             ExternalServiceException externalService =>
-                ((HttpStatusCode)HttpStatusCode.ServiceUnavailable,
-                 externalService.ErrorCode,
-                 $"{externalService.ServiceName} is currently unavailable. Please try again later.",
-                 (Dictionary<string, string[]>?)null),
+                (HttpStatusCode.ServiceUnavailable,
+                    externalService.ErrorCode,
+                    $"{externalService.ServiceName} is currently unavailable. Please try again later.",
+                    null),
 
             DomainException domain =>
-                ((HttpStatusCode)HttpStatusCode.BadRequest, domain.ErrorCode, domain.Message, (Dictionary<string, string[]>?)null),
+                (HttpStatusCode.BadRequest, domain.ErrorCode, domain.Message, null),
 
-            _ => ((HttpStatusCode)HttpStatusCode.InternalServerError, "ERR-INTERNAL-001",
-                  "An internal server error occurred", (Dictionary<string, string[]>?)null)
+            _ => (HttpStatusCode.InternalServerError, "ERR-INTERNAL-001",
+                "An internal server error occurred", (Dictionary<string, string[]>?)null)
         };
 
         var response = new ErrorResponse(
-            ErrorCode: errorCode,
-            Message: _environment.IsDevelopment() ? message : GetSafeMessage(exception),
-            CorrelationId: correlationId,
-            Errors: errors,
-            TraceId: _environment.IsDevelopment() ? traceId : null
+            errorCode,
+            _environment.IsDevelopment() ? message : GetSafeMessage(exception),
+            correlationId,
+            errors,
+            _environment.IsDevelopment() ? traceId : null
         );
 
         context.Response.ContentType = "application/json";
@@ -100,8 +100,8 @@ public class GlobalExceptionMiddleware
 
     private static string GetSafeMessage(Exception exception)
     {
-        return exception is DomainException 
-            ? exception.Message 
+        return exception is DomainException
+            ? exception.Message
             : "An error occurred while processing your request. Please contact support with the correlation ID.";
     }
 }

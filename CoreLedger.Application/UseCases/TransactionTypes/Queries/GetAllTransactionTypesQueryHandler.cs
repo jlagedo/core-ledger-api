@@ -1,17 +1,17 @@
-using Microsoft.Extensions.Logging;
-
 using AutoMapper;
-using MediatR;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Domain.Interfaces;
+using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.TransactionTypes.Queries;
 
-public class GetAllTransactionTypesQueryHandler : IRequestHandler<GetAllTransactionTypesQuery, IReadOnlyList<TransactionTypeDto>>
+public class
+    GetAllTransactionTypesQueryHandler : IRequestHandler<GetAllTransactionTypesQuery, IReadOnlyList<TransactionTypeDto>>
 {
-    private readonly ITransactionTypeRepository _repository;
-    private readonly IMapper _mapper;
     private readonly ILogger<GetAllTransactionTypesQueryHandler> _logger;
+    private readonly IMapper _mapper;
+    private readonly ITransactionTypeRepository _repository;
 
     public GetAllTransactionTypesQueryHandler(
         ITransactionTypeRepository repository,
@@ -23,7 +23,8 @@ public class GetAllTransactionTypesQueryHandler : IRequestHandler<GetAllTransact
         _logger = logger;
     }
 
-    public async Task<IReadOnlyList<TransactionTypeDto>> Handle(GetAllTransactionTypesQuery request, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<TransactionTypeDto>> Handle(GetAllTransactionTypesQuery request,
+        CancellationToken cancellationToken)
     {
         _logger.LogInformation("Retrieving all transaction types");
         var types = await _repository.GetAllAsync(cancellationToken);

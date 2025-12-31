@@ -1,8 +1,8 @@
 namespace CoreLedger.Application.Configuration;
 
 /// <summary>
-/// Static accessor for pagination defaults.
-/// Initialized during application startup.
+///     Static accessor for pagination defaults.
+///     Initialized during application startup.
 /// </summary>
 public static class PaginationDefaults
 {
@@ -10,7 +10,7 @@ public static class PaginationDefaults
     private static int _maxPageSize = 100;
 
     /// <summary>
-    /// Default page size for paginated queries
+    ///     Default page size for paginated queries
     /// </summary>
     public static int DefaultPageSize
     {
@@ -19,7 +19,7 @@ public static class PaginationDefaults
     }
 
     /// <summary>
-    /// Maximum allowed page size
+    ///     Maximum allowed page size
     /// </summary>
     public static int MaxPageSize
     {
@@ -28,7 +28,7 @@ public static class PaginationDefaults
     }
 
     /// <summary>
-    /// Initialize pagination defaults from configuration options
+    ///     Initialize pagination defaults from configuration options
     /// </summary>
     public static void Initialize(PaginationOptions options)
     {

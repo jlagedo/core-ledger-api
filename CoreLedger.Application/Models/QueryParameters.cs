@@ -4,14 +4,14 @@ using CoreLedger.Application.Configuration;
 namespace CoreLedger.Application.Models;
 
 /// <summary>
-/// Query parameters for RFC-8040 compliant GET operations with comprehensive validation.
+///     Query parameters for RFC-8040 compliant GET operations with comprehensive validation.
 /// </summary>
 public class QueryParameters
 {
-    private int _limit;
-    private int _offset = 0;
-    private string _sortDirection = "asc";
     private string? _filter;
+    private int _limit;
+    private int _offset;
+    private string _sortDirection = "asc";
 
     public QueryParameters()
     {
@@ -19,18 +19,19 @@ public class QueryParameters
     }
 
     /// <summary>
-    /// Maximum number of items to return (configurable limit, minimum: 1).
-    /// Automatically clamped to valid range [1, MaxPageSize].
+    ///     Maximum number of items to return (configurable limit, minimum: 1).
+    ///     Automatically clamped to valid range [1, MaxPageSize].
     /// </summary>
     public int Limit
     {
         get => _limit;
-        set => _limit = value < 1 ? PaginationDefaults.DefaultPageSize : Math.Min(value, PaginationDefaults.MaxPageSize);
+        set => _limit =
+            value < 1 ? PaginationDefaults.DefaultPageSize : Math.Min(value, PaginationDefaults.MaxPageSize);
     }
 
     /// <summary>
-    /// Number of items to skip (for pagination).
-    /// Automatically clamped to minimum of 0.
+    ///     Number of items to skip (for pagination).
+    ///     Automatically clamped to minimum of 0.
     /// </summary>
     public int Offset
     {
@@ -39,13 +40,13 @@ public class QueryParameters
     }
 
     /// <summary>
-    /// Field to sort by. Only whitelisted fields in repositories are used.
+    ///     Field to sort by. Only whitelisted fields in repositories are used.
     /// </summary>
     public string? SortBy { get; set; }
 
     /// <summary>
-    /// Sort direction (asc or desc). Automatically normalized to lowercase.
-    /// Invalid values default to "asc".
+    ///     Sort direction (asc or desc). Automatically normalized to lowercase.
+    ///     Invalid values default to "asc".
     /// </summary>
     public string SortDirection
     {
@@ -54,8 +55,8 @@ public class QueryParameters
     }
 
     /// <summary>
-    /// Filter expression (simple field=value format).
-    /// Validated to prevent SQL injection attempts.
+    ///     Filter expression (simple field=value format).
+    ///     Validated to prevent SQL injection attempts.
     /// </summary>
     public string? Filter
     {
@@ -86,31 +87,25 @@ public class QueryParameters
         var dangerousPatterns = new[]
         {
             @"('|(--)|;|\/\*|\*\/|xp_|sp_|exec|execute|declare|create|drop|alter|insert|update|delete|union|select|cast|convert)",
-            @"(@@|@[a-z]+)",  // SQL Server variables
+            @"(@@|@[a-z]+)", // SQL Server variables
             @"(\bor\b|\band\b).*=.*", // OR/AND with equals (potential SQLi)
-            @"(<script|<iframe|javascript:|onerror=|onload=)", // XSS attempts
+            @"(<script|<iframe|javascript:|onerror=|onload=)" // XSS attempts
         };
 
         foreach (var pattern in dangerousPatterns)
-        {
             if (Regex.IsMatch(value, pattern, RegexOptions.IgnoreCase))
-            {
                 throw new ArgumentException($"Filter contains potentially dangerous pattern: {pattern}");
-            }
-        }
 
         // Ensure filter follows field=value format
         if (!Regex.IsMatch(value, @"^[a-zA-Z_][a-zA-Z0-9_]*\s*=\s*.+$"))
-        {
             throw new ArgumentException("Filter must be in 'field=value' format with valid field name");
-        }
 
         return value.Trim();
     }
 }
 
 /// <summary>
-/// Paged result wrapper for RFC-8040 compliance.
+///     Paged result wrapper for RFC-8040 compliance.
 /// </summary>
 /// <typeparam name="T">Type of items in the result</typeparam>
 public record PagedResult<T>(

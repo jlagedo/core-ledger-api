@@ -1,24 +1,24 @@
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.UseCases.Securities.Commands;
 using CoreLedger.Application.UseCases.Securities.Queries;
 using CoreLedger.Domain.Interfaces;
 using CoreLedger.Domain.Models;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CoreLedger.API.Controllers;
 
 /// <summary>
-/// Controller for managing Security resources.
+///     Controller for managing Security resources.
 /// </summary>
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class SecuritiesController : ControllerBase
 {
-    private readonly IMediator _mediator;
     private readonly ILogger<SecuritiesController> _logger;
+    private readonly IMediator _mediator;
     private readonly ISecurityRepository _securityRepository;
 
     public SecuritiesController(
@@ -32,7 +32,7 @@ public class SecuritiesController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all securities with optional filtering, sorting, and pagination.
+    ///     Retrieves all securities with optional filtering, sorting, and pagination.
     /// </summary>
     /// <param name="limit">Maximum number of items to return (max 100)</param>
     /// <param name="offset">Number of items to skip</param>
@@ -87,7 +87,7 @@ public class SecuritiesController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves a specific security by ID.
+    ///     Retrieves a specific security by ID.
     /// </summary>
     [HttpGet("{id}", Name = "GetSecuritiesById")]
     [ProducesResponseType(typeof(SecurityDto), StatusCodes.Status200OK)]
@@ -100,27 +100,36 @@ public class SecuritiesController : ControllerBase
     }
 
     /// <summary>
-    /// Creates a new security.
+    ///     Creates a new security.
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(SecurityDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Create(
         [FromBody] CreateSecurityDto dto,
         CancellationToken cancellationToken)
     {
+        var userId = User.FindFirst("sub")?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            _logger.LogWarning("User claim 'sub' not found in token");
+            return Unauthorized(new { message = "Invalid authentication token" });
+        }
+
         var command = new CreateSecurityCommand(
             dto.Name,
             dto.Ticker,
             dto.Isin,
             dto.Type,
-            dto.Currency);
+            dto.Currency,
+            userId);
         var result = await _mediator.Send(command, cancellationToken);
         return CreatedAtRoute("GetSecuritiesById", new { id = result.Id }, result);
     }
 
     /// <summary>
-    /// Updates an existing security.
+    ///     Updates an existing security.
     /// </summary>
     [HttpPut("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -143,7 +152,7 @@ public class SecuritiesController : ControllerBase
     }
 
     /// <summary>
-    /// Deactivates a security and records the deactivation date.
+    ///     Deactivates a security and records the deactivation date.
     /// </summary>
     [HttpPatch("{id}/deactivate")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

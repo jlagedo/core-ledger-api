@@ -1,20 +1,19 @@
-
-using MediatR;
 using AutoMapper;
-using Microsoft.Extensions.Logging;
-using CoreLedger.Domain.Interfaces;
 using CoreLedger.Application.DTOs;
+using CoreLedger.Domain.Interfaces;
+using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.Securities.Queries;
 
 /// <summary>
-/// Handler for retrieving all Securities.
+///     Handler for retrieving all Securities.
 /// </summary>
 public class GetAllSecuritiesQueryHandler : IRequestHandler<GetAllSecuritiesQuery, IReadOnlyList<SecurityDto>>
 {
-    private readonly ISecurityRepository _repository;
-    private readonly IMapper _mapper;
     private readonly ILogger<GetAllSecuritiesQueryHandler> _logger;
+    private readonly IMapper _mapper;
+    private readonly ISecurityRepository _repository;
 
     public GetAllSecuritiesQueryHandler(
         ISecurityRepository repository,

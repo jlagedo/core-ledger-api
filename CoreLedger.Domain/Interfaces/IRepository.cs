@@ -3,7 +3,7 @@ using CoreLedger.Domain.Entities;
 namespace CoreLedger.Domain.Interfaces;
 
 /// <summary>
-/// Generic repository interface for common data operations.
+///     Generic repository interface for common data operations.
 /// </summary>
 public interface IRepository<T> where T : BaseEntity
 {

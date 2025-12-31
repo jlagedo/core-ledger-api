@@ -2,30 +2,29 @@ using System.Text;
 using System.Text.Json;
 using CoreLedger.Application.Constants;
 using CoreLedger.Application.DTOs;
-using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Enums;
 using CoreLedger.Domain.Interfaces;
 using CoreLedger.Infrastructure.Configuration;
 using CoreLedger.Worker.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Serilog.Context;
 
 namespace CoreLedger.Worker.Services;
 
 /// <summary>
-/// Background service that consumes test connection messages from RabbitMQ.
-/// This consumer is used to test the API -> Queue -> Worker flow.
+///     Background service that consumes test connection messages from RabbitMQ.
+///     This consumer is used to test the API -> Queue -> Worker flow.
 /// </summary>
 public class TestConnectionConsumer : BackgroundService
 {
     private readonly ILogger<TestConnectionConsumer> _logger;
-    private readonly IServiceProvider _serviceProvider;
     private readonly RabbitMQOptions _rabbitMQOptions;
+    private readonly IServiceProvider _serviceProvider;
     private readonly TestConnectionOptions _testConnectionOptions;
-    private IConnection? _connection;
     private IModel? _channel;
+    private IConnection? _connection;
 
     public TestConnectionConsumer(
         ILogger<TestConnectionConsumer> logger,
@@ -58,16 +57,16 @@ public class TestConnectionConsumer : BackgroundService
             _channel = _connection.CreateModel();
 
             _channel.QueueDeclare(
-                queue: QueueNames.TestConnection,
-                durable: _rabbitMQOptions.QueueDurable,
-                exclusive: _rabbitMQOptions.QueueExclusive,
-                autoDelete: _rabbitMQOptions.QueueAutoDelete,
-                arguments: null);
+                QueueNames.TestConnection,
+                _rabbitMQOptions.QueueDurable,
+                _rabbitMQOptions.QueueExclusive,
+                _rabbitMQOptions.QueueAutoDelete,
+                null);
 
             _channel.BasicQos(
-                prefetchSize: _rabbitMQOptions.PrefetchSize,
-                prefetchCount: _rabbitMQOptions.PrefetchCount,
-                global: false);
+                _rabbitMQOptions.PrefetchSize,
+                _rabbitMQOptions.PrefetchCount,
+                false);
 
             var consumer = new AsyncEventingBasicConsumer(_channel);
             consumer.Received += async (model, ea) =>
@@ -78,15 +77,11 @@ public class TestConnectionConsumer : BackgroundService
                 // Extract correlation ID from message headers or properties
                 var correlationId = ea.BasicProperties?.CorrelationId;
                 if (string.IsNullOrWhiteSpace(correlationId) && ea.BasicProperties?.Headers != null)
-                {
                     if (ea.BasicProperties.Headers.TryGetValue("X-Correlation-ID", out var headerValue))
-                    {
                         correlationId = Encoding.UTF8.GetString((byte[])headerValue);
-                    }
-                }
 
                 // Set up Serilog LogContext with correlation ID for distributed tracing
-                using (Serilog.Context.LogContext.PushProperty("CorrelationId", correlationId ?? "unknown"))
+                using (LogContext.PushProperty("CorrelationId", correlationId ?? "unknown"))
                 {
                     _logger.LogInformation("========================================");
                     _logger.LogInformation("TEST CONNECTION MESSAGE RECEIVED");
@@ -127,12 +122,13 @@ public class TestConnectionConsumer : BackgroundService
                             coreJob.Id, coreJob.Status);
 
                         // Update status to Running
-                        coreJob.UpdateStatus(JobStatus.Running, runningDate: DateTime.UtcNow);
+                        coreJob.UpdateStatus(JobStatus.Running, DateTime.UtcNow);
                         await coreJobRepository.UpdateAsync(coreJob, stoppingToken);
                         _logger.LogInformation("CoreJob status updated to Running");
 
                         // Simulate processing
-                        _logger.LogInformation("Simulating processing for {DelayMs} milliseconds...", _testConnectionOptions.SimulatedProcessingDelayMs);
+                        _logger.LogInformation("Simulating processing for {DelayMs} milliseconds...",
+                            _testConnectionOptions.SimulatedProcessingDelayMs);
                         await Task.Delay(_testConnectionOptions.SimulatedProcessingDelayMs, stoppingToken);
 
                         // Update status to Complete
@@ -144,7 +140,8 @@ public class TestConnectionConsumer : BackgroundService
 
                         _logger.LogInformation("========================================");
                         _logger.LogInformation("TEST CONNECTION COMPLETED SUCCESSFULLY");
-                        _logger.LogInformation("CoreJobId: {CoreJobId}, Final Status: {Status}", coreJob.Id, coreJob.Status);
+                        _logger.LogInformation("CoreJobId: {CoreJobId}, Final Status: {Status}", coreJob.Id,
+                            coreJob.Status);
                         _logger.LogInformation("========================================");
                     }
                     catch (Exception ex)
@@ -179,9 +176,10 @@ public class TestConnectionConsumer : BackgroundService
                 }
             };
 
-            _channel.BasicConsume(queue: QueueNames.TestConnection, autoAck: false, consumer: consumer);
+            _channel.BasicConsume(QueueNames.TestConnection, false, consumer);
 
-            _logger.LogInformation("TestConnectionConsumer started and listening on queue: {QueueNames.TestConnection}", QueueNames.TestConnection);
+            _logger.LogInformation("TestConnectionConsumer started and listening on queue: {QueueNames.TestConnection}",
+                QueueNames.TestConnection);
 
             await Task.Delay(Timeout.Infinite, stoppingToken);
         }

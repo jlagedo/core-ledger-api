@@ -3,12 +3,12 @@ using Serilog.Context;
 namespace CoreLedger.API.Middleware;
 
 /// <summary>
-/// Middleware that adds correlation ID and authenticated user information to the log context.
+///     Middleware that adds correlation ID and authenticated user information to the log context.
 /// </summary>
 public class CorrelationIdMiddleware
 {
-    private readonly RequestDelegate _next;
     private const string CorrelationIdHeaderName = "X-Correlation-ID";
+    private readonly RequestDelegate _next;
 
     public CorrelationIdMiddleware(RequestDelegate next)
     {

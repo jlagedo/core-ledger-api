@@ -9,14 +9,14 @@ using RabbitMQ.Client;
 namespace CoreLedger.Infrastructure.Services;
 
 /// <summary>
-/// RabbitMQ implementation of the message publisher.
+///     RabbitMQ implementation of the message publisher.
 /// </summary>
 public class RabbitMQPublisher : IMessagePublisher, IDisposable
 {
+    private readonly IModel _channel;
+    private readonly IConnection _connection;
     private readonly ILogger<RabbitMQPublisher> _logger;
     private readonly RabbitMQOptions _options;
-    private readonly IConnection _connection;
-    private readonly IModel _channel;
     private bool _disposed;
 
     public RabbitMQPublisher(IOptions<RabbitMQOptions> options, ILogger<RabbitMQPublisher> logger)
@@ -36,20 +36,34 @@ public class RabbitMQPublisher : IMessagePublisher, IDisposable
         _connection = factory.CreateConnection();
         _channel = _connection.CreateModel();
 
-        _logger.LogInformation("RabbitMQ connection established to {Hostname}:{Port}", _options.Hostname, _options.Port);
+        _logger.LogInformation("RabbitMQ connection established to {Hostname}:{Port}", _options.Hostname,
+            _options.Port);
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
+
+        _channel?.Dispose();
+        _connection?.Dispose();
+        _disposed = true;
+
+        _logger.LogInformation("RabbitMQ connection disposed");
     }
 
     /// <summary>
-    /// Publishes a message to the specified queue.
+    ///     Publishes a message to the specified queue.
     /// </summary>
-    public Task PublishAsync<T>(string queueName, T message, string? correlationId = null, CancellationToken cancellationToken = default) where T : class
+    public Task PublishAsync<T>(string queueName, T message, string? correlationId = null,
+        CancellationToken cancellationToken = default) where T : class
     {
         _channel.QueueDeclare(
-            queue: queueName,
-            durable: _options.QueueDurable,
-            exclusive: _options.QueueExclusive,
-            autoDelete: _options.QueueAutoDelete,
-            arguments: null);
+            queueName,
+            _options.QueueDurable,
+            _options.QueueExclusive,
+            _options.QueueAutoDelete,
+            null);
 
         var json = JsonSerializer.Serialize(message);
         var body = Encoding.UTF8.GetBytes(json);
@@ -67,26 +81,14 @@ public class RabbitMQPublisher : IMessagePublisher, IDisposable
         }
 
         _channel.BasicPublish(
-            exchange: string.Empty,
-            routingKey: queueName,
-            basicProperties: properties,
-            body: body);
+            string.Empty,
+            queueName,
+            properties,
+            body);
 
         _logger.LogInformation("Message published to queue {QueueName} with CorrelationId {CorrelationId}: {Message}",
             queueName, correlationId ?? "none", json);
 
         return Task.CompletedTask;
-    }
-
-    public void Dispose()
-    {
-        if (_disposed)
-            return;
-
-        _channel?.Dispose();
-        _connection?.Dispose();
-        _disposed = true;
-
-        _logger.LogInformation("RabbitMQ connection disposed");
     }
 }

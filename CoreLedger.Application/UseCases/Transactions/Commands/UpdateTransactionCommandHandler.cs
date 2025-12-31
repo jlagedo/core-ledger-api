@@ -1,19 +1,18 @@
-using Microsoft.Extensions.Logging;
-
-using MediatR;
 using CoreLedger.Domain.Exceptions;
 using CoreLedger.Domain.Interfaces;
+using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.Transactions.Commands;
 
 public class UpdateTransactionCommandHandler : IRequestHandler<UpdateTransactionCommand>
 {
-    private readonly ITransactionRepository _transactionRepository;
     private readonly IFundRepository _fundRepository;
-    private readonly ISecurityRepository _securityRepository;
-    private readonly ITransactionSubTypeRepository _transactionSubTypeRepository;
-    private readonly ITransactionStatusRepository _transactionStatusRepository;
     private readonly ILogger<UpdateTransactionCommandHandler> _logger;
+    private readonly ISecurityRepository _securityRepository;
+    private readonly ITransactionRepository _transactionRepository;
+    private readonly ITransactionStatusRepository _transactionStatusRepository;
+    private readonly ITransactionSubTypeRepository _transactionSubTypeRepository;
 
     public UpdateTransactionCommandHandler(
         ITransactionRepository transactionRepository,

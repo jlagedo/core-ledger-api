@@ -2,21 +2,19 @@ using System.Net;
 using System.Net.Http.Json;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.Models;
-using CoreLedger.Domain.Entities;
-using CoreLedger.Domain.Enums;
 using CoreLedger.Infrastructure.Persistence;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CoreLedger.IntegrationTests.Controllers;
 
 /// <summary>
-/// Integration tests for AccountsController pagination functionality.
+///     Integration tests for AccountsController pagination functionality.
 /// </summary>
 public class AccountsControllerPaginationTests : IClassFixture<WebApplicationFactoryFixture>
 {
-    private readonly WebApplicationFactoryFixture _factory;
     private readonly HttpClient _client;
+    private readonly WebApplicationFactoryFixture _factory;
 
     public AccountsControllerPaginationTests(WebApplicationFactoryFixture factory)
     {
@@ -25,8 +23,8 @@ public class AccountsControllerPaginationTests : IClassFixture<WebApplicationFac
     }
 
     /// <summary>
-    /// Gets the count of existing accounts in the database.
-    /// Tests will work with existing seeded data from migrations.
+    ///     Gets the count of existing accounts in the database.
+    ///     Tests will work with existing seeded data from migrations.
     /// </summary>
     private async Task<int> GetAccountCountAsync()
     {
@@ -122,7 +120,7 @@ public class AccountsControllerPaginationTests : IClassFixture<WebApplicationFac
 
         var result = await response.Content.ReadFromJsonAsync<PagedResult<AccountDto>>();
         Assert.NotNull(result);
-        
+
         var codes = result.Items.Select(a => a.Code).ToList();
         Assert.Equal(codes.OrderBy(c => c).ToList(), codes);
     }
@@ -138,7 +136,7 @@ public class AccountsControllerPaginationTests : IClassFixture<WebApplicationFac
 
         var result = await response.Content.ReadFromJsonAsync<PagedResult<AccountDto>>();
         Assert.NotNull(result);
-        
+
         var codes = result.Items.Select(a => a.Code).ToList();
         Assert.Equal(codes.OrderByDescending(c => c).ToList(), codes);
     }
@@ -154,7 +152,7 @@ public class AccountsControllerPaginationTests : IClassFixture<WebApplicationFac
 
         var result = await response.Content.ReadFromJsonAsync<PagedResult<AccountDto>>();
         Assert.NotNull(result);
-        
+
         var names = result.Items.Select(a => a.Name).ToList();
         Assert.Equal(names.OrderBy(n => n).ToList(), names);
     }
@@ -170,14 +168,12 @@ public class AccountsControllerPaginationTests : IClassFixture<WebApplicationFac
 
         var result = await response.Content.ReadFromJsonAsync<PagedResult<AccountDto>>();
         Assert.NotNull(result);
-        
+
         // If accounts exist, verify filtering works correctly
         if (result.Items.Count > 0)
-        {
-            Assert.All(result.Items, account => 
+            Assert.All(result.Items, account =>
                 Assert.Equal("Active", account.StatusDescription));
-        }
-        
+
         // TotalCount should match filtered results (could be 0 in empty database)
         Assert.True(result.TotalCount >= 0);
     }
@@ -193,13 +189,11 @@ public class AccountsControllerPaginationTests : IClassFixture<WebApplicationFac
 
         var result = await response.Content.ReadFromJsonAsync<PagedResult<AccountDto>>();
         Assert.NotNull(result);
-        
+
         // If there are inactive accounts, verify they are all inactive
         if (result.Items.Count > 0)
-        {
-            Assert.All(result.Items, account => 
+            Assert.All(result.Items, account =>
                 Assert.Equal("Inactive", account.StatusDescription));
-        }
     }
 
     [Fact]
@@ -214,16 +208,16 @@ public class AccountsControllerPaginationTests : IClassFixture<WebApplicationFac
 
         var result = await response.Content.ReadFromJsonAsync<PagedResult<AccountDto>>();
         Assert.NotNull(result);
-        
+
         Assert.Equal(10, result.Offset);
         Assert.True(result.TotalCount >= 0);
-        
+
         // If accounts exist at this offset, verify filtering and sorting
         if (result.Items.Count > 0)
         {
-            Assert.All(result.Items, account => 
+            Assert.All(result.Items, account =>
                 Assert.Equal("Active", account.StatusDescription));
-            
+
             var codes = result.Items.Select(a => a.Code).ToList();
             Assert.Equal(codes.OrderByDescending(c => c).ToList(), codes);
         }
@@ -244,7 +238,7 @@ public class AccountsControllerPaginationTests : IClassFixture<WebApplicationFac
 
         var result = await response.Content.ReadFromJsonAsync<PagedResult<AccountDto>>();
         Assert.NotNull(result);
-        
+
         Assert.Empty(result.Items);
         Assert.Equal(totalCount, result.TotalCount);
         Assert.Equal(offsetBeyondTotal, result.Offset);
@@ -265,22 +259,22 @@ public class AccountsControllerPaginationTests : IClassFixture<WebApplicationFac
         var result1 = await response1.Content.ReadFromJsonAsync<PagedResult<AccountDto>>();
         var result2 = await response2.Content.ReadFromJsonAsync<PagedResult<AccountDto>>();
         var result3 = await response3.Content.ReadFromJsonAsync<PagedResult<AccountDto>>();
-        
+
         Assert.NotNull(result1);
         Assert.NotNull(result2);
         Assert.NotNull(result3);
-        
+
         // All requests should return the same total count
         Assert.Equal(expectedTotal, result1.TotalCount);
         Assert.Equal(expectedTotal, result2.TotalCount);
         Assert.Equal(expectedTotal, result3.TotalCount);
-        
+
         // Verify no duplicate IDs across pages
         var allIds = result1.Items.Select(a => a.Id)
             .Concat(result2.Items.Select(a => a.Id))
             .Concat(result3.Items.Select(a => a.Id))
             .ToList();
-        
+
         Assert.Equal(allIds.Count, allIds.Distinct().Count());
     }
 }

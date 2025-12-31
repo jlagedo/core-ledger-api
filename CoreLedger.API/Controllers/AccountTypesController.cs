@@ -1,22 +1,22 @@
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.UseCases.AccountTypes.Commands;
 using CoreLedger.Application.UseCases.AccountTypes.Queries;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CoreLedger.API.Controllers;
 
 /// <summary>
-/// Controller for managing Account Type resources.
+///     Controller for managing Account Type resources.
 /// </summary>
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class AccountTypesController : ControllerBase
 {
-    private readonly IMediator _mediator;
     private readonly ILogger<AccountTypesController> _logger;
+    private readonly IMediator _mediator;
 
     public AccountTypesController(IMediator mediator, ILogger<AccountTypesController> logger)
     {
@@ -25,7 +25,7 @@ public class AccountTypesController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all account types.
+    ///     Retrieves all account types.
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<AccountTypeDto>), StatusCodes.Status200OK)]
@@ -37,7 +37,7 @@ public class AccountTypesController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves a specific account type by ID.
+    ///     Retrieves a specific account type by ID.
     /// </summary>
     [HttpGet("{id}", Name = "GetAccountTypeById")]
     [ProducesResponseType(typeof(AccountTypeDto), StatusCodes.Status200OK)]
@@ -50,7 +50,7 @@ public class AccountTypesController : ControllerBase
     }
 
     /// <summary>
-    /// Creates a new account type.
+    ///     Creates a new account type.
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(AccountTypeDto), StatusCodes.Status201Created)]
@@ -65,7 +65,7 @@ public class AccountTypesController : ControllerBase
     }
 
     /// <summary>
-    /// Updates an existing account type.
+    ///     Updates an existing account type.
     /// </summary>
     [HttpPut("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -82,7 +82,7 @@ public class AccountTypesController : ControllerBase
     }
 
     /// <summary>
-    /// Deletes an account type.
+    ///     Deletes an account type.
     /// </summary>
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

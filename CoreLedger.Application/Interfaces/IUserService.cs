@@ -4,12 +4,12 @@ using CoreLedger.Domain.Exceptions;
 namespace CoreLedger.Application.Interfaces;
 
 /// <summary>
-/// Service for managing user lifecycle and synchronization with Auth0.
+///     Service for managing user lifecycle and synchronization with Auth0.
 /// </summary>
 public interface IUserService
 {
     /// <summary>
-    /// Ensures user exists in database, creating or updating from Auth0 if needed.
+    ///     Ensures user exists in database, creating or updating from Auth0 if needed.
     /// </summary>
     /// <param name="authProviderId">The Auth0 subject claim (sub)</param>
     /// <param name="provider">The identity provider (e.g., "auth0")</param>
@@ -24,12 +24,12 @@ public interface IUserService
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets user by internal database ID.
+    ///     Gets user by internal database ID.
     /// </summary>
     Task<UserDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets user by Auth Provider ID and Provider.
+    ///     Gets user by Auth Provider ID and Provider.
     /// </summary>
     Task<UserDto?> GetByAuthProviderIdAsync(
         string authProviderId,

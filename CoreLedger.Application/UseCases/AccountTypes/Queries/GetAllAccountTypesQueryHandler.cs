@@ -1,20 +1,19 @@
-
-using MediatR;
 using AutoMapper;
-using Microsoft.Extensions.Logging;
-using CoreLedger.Domain.Interfaces;
 using CoreLedger.Application.DTOs;
+using CoreLedger.Domain.Interfaces;
+using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.AccountTypes.Queries;
 
 /// <summary>
-/// Handler for retrieving all AccountType items.
+///     Handler for retrieving all AccountType items.
 /// </summary>
 public class GetAllAccountTypesQueryHandler : IRequestHandler<GetAllAccountTypesQuery, IReadOnlyList<AccountTypeDto>>
 {
-    private readonly IAccountTypeRepository _repository;
-    private readonly IMapper _mapper;
     private readonly ILogger<GetAllAccountTypesQueryHandler> _logger;
+    private readonly IMapper _mapper;
+    private readonly IAccountTypeRepository _repository;
 
     public GetAllAccountTypesQueryHandler(
         IAccountTypeRepository repository,
@@ -27,7 +26,7 @@ public class GetAllAccountTypesQueryHandler : IRequestHandler<GetAllAccountTypes
     }
 
     public async Task<IReadOnlyList<AccountTypeDto>> Handle(
-        GetAllAccountTypesQuery request, 
+        GetAllAccountTypesQuery request,
         CancellationToken cancellationToken)
     {
         _logger.LogInformation("Retrieving all AccountTypes");

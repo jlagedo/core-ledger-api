@@ -1,12 +1,13 @@
-using Microsoft.EntityFrameworkCore;
 using CoreLedger.Domain.Entities;
+using CoreLedger.Domain.Enums;
 using CoreLedger.Domain.Interfaces;
 using CoreLedger.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CoreLedger.Infrastructure.Persistence.Repositories;
 
 /// <summary>
-/// Repository implementation for Security entity with specific queries.
+///     Repository implementation for Security entity with specific queries.
 /// </summary>
 public class SecurityRepository : Repository<Security>, ISecurityRepository
 {
@@ -49,29 +50,18 @@ public class SecurityRepository : Repository<Security>, ISecurityRepository
                 if (!string.IsNullOrEmpty(whereClause))
                 {
                     if (field == "name")
-                    {
                         sqlParameters.Add($"%{value}%");
-                    }
                     else if (field == "ticker")
-                    {
                         sqlParameters.Add(value.ToUpperInvariant());
-                    }
-                    else if (field == "type" && Enum.TryParse(typeof(CoreLedger.Domain.Enums.SecurityType), value, true, out var typeEnum))
-                    {
+                    else if (field == "type" && Enum.TryParse(typeof(SecurityType), value, true, out var typeEnum))
                         sqlParameters.Add((int)typeEnum!);
-                    }
                     else if (field == "currency")
-                    {
                         sqlParameters.Add(value.ToUpperInvariant());
-                    }
-                    else if (field == "status" && Enum.TryParse(typeof(CoreLedger.Domain.Enums.SecurityStatus), value, true, out var statusEnum))
-                    {
+                    else if (field == "status" &&
+                             Enum.TryParse(typeof(SecurityStatus), value, true, out var statusEnum))
                         sqlParameters.Add((int)statusEnum!);
-                    }
                     else
-                    {
                         whereClause = string.Empty;
-                    }
                 }
             }
         }
@@ -79,7 +69,9 @@ public class SecurityRepository : Repository<Security>, ISecurityRepository
         var orderByClause = string.Empty;
         if (!string.IsNullOrWhiteSpace(parameters.SortBy))
         {
-            var direction = parameters.SortDirection.Equals("desc", StringComparison.OrdinalIgnoreCase) ? "DESC" : "ASC";
+            var direction = parameters.SortDirection.Equals("desc", StringComparison.OrdinalIgnoreCase)
+                ? "DESC"
+                : "ASC";
             orderByClause = parameters.SortBy.ToLower() switch
             {
                 "name" => $"ORDER BY s.name {direction}",

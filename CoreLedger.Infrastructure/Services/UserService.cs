@@ -8,14 +8,14 @@ using Microsoft.Extensions.Logging;
 namespace CoreLedger.Infrastructure.Services;
 
 /// <summary>
-/// Service for managing user lifecycle and synchronization with Auth0.
+///     Service for managing user lifecycle and synchronization with Auth0.
 /// </summary>
 public class UserService : IUserService
 {
-    private readonly IUserRepository _userRepository;
     private readonly IAuth0Service _auth0Service;
-    private readonly IMapper _mapper;
     private readonly ILogger<UserService> _logger;
+    private readonly IMapper _mapper;
+    private readonly IUserRepository _userRepository;
 
     public UserService(
         IUserRepository userRepository,
@@ -77,10 +77,11 @@ public class UserService : IUserService
         var profile = await _auth0Service.GetUserProfileAsync(accessToken, cancellationToken);
 
         var newUser = User.Create(
-            authProviderId: profile.Sub,
-            provider: provider,
-            email: profile.Email,
-            name: profile.Name);
+            profile.Sub,
+            provider,
+            profile.Sub, // User creates themselves on first login
+            profile.Email,
+            profile.Name);
 
         await _userRepository.AddAsync(newUser, cancellationToken);
 

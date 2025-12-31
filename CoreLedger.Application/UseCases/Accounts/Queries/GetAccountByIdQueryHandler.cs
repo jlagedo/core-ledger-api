@@ -1,21 +1,20 @@
-
-using MediatR;
 using AutoMapper;
-using Microsoft.Extensions.Logging;
-using CoreLedger.Domain.Interfaces;
-using CoreLedger.Domain.Exceptions;
 using CoreLedger.Application.DTOs;
+using CoreLedger.Domain.Exceptions;
+using CoreLedger.Domain.Interfaces;
+using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.Accounts.Queries;
 
 /// <summary>
-/// Handler for retrieving a specific Account by ID.
+///     Handler for retrieving a specific Account by ID.
 /// </summary>
 public class GetAccountByIdQueryHandler : IRequestHandler<GetAccountByIdQuery, AccountDto>
 {
-    private readonly IAccountRepository _repository;
-    private readonly IMapper _mapper;
     private readonly ILogger<GetAccountByIdQueryHandler> _logger;
+    private readonly IMapper _mapper;
+    private readonly IAccountRepository _repository;
 
     public GetAccountByIdQueryHandler(
         IAccountRepository repository,
@@ -34,10 +33,7 @@ public class GetAccountByIdQueryHandler : IRequestHandler<GetAccountByIdQuery, A
         _logger.LogInformation("Retrieving Account with ID: {AccountId}", request.Id);
 
         var account = await _repository.GetByIdWithTypeAsync(request.Id, cancellationToken);
-        if (account == null)
-        {
-            throw new EntityNotFoundException("Account", request.Id);
-        }
+        if (account == null) throw new EntityNotFoundException("Account", request.Id);
 
         var result = _mapper.Map<AccountDto>(account);
 

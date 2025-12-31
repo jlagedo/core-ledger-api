@@ -1,10 +1,10 @@
-using FluentValidation;
 using CoreLedger.Application.DTOs;
+using FluentValidation;
 
 namespace CoreLedger.Application.Validators;
 
 /// <summary>
-/// Validator for TestConnectionRequest DTO.
+///     Validator for TestConnectionRequest DTO.
 /// </summary>
 public class TestConnectionRequestValidator : AbstractValidator<TestConnectionRequest>
 {

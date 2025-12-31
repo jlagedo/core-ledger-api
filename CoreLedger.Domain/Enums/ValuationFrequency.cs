@@ -1,7 +1,7 @@
 namespace CoreLedger.Domain.Enums;
 
 /// <summary>
-/// Represents the valuation frequency for a fund.
+///     Represents the valuation frequency for a fund.
 /// </summary>
 public enum ValuationFrequency
 {

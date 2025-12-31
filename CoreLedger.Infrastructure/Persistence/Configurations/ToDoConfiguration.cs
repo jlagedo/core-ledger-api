@@ -1,11 +1,11 @@
+using CoreLedger.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using CoreLedger.Domain.Entities;
 
 namespace CoreLedger.Infrastructure.Persistence.Configurations;
 
 /// <summary>
-/// Entity Framework configuration for ToDo entity.
+///     Entity Framework configuration for ToDo entity.
 /// </summary>
 public class ToDoConfiguration : IEntityTypeConfiguration<ToDo>
 {
@@ -37,6 +37,10 @@ public class ToDoConfiguration : IEntityTypeConfiguration<ToDo>
 
         builder.Property(t => t.CompletedAt)
             .HasColumnName("completed_at");
+
+        builder.Property(t => t.CreatedByUserId)
+            .HasColumnName("created_by_user_id")
+            .IsRequired();
 
         builder.HasIndex(t => t.IsCompleted)
             .HasDatabaseName("ix_todos_is_completed");

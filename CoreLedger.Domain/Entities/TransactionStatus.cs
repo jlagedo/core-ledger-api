@@ -3,17 +3,19 @@ using CoreLedger.Domain.Exceptions;
 namespace CoreLedger.Domain.Entities;
 
 /// <summary>
-/// TransactionStatus domain entity representing transaction workflow states.
+///     TransactionStatus domain entity representing transaction workflow states.
 /// </summary>
 public class TransactionStatus : BaseEntity
 {
+    private TransactionStatus()
+    {
+    }
+
     public string ShortDescription { get; private set; } = string.Empty;
     public string LongDescription { get; private set; } = string.Empty;
 
-    private TransactionStatus() { }
-
     /// <summary>
-    /// Factory method to create a new TransactionStatus with validation.
+    ///     Factory method to create a new TransactionStatus with validation.
     /// </summary>
     public static TransactionStatus Create(string shortDescription, string longDescription)
     {
@@ -27,7 +29,7 @@ public class TransactionStatus : BaseEntity
     }
 
     /// <summary>
-    /// Updates the descriptions with validation.
+    ///     Updates the descriptions with validation.
     /// </summary>
     public void UpdateDescriptions(string shortDescription, string longDescription)
     {

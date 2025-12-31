@@ -1,11 +1,11 @@
+using CoreLedger.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using CoreLedger.Domain.Entities;
 
 namespace CoreLedger.Infrastructure.Persistence.Configurations;
 
 /// <summary>
-/// Entity Framework configuration for TransactionSubType entity.
+///     Entity Framework configuration for TransactionSubType entity.
 /// </summary>
 public class TransactionSubTypeConfiguration : IEntityTypeConfiguration<TransactionSubType>
 {

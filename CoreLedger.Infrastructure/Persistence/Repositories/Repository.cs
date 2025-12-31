@@ -1,11 +1,11 @@
-using Microsoft.EntityFrameworkCore;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace CoreLedger.Infrastructure.Persistence.Repositories;
 
 /// <summary>
-/// Base repository implementation with common data operations.
+///     Base repository implementation with common data operations.
 /// </summary>
 public class Repository<T> : IRepository<T> where T : BaseEntity
 {

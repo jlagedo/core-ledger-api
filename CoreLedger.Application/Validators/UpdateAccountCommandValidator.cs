@@ -1,10 +1,10 @@
-using FluentValidation;
 using CoreLedger.Application.UseCases.Accounts.Commands;
+using FluentValidation;
 
 namespace CoreLedger.Application.Validators;
 
 /// <summary>
-/// Validator for UpdateAccountCommand.
+///     Validator for UpdateAccountCommand.
 /// </summary>
 public class UpdateAccountCommandValidator : AbstractValidator<UpdateAccountCommand>
 {

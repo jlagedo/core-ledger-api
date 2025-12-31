@@ -1,10 +1,10 @@
-using FluentValidation;
 using CoreLedger.Application.UseCases.Transactions.Commands;
+using FluentValidation;
 
 namespace CoreLedger.Application.Validators;
 
 /// <summary>
-/// Validator for UpdateTransactionCommand.
+///     Validator for UpdateTransactionCommand.
 /// </summary>
 public class UpdateTransactionCommandValidator : AbstractValidator<UpdateTransactionCommand>
 {

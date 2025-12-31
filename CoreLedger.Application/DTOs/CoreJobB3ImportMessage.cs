@@ -1,7 +1,7 @@
 namespace CoreLedger.Application.DTOs;
 
 /// <summary>
-/// Message DTO for B3 import job sent to RabbitMQ.
+///     Message DTO for B3 import job sent to RabbitMQ.
 /// </summary>
 public record CoreJobB3ImportMessage(
     int CoreJobId,

@@ -1,12 +1,13 @@
-using Microsoft.EntityFrameworkCore;
 using CoreLedger.Domain.Entities;
+using CoreLedger.Domain.Enums;
 using CoreLedger.Domain.Interfaces;
 using CoreLedger.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CoreLedger.Infrastructure.Persistence.Repositories;
 
 /// <summary>
-/// Repository implementation for Account entity with specific queries.
+///     Repository implementation for Account entity with specific queries.
 /// </summary>
 public class AccountRepository : Repository<Account>, IAccountRepository
 {
@@ -37,7 +38,7 @@ public class AccountRepository : Repository<Account>, IAccountRepository
     }
 
     public async Task<(IReadOnlyList<Account> Accounts, int TotalCount)> GetWithQueryAsync(
-        QueryParameters parameters, 
+        QueryParameters parameters,
         CancellationToken cancellationToken = default)
     {
         // Build the WHERE clause for filtering
@@ -65,29 +66,18 @@ public class AccountRepository : Repository<Account>, IAccountRepository
                 if (!string.IsNullOrEmpty(whereClause))
                 {
                     if (field == "name")
-                    {
                         sqlParameters.Add($"%{value}%");
-                    }
                     else if (field == "code" && long.TryParse(value, out var codeValue))
-                    {
                         sqlParameters.Add(codeValue);
-                    }
                     else if (field == "typeId" && int.TryParse(value, out var intValue))
-                    {
                         sqlParameters.Add(intValue);
-                    }
-                    else if (field == "status" && Enum.TryParse(typeof(CoreLedger.Domain.Enums.AccountStatus), value, true, out var statusEnum))
-                    {
+                    else if (field == "status" && Enum.TryParse(typeof(AccountStatus), value, true, out var statusEnum))
                         sqlParameters.Add((int)statusEnum!);
-                    }
-                    else if (field == "normalBalance" && Enum.TryParse(typeof(CoreLedger.Domain.Enums.NormalBalance), value, true, out var balanceEnum))
-                    {
+                    else if (field == "normalBalance" &&
+                             Enum.TryParse(typeof(NormalBalance), value, true, out var balanceEnum))
                         sqlParameters.Add((int)balanceEnum!);
-                    }
                     else
-                    {
                         whereClause = string.Empty;
-                    }
                 }
             }
         }
@@ -96,7 +86,9 @@ public class AccountRepository : Repository<Account>, IAccountRepository
         var orderByClause = string.Empty;
         if (!string.IsNullOrWhiteSpace(parameters.SortBy))
         {
-            var direction = parameters.SortDirection.Equals("desc", StringComparison.OrdinalIgnoreCase) ? "DESC" : "ASC";
+            var direction = parameters.SortDirection.Equals("desc", StringComparison.OrdinalIgnoreCase)
+                ? "DESC"
+                : "ASC";
             orderByClause = parameters.SortBy.ToLower() switch
             {
                 "code" => $"ORDER BY a.code {direction}",
@@ -148,8 +140,9 @@ public class AccountRepository : Repository<Account>, IAccountRepository
         return (accounts, totalCount);
     }
 
-    public async Task<IReadOnlyList<(int TypeId, string TypeDescription, int ActiveAccountCount)>> GetActiveAccountsByTypeAsync(
-        CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<(int TypeId, string TypeDescription, int ActiveAccountCount)>>
+        GetActiveAccountsByTypeAsync(
+            CancellationToken cancellationToken = default)
     {
         var sql = @"
             SELECT 
@@ -171,7 +164,7 @@ public class AccountRepository : Repository<Account>, IAccountRepository
     private class AccountsByTypeReportResult
     {
         public int TypeId { get; set; }
-        public string TypeDescription { get; set; } = string.Empty;
+        public string TypeDescription { get; } = string.Empty;
         public int ActiveAccountCount { get; set; }
     }
 }

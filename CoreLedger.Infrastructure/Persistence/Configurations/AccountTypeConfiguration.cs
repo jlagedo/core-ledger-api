@@ -1,11 +1,11 @@
+using CoreLedger.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using CoreLedger.Domain.Entities;
 
 namespace CoreLedger.Infrastructure.Persistence.Configurations;
 
 /// <summary>
-/// Entity Framework configuration for AccountType entity.
+///     Entity Framework configuration for AccountType entity.
 /// </summary>
 public class AccountTypeConfiguration : IEntityTypeConfiguration<AccountType>
 {

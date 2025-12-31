@@ -1,11 +1,11 @@
-using Microsoft.EntityFrameworkCore;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace CoreLedger.Infrastructure.Persistence.Repositories;
 
 /// <summary>
-/// Repository implementation for TransactionSubType entity with specialized queries.
+///     Repository implementation for TransactionSubType entity with specialized queries.
 /// </summary>
 public class TransactionSubTypeRepository : Repository<TransactionSubType>, ITransactionSubTypeRepository
 {
@@ -13,7 +13,8 @@ public class TransactionSubTypeRepository : Repository<TransactionSubType>, ITra
     {
     }
 
-    public async Task<IReadOnlyList<TransactionSubType>> GetByTypeIdAsync(int typeId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TransactionSubType>> GetByTypeIdAsync(int typeId,
+        CancellationToken cancellationToken = default)
     {
         return await _dbSet
             .Include(st => st.Type)

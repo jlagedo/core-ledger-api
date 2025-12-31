@@ -1,13 +1,12 @@
-
+using CoreLedger.Domain.Exceptions;
+using CoreLedger.Domain.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using CoreLedger.Domain.Interfaces;
-using CoreLedger.Domain.Exceptions;
 
 namespace CoreLedger.Application.UseCases.Funds.Commands;
 
 /// <summary>
-/// Handler for updating an existing Fund.
+///     Handler for updating an existing Fund.
 /// </summary>
 public class UpdateFundCommandHandler : IRequestHandler<UpdateFundCommand>
 {
@@ -29,16 +28,11 @@ public class UpdateFundCommandHandler : IRequestHandler<UpdateFundCommand>
         _logger.LogInformation("Updating Fund with ID: {FundId}", request.Id);
 
         var fund = await _fundRepository.GetByIdAsync(request.Id, cancellationToken);
-        if (fund == null)
-        {
-            throw new EntityNotFoundException("Fund", request.Id);
-        }
+        if (fund == null) throw new EntityNotFoundException("Fund", request.Id);
 
         var existingWithName = await _fundRepository.GetByNameAsync(request.Name, cancellationToken);
         if (existingWithName != null && existingWithName.Id != request.Id)
-        {
             throw new DomainValidationException("Fund with this name already exists");
-        }
 
         fund.Update(
             request.Code,

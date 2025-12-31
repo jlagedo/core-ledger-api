@@ -1,18 +1,17 @@
-
+using CoreLedger.Domain.Exceptions;
+using CoreLedger.Domain.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using CoreLedger.Domain.Interfaces;
-using CoreLedger.Domain.Exceptions;
 
 namespace CoreLedger.Application.UseCases.Accounts.Commands;
 
 /// <summary>
-/// Handler for deleting an Account.
+///     Handler for deleting an Account.
 /// </summary>
 public class DeleteAccountCommandHandler : IRequestHandler<DeleteAccountCommand>
 {
-    private readonly IAccountRepository _repository;
     private readonly ILogger<DeleteAccountCommandHandler> _logger;
+    private readonly IAccountRepository _repository;
 
     public DeleteAccountCommandHandler(
         IAccountRepository repository,
@@ -29,10 +28,7 @@ public class DeleteAccountCommandHandler : IRequestHandler<DeleteAccountCommand>
         _logger.LogInformation("Deleting Account with ID: {AccountId}", request.Id);
 
         var account = await _repository.GetByIdAsync(request.Id, cancellationToken);
-        if (account == null)
-        {
-            throw new EntityNotFoundException("Account", request.Id);
-        }
+        if (account == null) throw new EntityNotFoundException("Account", request.Id);
 
         await _repository.DeleteAsync(account, cancellationToken);
 

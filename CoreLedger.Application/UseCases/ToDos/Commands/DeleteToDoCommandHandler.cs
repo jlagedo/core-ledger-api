@@ -1,18 +1,17 @@
-
+using CoreLedger.Domain.Exceptions;
+using CoreLedger.Domain.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using CoreLedger.Domain.Interfaces;
-using CoreLedger.Domain.Exceptions;
 
 namespace CoreLedger.Application.UseCases.ToDos.Commands;
 
 /// <summary>
-/// Handler for deleting a ToDo.
+///     Handler for deleting a ToDo.
 /// </summary>
 public class DeleteToDoCommandHandler : IRequestHandler<DeleteToDoCommand>
 {
-    private readonly IToDoRepository _repository;
     private readonly ILogger<DeleteToDoCommandHandler> _logger;
+    private readonly IToDoRepository _repository;
 
     public DeleteToDoCommandHandler(
         IToDoRepository repository,
@@ -27,7 +26,7 @@ public class DeleteToDoCommandHandler : IRequestHandler<DeleteToDoCommand>
         _logger.LogInformation("Deleting ToDo {TodoId}", request.Id);
 
         var todo = await _repository.GetByIdAsync(request.Id, cancellationToken);
-        
+
         if (todo == null)
         {
             _logger.LogWarning("ToDo {TodoId} not found for deletion", request.Id);

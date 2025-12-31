@@ -1,18 +1,18 @@
-using Microsoft.Extensions.Logging;
-
 using AutoMapper;
-using MediatR;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Domain.Exceptions;
 using CoreLedger.Domain.Interfaces;
+using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.TransactionSubTypes.Queries;
 
-public class GetTransactionSubTypeByIdQueryHandler : IRequestHandler<GetTransactionSubTypeByIdQuery, TransactionSubTypeDto>
+public class
+    GetTransactionSubTypeByIdQueryHandler : IRequestHandler<GetTransactionSubTypeByIdQuery, TransactionSubTypeDto>
 {
-    private readonly ITransactionSubTypeRepository _repository;
-    private readonly IMapper _mapper;
     private readonly ILogger<GetTransactionSubTypeByIdQueryHandler> _logger;
+    private readonly IMapper _mapper;
+    private readonly ITransactionSubTypeRepository _repository;
 
     public GetTransactionSubTypeByIdQueryHandler(
         ITransactionSubTypeRepository repository,
@@ -24,7 +24,8 @@ public class GetTransactionSubTypeByIdQueryHandler : IRequestHandler<GetTransact
         _logger = logger;
     }
 
-    public async Task<TransactionSubTypeDto> Handle(GetTransactionSubTypeByIdQuery request, CancellationToken cancellationToken)
+    public async Task<TransactionSubTypeDto> Handle(GetTransactionSubTypeByIdQuery request,
+        CancellationToken cancellationToken)
     {
         var subtype = await _repository.GetByIdAsync(request.Id, cancellationToken);
         if (subtype == null)

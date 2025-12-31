@@ -1,18 +1,17 @@
-using Microsoft.Extensions.Logging;
-
 using AutoMapper;
-using MediatR;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Domain.Exceptions;
 using CoreLedger.Domain.Interfaces;
+using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.Transactions.Queries;
 
 public class GetTransactionByIdQueryHandler : IRequestHandler<GetTransactionByIdQuery, TransactionDto>
 {
-    private readonly ITransactionRepository _repository;
-    private readonly IMapper _mapper;
     private readonly ILogger<GetTransactionByIdQueryHandler> _logger;
+    private readonly IMapper _mapper;
+    private readonly ITransactionRepository _repository;
 
     public GetTransactionByIdQueryHandler(
         ITransactionRepository repository,

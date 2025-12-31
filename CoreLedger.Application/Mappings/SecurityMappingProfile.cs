@@ -1,11 +1,11 @@
 using AutoMapper;
-using CoreLedger.Domain.Entities;
 using CoreLedger.Application.DTOs;
+using CoreLedger.Domain.Entities;
 
 namespace CoreLedger.Application.Mappings;
 
 /// <summary>
-/// AutoMapper profile for Security entity mappings.
+///     AutoMapper profile for Security entity mappings.
 /// </summary>
 public class SecurityMappingProfile : Profile
 {

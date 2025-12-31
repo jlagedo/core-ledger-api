@@ -1,11 +1,11 @@
-using Microsoft.EntityFrameworkCore;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace CoreLedger.Infrastructure.Persistence.Repositories;
 
 /// <summary>
-/// Repository implementation for User entity with specific queries.
+///     Repository implementation for User entity with specific queries.
 /// </summary>
 public class UserRepository : Repository<User>, IUserRepository
 {

@@ -8,13 +8,13 @@ using Microsoft.Extensions.Logging;
 namespace CoreLedger.Infrastructure.Services;
 
 /// <summary>
-/// Service for interacting with Auth0 APIs.
+///     Service for interacting with Auth0 APIs.
 /// </summary>
 public class Auth0Service : IAuth0Service
 {
+    private readonly string _domain;
     private readonly HttpClient _httpClient;
     private readonly ILogger<Auth0Service> _logger;
-    private readonly string _domain;
 
     public Auth0Service(
         HttpClient httpClient,
@@ -25,17 +25,11 @@ public class Auth0Service : IAuth0Service
         _logger = logger;
 
         _domain = configuration["Auth0:Domain"]
-            ?? throw new InvalidOperationException("Auth0:Domain configuration is missing");
+                  ?? throw new InvalidOperationException("Auth0:Domain configuration is missing");
 
         // Ensure domain has proper format
-        if (!_domain.StartsWith("https://"))
-        {
-            _domain = $"https://{_domain}";
-        }
-        if (_domain.EndsWith("/"))
-        {
-            _domain = _domain.TrimEnd('/');
-        }
+        if (!_domain.StartsWith("https://")) _domain = $"https://{_domain}";
+        if (_domain.EndsWith("/")) _domain = _domain.TrimEnd('/');
     }
 
     public async Task<Auth0UserProfile> GetUserProfileAsync(
@@ -72,11 +66,9 @@ public class Auth0Service : IAuth0Service
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             if (userInfo == null || string.IsNullOrEmpty(userInfo.Sub))
-            {
                 throw new ExternalServiceException(
                     "Auth0",
                     "Invalid response from /userinfo endpoint");
-            }
 
             _logger.LogInformation(
                 "Successfully retrieved Auth0 profile for user: {Sub}",
@@ -109,7 +101,7 @@ public class Auth0Service : IAuth0Service
     }
 
     /// <summary>
-    /// Internal DTO for Auth0 /userinfo response deserialization.
+    ///     Internal DTO for Auth0 /userinfo response deserialization.
     /// </summary>
     private class Auth0UserInfoResponse
     {

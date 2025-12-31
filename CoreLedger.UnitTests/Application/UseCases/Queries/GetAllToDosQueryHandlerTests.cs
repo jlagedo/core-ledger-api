@@ -9,14 +9,14 @@ using NSubstitute;
 namespace CoreLedger.UnitTests.Application.UseCases.Queries;
 
 /// <summary>
-/// Unit tests for GetAllToDosQueryHandler.
+///     Unit tests for GetAllToDosQueryHandler.
 /// </summary>
 public class GetAllToDosQueryHandlerTests
 {
-    private readonly IToDoRepository _mockRepository;
-    private readonly IMapper _mockMapper;
-    private readonly ILogger<GetAllToDosQueryHandler> _mockLogger;
     private readonly GetAllToDosQueryHandler _handler;
+    private readonly ILogger<GetAllToDosQueryHandler> _mockLogger;
+    private readonly IMapper _mockMapper;
+    private readonly IToDoRepository _mockRepository;
 
     public GetAllToDosQueryHandlerTests()
     {
@@ -33,16 +33,16 @@ public class GetAllToDosQueryHandlerTests
         var query = new GetAllToDosQuery();
         var todos = new List<ToDo>
         {
-            ToDo.Create("Task 1"),
-            ToDo.Create("Task 2"),
-            ToDo.Create("Task 3")
+            ToDo.Create("Task 1", "test-user"),
+            ToDo.Create("Task 2", "test-user"),
+            ToDo.Create("Task 3", "test-user")
         };
 
         var expectedDtos = new List<ToDoDto>
         {
-            new ToDoDto(1, "Task 1", false, DateTime.UtcNow, null),
-            new ToDoDto(2, "Task 2", false, DateTime.UtcNow, null),
-            new ToDoDto(3, "Task 3", false, DateTime.UtcNow, null)
+            new(1, "Task 1", false, DateTime.UtcNow, null),
+            new(2, "Task 2", false, DateTime.UtcNow, null),
+            new(3, "Task 3", false, DateTime.UtcNow, null)
         };
 
         _mockRepository.GetAllAsync(Arg.Any<CancellationToken>())
@@ -94,14 +94,14 @@ public class GetAllToDosQueryHandlerTests
         var query = new GetAllToDosQuery();
         var todos = new List<ToDo>
         {
-            ToDo.Create("Task 1"),
-            ToDo.Create("Task 2")
+            ToDo.Create("Task 1", "test-user"),
+            ToDo.Create("Task 2", "test-user")
         };
 
         var expectedDtos = new List<ToDoDto>
         {
-            new ToDoDto(1, "Task 1", false, DateTime.UtcNow, null),
-            new ToDoDto(2, "Task 2", false, DateTime.UtcNow, null)
+            new(1, "Task 1", false, DateTime.UtcNow, null),
+            new(2, "Task 2", false, DateTime.UtcNow, null)
         };
 
         _mockRepository.GetAllAsync(Arg.Any<CancellationToken>())

@@ -1,7 +1,7 @@
 namespace CoreLedger.Application.DTOs;
 
 /// <summary>
-/// Response DTO for test connection request.
+///     Response DTO for test connection request.
 /// </summary>
 public record TestConnectionResponse(
     int CoreJobId,

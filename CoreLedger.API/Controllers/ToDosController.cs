@@ -1,22 +1,22 @@
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.UseCases.ToDos.Commands;
 using CoreLedger.Application.UseCases.ToDos.Queries;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CoreLedger.API.Controllers;
 
 /// <summary>
-/// Controller for managing ToDo items.
+///     Controller for managing ToDo items.
 /// </summary>
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ToDosController : ControllerBase
 {
-    private readonly IMediator _mediator;
     private readonly ILogger<ToDosController> _logger;
+    private readonly IMediator _mediator;
 
     public ToDosController(IMediator mediator, ILogger<ToDosController> logger)
     {
@@ -25,7 +25,7 @@ public class ToDosController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all ToDo items.
+    ///     Retrieves all ToDo items.
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<ToDoDto>), StatusCodes.Status200OK)]
@@ -37,7 +37,7 @@ public class ToDosController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves a specific ToDo item by ID.
+    ///     Retrieves a specific ToDo item by ID.
     /// </summary>
     [HttpGet("{id}", Name = "GetTodoById")]
     [ProducesResponseType(typeof(ToDoDto), StatusCodes.Status200OK)]
@@ -50,22 +50,30 @@ public class ToDosController : ControllerBase
     }
 
     /// <summary>
-    /// Creates a new ToDo item.
+    ///     Creates a new ToDo item.
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(ToDoDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Create(
         [FromBody] CreateToDoDto dto,
         CancellationToken cancellationToken)
     {
-        var command = new CreateToDoCommand(dto.Description);
+        var userId = User.FindFirst("sub")?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            _logger.LogWarning("User claim 'sub' not found in token");
+            return Unauthorized(new { message = "Invalid authentication token" });
+        }
+
+        var command = new CreateToDoCommand(dto.Description, userId);
         var result = await _mediator.Send(command, cancellationToken);
         return CreatedAtRoute("GetTodoById", new { id = result.Id }, result);
     }
 
     /// <summary>
-    /// Updates an existing ToDo item.
+    ///     Updates an existing ToDo item.
     /// </summary>
     [HttpPut("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -82,7 +90,7 @@ public class ToDosController : ControllerBase
     }
 
     /// <summary>
-    /// Deletes a ToDo item.
+    ///     Deletes a ToDo item.
     /// </summary>
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

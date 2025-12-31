@@ -1,23 +1,22 @@
-using Microsoft.Extensions.Logging;
-
 using AutoMapper;
-using MediatR;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Exceptions;
 using CoreLedger.Domain.Interfaces;
+using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.Transactions.Commands;
 
 public class CreateTransactionCommandHandler : IRequestHandler<CreateTransactionCommand, TransactionDto>
 {
-    private readonly ITransactionRepository _transactionRepository;
     private readonly IFundRepository _fundRepository;
-    private readonly ISecurityRepository _securityRepository;
-    private readonly ITransactionSubTypeRepository _transactionSubTypeRepository;
-    private readonly ITransactionStatusRepository _transactionStatusRepository;
-    private readonly IMapper _mapper;
     private readonly ILogger<CreateTransactionCommandHandler> _logger;
+    private readonly IMapper _mapper;
+    private readonly ISecurityRepository _securityRepository;
+    private readonly ITransactionRepository _transactionRepository;
+    private readonly ITransactionStatusRepository _transactionStatusRepository;
+    private readonly ITransactionSubTypeRepository _transactionSubTypeRepository;
 
     public CreateTransactionCommandHandler(
         ITransactionRepository transactionRepository,
@@ -72,7 +71,8 @@ public class CreateTransactionCommandHandler : IRequestHandler<CreateTransaction
             request.Price,
             request.Amount,
             request.Currency,
-            request.StatusId);
+            request.StatusId,
+            request.CreatedByUserId);
 
         var created = await _transactionRepository.AddAsync(transaction, cancellationToken);
 

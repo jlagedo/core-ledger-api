@@ -1,19 +1,19 @@
+using System.IdentityModel.Tokens.Jwt;
 using CoreLedger.API.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace CoreLedger.API.Extensions;
 
 /// <summary>
-/// Extension methods for configuring JWT Bearer authentication with Auth0.
+///     Extension methods for configuring JWT Bearer authentication with Auth0.
 /// </summary>
 public static class AuthenticationExtensions
 {
     extension(IServiceCollection services)
     {
         /// <summary>
-        /// Adds JWT Bearer authentication configured for Auth0.
+        ///     Adds JWT Bearer authentication configured for Auth0.
         /// </summary>
         public IServiceCollection AddAuth0Authentication(IConfiguration configuration)
         {
@@ -34,15 +34,9 @@ public static class AuthenticationExtensions
                            ?? throw new InvalidOperationException("Auth0:Audience configuration is missing");
 
             // Ensure domain has proper format
-            if (!domain.StartsWith("https://"))
-            {
-                domain = $"https://{domain}";
-            }
+            if (!domain.StartsWith("https://")) domain = $"https://{domain}";
 
-            if (!domain.EndsWith("/"))
-            {
-                domain = $"{domain}/";
-            }
+            if (!domain.EndsWith("/")) domain = $"{domain}/";
 
             services.AddAuthentication(options =>
                 {
@@ -94,11 +88,9 @@ public static class AuthenticationExtensions
 
                             // Debug: Log all claims to help troubleshoot
                             if (userId == null && context.Principal?.Claims != null)
-                            {
                                 logger.LogWarning(
                                     "Sub claim not found. Available claims: {Claims}",
                                     string.Join(", ", context.Principal.Claims.Select(c => $"{c.Type}={c.Value}")));
-                            }
 
                             return Task.CompletedTask;
                         }
@@ -122,10 +114,9 @@ public static class AuthenticationExtensions
                             ValidateAudience = false,
                             ValidateLifetime = false,
                             ValidateIssuerSigningKey = false,
-                            LogValidationExceptions = true, 
+                            LogValidationExceptions = true,
                             LogTokenId = true,
                             RequireSignedTokens = false
-                            
                         };
                         options.Events = new JwtBearerEvents
                         {
@@ -188,5 +179,3 @@ public static class AuthenticationExtensions
         }
     }
 }
-    
-    

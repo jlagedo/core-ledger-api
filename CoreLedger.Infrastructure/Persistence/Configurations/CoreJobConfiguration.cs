@@ -1,11 +1,11 @@
+using CoreLedger.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using CoreLedger.Domain.Entities;
 
 namespace CoreLedger.Infrastructure.Persistence.Configurations;
 
 /// <summary>
-/// EF Core configuration for CoreJob entity.
+///     EF Core configuration for CoreJob entity.
 /// </summary>
 public class CoreJobConfiguration : IEntityTypeConfiguration<CoreJob>
 {

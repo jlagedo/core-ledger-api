@@ -1,18 +1,17 @@
-
+using CoreLedger.Domain.Exceptions;
+using CoreLedger.Domain.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using CoreLedger.Domain.Interfaces;
-using CoreLedger.Domain.Exceptions;
 
 namespace CoreLedger.Application.UseCases.ToDos.Commands;
 
 /// <summary>
-/// Handler for updating an existing ToDo.
+///     Handler for updating an existing ToDo.
 /// </summary>
 public class UpdateToDoCommandHandler : IRequestHandler<UpdateToDoCommand>
 {
-    private readonly IToDoRepository _repository;
     private readonly ILogger<UpdateToDoCommandHandler> _logger;
+    private readonly IToDoRepository _repository;
 
     public UpdateToDoCommandHandler(
         IToDoRepository repository,
@@ -27,7 +26,7 @@ public class UpdateToDoCommandHandler : IRequestHandler<UpdateToDoCommand>
         _logger.LogInformation("Updating ToDo {TodoId}", request.Id);
 
         var todo = await _repository.GetByIdAsync(request.Id, cancellationToken);
-        
+
         if (todo == null)
         {
             _logger.LogWarning("ToDo {TodoId} not found for update", request.Id);
@@ -37,13 +36,8 @@ public class UpdateToDoCommandHandler : IRequestHandler<UpdateToDoCommand>
         todo.UpdateDescription(request.Description);
 
         if (request.IsCompleted && !todo.IsCompleted)
-        {
             todo.MarkAsCompleted();
-        }
-        else if (!request.IsCompleted && todo.IsCompleted)
-        {
-            todo.MarkAsIncomplete();
-        }
+        else if (!request.IsCompleted && todo.IsCompleted) todo.MarkAsIncomplete();
 
         await _repository.UpdateAsync(todo, cancellationToken);
 

@@ -1,17 +1,17 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using CoreLedger.Application.Interfaces;
 using CoreLedger.Domain.Interfaces;
 using CoreLedger.Infrastructure.Configuration;
 using CoreLedger.Infrastructure.Persistence;
 using CoreLedger.Infrastructure.Persistence.Repositories;
 using CoreLedger.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CoreLedger.Infrastructure;
 
 /// <summary>
-/// Extension methods for registering Infrastructure layer services.
+///     Extension methods for registering Infrastructure layer services.
 /// </summary>
 public static class DependencyInjection
 {
@@ -36,9 +36,9 @@ public static class DependencyInjection
                 connectionString,
                 npgsqlOptions => npgsqlOptions
                     .EnableRetryOnFailure(
-                        maxRetryCount: databaseOptions.MaxRetryCount,
-                        maxRetryDelay: TimeSpan.FromSeconds(databaseOptions.MaxRetryDelaySeconds),
-                        errorCodesToAdd: null)
+                        databaseOptions.MaxRetryCount,
+                        TimeSpan.FromSeconds(databaseOptions.MaxRetryDelaySeconds),
+                        null)
                     .CommandTimeout(databaseOptions.CommandTimeoutSeconds)
                     .MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName));
         });
@@ -54,9 +54,11 @@ public static class DependencyInjection
         services.AddScoped<ITransactionSubTypeRepository, TransactionSubTypeRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 
         // Get HTTP client options for Auth0 service configuration
-        var httpClientOptions = configuration.GetSection("HttpClient").Get<HttpClientOptions>() ?? new HttpClientOptions();
+        var httpClientOptions =
+            configuration.GetSection("HttpClient").Get<HttpClientOptions>() ?? new HttpClientOptions();
 
         // HttpClient for Auth0 API calls
         services.AddHttpClient<IAuth0Service, Auth0Service>(client =>

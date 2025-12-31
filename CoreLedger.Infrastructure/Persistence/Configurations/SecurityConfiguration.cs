@@ -1,11 +1,11 @@
+using CoreLedger.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using CoreLedger.Domain.Entities;
 
 namespace CoreLedger.Infrastructure.Persistence.Configurations;
 
 /// <summary>
-/// EF Core configuration for Security entity.
+///     EF Core configuration for Security entity.
 /// </summary>
 public class SecurityConfiguration : IEntityTypeConfiguration<Security>
 {
@@ -57,6 +57,10 @@ public class SecurityConfiguration : IEntityTypeConfiguration<Security>
 
         builder.Property(s => s.UpdatedAt)
             .HasColumnName("updated_at");
+
+        builder.Property(s => s.CreatedByUserId)
+            .HasColumnName("created_by_user_id")
+            .IsRequired();
 
         // Unique index on ticker
         builder.HasIndex(s => s.Ticker)

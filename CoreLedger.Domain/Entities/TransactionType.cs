@@ -3,17 +3,19 @@ using CoreLedger.Domain.Exceptions;
 namespace CoreLedger.Domain.Entities;
 
 /// <summary>
-/// TransactionType domain entity representing asset class categories for transactions.
+///     TransactionType domain entity representing asset class categories for transactions.
 /// </summary>
 public class TransactionType : BaseEntity
 {
+    private TransactionType()
+    {
+    }
+
     public string ShortDescription { get; private set; } = string.Empty;
     public string LongDescription { get; private set; } = string.Empty;
 
-    private TransactionType() { }
-
     /// <summary>
-    /// Factory method to create a new TransactionType with validation.
+    ///     Factory method to create a new TransactionType with validation.
     /// </summary>
     public static TransactionType Create(string shortDescription, string longDescription)
     {
@@ -27,7 +29,7 @@ public class TransactionType : BaseEntity
     }
 
     /// <summary>
-    /// Updates the descriptions with validation.
+    ///     Updates the descriptions with validation.
     /// </summary>
     public void UpdateDescriptions(string shortDescription, string longDescription)
     {

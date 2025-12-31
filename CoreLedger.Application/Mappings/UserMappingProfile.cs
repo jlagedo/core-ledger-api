@@ -5,7 +5,7 @@ using CoreLedger.Domain.Entities;
 namespace CoreLedger.Application.Mappings;
 
 /// <summary>
-/// AutoMapper profile for User entity mappings.
+///     AutoMapper profile for User entity mappings.
 /// </summary>
 public class UserMappingProfile : Profile
 {

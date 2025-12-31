@@ -1,23 +1,23 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using CoreLedger.Application.Constants;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.Interfaces;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CoreLedger.API.Controllers;
 
 /// <summary>
-/// Controller for job ingestion operations.
+///     Controller for job ingestion operations.
 /// </summary>
 [Authorize]
 [ApiController]
 [Route("api/jobs-ingestion")]
 public class JobsIngestionController : ControllerBase
 {
-    private readonly ILogger<JobsIngestionController> _logger;
     private readonly ICoreJobRepository _coreJobRepository;
+    private readonly ILogger<JobsIngestionController> _logger;
     private readonly IMessagePublisher _messagePublisher;
 
     public JobsIngestionController(
@@ -31,8 +31,8 @@ public class JobsIngestionController : ControllerBase
     }
 
     /// <summary>
-    /// Imports a B3 instruction file by creating a CoreJob and sending a message to RabbitMQ.
-    /// The job reference ID and description are auto-generated with the current datetime.
+    ///     Imports a B3 instruction file by creating a CoreJob and sending a message to RabbitMQ.
+    ///     The job reference ID and description are auto-generated with the current datetime.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Import response with CoreJob details</returns>
@@ -56,41 +56,42 @@ public class JobsIngestionController : ControllerBase
         _logger.LogInformation("Starting B3 instruction file import for ReferenceId: {ReferenceId}", referenceId);
 
         var coreJob = CoreJob.Create(
-            referenceId: referenceId,
-            jobDescription: jobDescription);
+            referenceId,
+            jobDescription);
 
         await _coreJobRepository.AddAsync(coreJob, cancellationToken);
 
         _logger.LogInformation("CoreJob created with Id: {CoreJobId}", coreJob.Id);
 
         var message = new CoreJobB3ImportMessage(
-            CoreJobId: coreJob.Id,
-            ReferenceId: coreJob.ReferenceId,
-            CommandType: "CoreJobB3Import",
-            CorrelationId: correlationId);
+            coreJob.Id,
+            coreJob.ReferenceId,
+            "CoreJobB3Import",
+            correlationId);
 
         await _messagePublisher.PublishAsync(
-            queueName: QueueNames.B3Import,
-            message: message,
-            correlationId: correlationId,
-            cancellationToken: cancellationToken);
+            QueueNames.B3Import,
+            message,
+            correlationId,
+            cancellationToken);
 
-        _logger.LogInformation("Message published to {QueueName} for CoreJobId: {CoreJobId}", QueueNames.B3Import, coreJob.Id);
+        _logger.LogInformation("Message published to {QueueName} for CoreJobId: {CoreJobId}", QueueNames.B3Import,
+            coreJob.Id);
 
         var response = new ImportB3InstructionFileResponse(
-            CoreJobId: coreJob.Id,
-            ReferenceId: coreJob.ReferenceId,
-            Status: "Accepted",
-            Message: "B3 instruction file import job has been queued successfully");
+            coreJob.Id,
+            coreJob.ReferenceId,
+            "Accepted",
+            "B3 instruction file import job has been queued successfully");
 
         return AcceptedAtAction(
-            actionName: null,
-            value: response);
+            null,
+            response);
     }
 
     /// <summary>
-    /// Tests the API -> Queue -> Worker connection by creating a CoreJob and sending a test message.
-    /// The worker will only log the message and update the job status.
+    ///     Tests the API -> Queue -> Worker connection by creating a CoreJob and sending a test message.
+    ///     The worker will only log the message and update the job status.
     /// </summary>
     /// <param name="request">Test connection request containing reference ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
@@ -105,39 +106,42 @@ public class JobsIngestionController : ControllerBase
         // Extract correlation ID from HttpContext (set by CorrelationIdMiddleware)
         var correlationId = HttpContext.Items["CorrelationId"]?.ToString();
 
-        _logger.LogInformation("Testing API -> Queue -> Worker connection for ReferenceId: {ReferenceId}", request.ReferenceId);
+        _logger.LogInformation("Testing API -> Queue -> Worker connection for ReferenceId: {ReferenceId}",
+            request.ReferenceId);
 
         var coreJob = CoreJob.Create(
-            referenceId: request.ReferenceId,
-            jobDescription: request.JobDescription ?? "Test connection job");
+            request.ReferenceId,
+            request.JobDescription ?? "Test connection job");
 
         await _coreJobRepository.AddAsync(coreJob, cancellationToken);
 
-        _logger.LogInformation("Test CoreJob created with Id: {CoreJobId}, Status: {Status}", coreJob.Id, coreJob.Status);
+        _logger.LogInformation("Test CoreJob created with Id: {CoreJobId}, Status: {Status}", coreJob.Id,
+            coreJob.Status);
 
         var message = new TestConnectionMessage(
-            CoreJobId: coreJob.Id,
-            ReferenceId: coreJob.ReferenceId,
-            CommandType: "TestConnection",
-            CorrelationId: correlationId);
+            coreJob.Id,
+            coreJob.ReferenceId,
+            "TestConnection",
+            correlationId);
 
         await _messagePublisher.PublishAsync(
-            queueName: QueueNames.TestConnection,
-            message: message,
-            correlationId: correlationId,
-            cancellationToken: cancellationToken);
+            QueueNames.TestConnection,
+            message,
+            correlationId,
+            cancellationToken);
 
-        _logger.LogInformation("Test message published to {QueueName} for CoreJobId: {CoreJobId}", QueueNames.TestConnection, coreJob.Id);
+        _logger.LogInformation("Test message published to {QueueName} for CoreJobId: {CoreJobId}",
+            QueueNames.TestConnection, coreJob.Id);
 
         var response = new TestConnectionResponse(
-            CoreJobId: coreJob.Id,
-            ReferenceId: coreJob.ReferenceId,
-            Status: coreJob.Status.ToString(),
-            Message: "Test connection job has been queued successfully. Check worker logs to verify message processing.",
-            CorrelationId: correlationId);
+            coreJob.Id,
+            coreJob.ReferenceId,
+            coreJob.Status.ToString(),
+            "Test connection job has been queued successfully. Check worker logs to verify message processing.",
+            correlationId);
 
         return AcceptedAtAction(
-            actionName: null,
-            value: response);
+            null,
+            response);
     }
 }
