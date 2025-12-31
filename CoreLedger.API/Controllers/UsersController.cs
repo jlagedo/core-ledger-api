@@ -38,7 +38,7 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> GetCurrentUser(CancellationToken cancellationToken)
     {
         // Extract claims from JWT
-        var authProviderId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+        var authProviderId = User.FindFirst("sub")?.Value;
         if (string.IsNullOrEmpty(authProviderId))
         {
             _logger.LogWarning("User claim 'sub' not found in token");

@@ -53,8 +53,11 @@ public static class AuthenticationExtensions
                 ValidateIssuerSigningKey = true,
                 ClockSkew = TimeSpan.FromMinutes(5),
                 // Map Auth0's claim names to standard .NET claim types
-                NameClaimType = "sub"
+                NameClaimType = "sub",
+                RoleClaimType = "permissions"
             };
+
+            options.MapInboundClaims = false;
 
             // Optional: Log authentication failures for debugging
             options.Events = new JwtBearerEvents
