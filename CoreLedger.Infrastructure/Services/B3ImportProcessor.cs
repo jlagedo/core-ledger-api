@@ -2,10 +2,12 @@ using CoreLedger.Application.Interfaces;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Enums;
 using CoreLedger.Domain.Interfaces;
+using CoreLedger.Infrastructure.Configuration;
 using CoreLedger.Infrastructure.Persistence;
 using CoreLedger.Infrastructure.Persistence.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace CoreLedger.Infrastructure.Services;
 
@@ -18,17 +20,20 @@ public class B3ImportProcessor : IB3ImportProcessor
     private readonly ICoreJobRepository _coreJobRepository;
     private readonly ISecurityRepository _securityRepository;
     private readonly ApplicationDbContext _dbContext;
+    private readonly int _batchSize;
 
     public B3ImportProcessor(
         ILogger<B3ImportProcessor> logger,
         ICoreJobRepository coreJobRepository,
         ISecurityRepository securityRepository,
-        ApplicationDbContext dbContext)
+        ApplicationDbContext dbContext,
+        IOptions<B3ImportOptions> options)
     {
         _logger = logger;
         _coreJobRepository = coreJobRepository;
         _securityRepository = securityRepository;
         _dbContext = dbContext;
+        _batchSize = options.Value.BatchSize;
     }
 
     /// <summary>
@@ -38,7 +43,6 @@ public class B3ImportProcessor : IB3ImportProcessor
     /// </summary>
     public async Task ProcessAsync(int coreJobId, string referenceId, CancellationToken cancellationToken = default)
     {
-        const int BatchSize = 1000;
 
         var coreJob = await _coreJobRepository.GetByIdAsync(coreJobId, cancellationToken);
         if (coreJob == null)
@@ -68,8 +72,8 @@ public class B3ImportProcessor : IB3ImportProcessor
                 .SqlQuery<int>($"SELECT COUNT(*) AS \"Value\" FROM b3_instruments_enriched WHERE \"TckrSymb\" IS NOT NULL AND instrument_name IS NOT NULL")
                 .FirstOrDefaultAsync(cancellationToken);
 
-            _logger.LogInformation("Total instruments to process: {TotalCount} | Batch size: {BatchSize} | Estimated batches: {EstimatedBatches}", 
-                totalCount, BatchSize, (int)Math.Ceiling((double)totalCount / BatchSize));
+            _logger.LogInformation("Total instruments to process: {TotalCount} | Batch size: {BatchSize} | Estimated batches: {EstimatedBatches}",
+                totalCount, _batchSize, (int)Math.Ceiling((double)totalCount / _batchSize));
 
             var processedCount = 0;
             var createdCount = 0;
@@ -88,7 +92,7 @@ public class B3ImportProcessor : IB3ImportProcessor
                     batchNumber, progressPercent, offset, totalCount);
 
                 var instruments = await _dbContext.Database
-                    .SqlQuery<B3InstrumentsEnriched>($"SELECT instrument_name AS \"InstrumentName\", \"TckrSymb\" AS \"Ticker\", \"ISIN\" AS \"Isin\", securitytypeid AS \"SecurityTypeId\", \"TradgCcy\" AS \"Currency\" FROM b3_instruments_enriched WHERE \"TckrSymb\" IS NOT NULL AND instrument_name IS NOT NULL ORDER BY \"TckrSymb\" LIMIT {BatchSize} OFFSET {offset}")
+                    .SqlQuery<B3InstrumentsEnriched>($"SELECT instrument_name AS \"InstrumentName\", \"TckrSymb\" AS \"Ticker\", \"ISIN\" AS \"Isin\", securitytypeid AS \"SecurityTypeId\", \"TradgCcy\" AS \"Currency\" FROM b3_instruments_enriched WHERE \"TckrSymb\" IS NOT NULL AND instrument_name IS NOT NULL ORDER BY \"TckrSymb\" LIMIT {_batchSize} OFFSET {offset}")
                     .ToListAsync(cancellationToken);
 
                 _logger.LogInformation("Retrieved {Count} instruments from database", instruments.Count);
@@ -177,7 +181,7 @@ public class B3ImportProcessor : IB3ImportProcessor
                 _logger.LogInformation("Batch {BatchNumber} committed successfully in {Duration}ms", 
                     batchNumber, (int)batchDuration.TotalMilliseconds);
 
-                offset += BatchSize;
+                offset += _batchSize;
             }
 
             _logger.LogInformation("Finalizing B3 import process...");

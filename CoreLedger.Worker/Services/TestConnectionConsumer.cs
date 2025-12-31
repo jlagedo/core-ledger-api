@@ -5,7 +5,10 @@ using CoreLedger.Application.DTOs;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Enums;
 using CoreLedger.Domain.Interfaces;
+using CoreLedger.Infrastructure.Configuration;
+using CoreLedger.Worker.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -19,35 +22,33 @@ public class TestConnectionConsumer : BackgroundService
 {
     private readonly ILogger<TestConnectionConsumer> _logger;
     private readonly IServiceProvider _serviceProvider;
-    private readonly IConfiguration _configuration;
+    private readonly RabbitMQOptions _rabbitMQOptions;
+    private readonly TestConnectionOptions _testConnectionOptions;
     private IConnection? _connection;
     private IModel? _channel;
 
     public TestConnectionConsumer(
         ILogger<TestConnectionConsumer> logger,
         IServiceProvider serviceProvider,
-        IConfiguration configuration)
+        IOptions<RabbitMQOptions> rabbitMQOptions,
+        IOptions<TestConnectionOptions> testConnectionOptions)
     {
         _logger = logger;
         _serviceProvider = serviceProvider;
-        _configuration = configuration;
+        _rabbitMQOptions = rabbitMQOptions.Value;
+        _testConnectionOptions = testConnectionOptions.Value;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("TestConnectionConsumer starting");
 
-        var hostname = _configuration["RabbitMQ:Hostname"] ?? "localhost";
-        var port = int.Parse(_configuration["RabbitMQ:Port"] ?? "5672");
-        var username = _configuration["RabbitMQ:Username"] ?? "guest";
-        var password = _configuration["RabbitMQ:Password"] ?? "guest";
-
         var factory = new ConnectionFactory
         {
-            HostName = hostname,
-            Port = port,
-            UserName = username,
-            Password = password,
+            HostName = _rabbitMQOptions.Hostname,
+            Port = int.Parse(_rabbitMQOptions.Port),
+            UserName = _rabbitMQOptions.Username,
+            Password = _rabbitMQOptions.Password,
             DispatchConsumersAsync = true
         };
 
@@ -58,12 +59,15 @@ public class TestConnectionConsumer : BackgroundService
 
             _channel.QueueDeclare(
                 queue: QueueNames.TestConnection,
-                durable: true,
-                exclusive: false,
-                autoDelete: false,
+                durable: _rabbitMQOptions.QueueDurable,
+                exclusive: _rabbitMQOptions.QueueExclusive,
+                autoDelete: _rabbitMQOptions.QueueAutoDelete,
                 arguments: null);
 
-            _channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+            _channel.BasicQos(
+                prefetchSize: _rabbitMQOptions.PrefetchSize,
+                prefetchCount: _rabbitMQOptions.PrefetchCount,
+                global: false);
 
             var consumer = new AsyncEventingBasicConsumer(_channel);
             consumer.Received += async (model, ea) =>
@@ -128,8 +132,8 @@ public class TestConnectionConsumer : BackgroundService
                         _logger.LogInformation("CoreJob status updated to Running");
 
                         // Simulate processing
-                        _logger.LogInformation("Simulating processing for 2 seconds...");
-                        await Task.Delay(2000, stoppingToken);
+                        _logger.LogInformation("Simulating processing for {DelayMs} milliseconds...", _testConnectionOptions.SimulatedProcessingDelayMs);
+                        await Task.Delay(_testConnectionOptions.SimulatedProcessingDelayMs, stoppingToken);
 
                         // Update status to Complete
                         coreJob.UpdateStatus(JobStatus.Complete, finishedDate: DateTime.UtcNow);

@@ -1,8 +1,9 @@
 using System.Text;
 using System.Text.Json;
 using CoreLedger.Application.Interfaces;
-using Microsoft.Extensions.Configuration;
+using CoreLedger.Infrastructure.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 
 namespace CoreLedger.Infrastructure.Services;
@@ -13,32 +14,29 @@ namespace CoreLedger.Infrastructure.Services;
 public class RabbitMQPublisher : IMessagePublisher, IDisposable
 {
     private readonly ILogger<RabbitMQPublisher> _logger;
+    private readonly RabbitMQOptions _options;
     private readonly IConnection _connection;
     private readonly IModel _channel;
     private bool _disposed;
 
-    public RabbitMQPublisher(IConfiguration configuration, ILogger<RabbitMQPublisher> logger)
+    public RabbitMQPublisher(IOptions<RabbitMQOptions> options, ILogger<RabbitMQPublisher> logger)
     {
         _logger = logger;
-
-        var hostname = configuration["RabbitMQ:Hostname"] ?? "localhost";
-        var port = int.Parse(configuration["RabbitMQ:Port"] ?? "5672");
-        var username = configuration["RabbitMQ:Username"] ?? "guest";
-        var password = configuration["RabbitMQ:Password"] ?? "guest";
+        _options = options.Value;
 
         var factory = new ConnectionFactory
         {
-            HostName = hostname,
-            Port = port,
-            UserName = username,
-            Password = password,
+            HostName = _options.Hostname,
+            Port = int.Parse(_options.Port),
+            UserName = _options.Username,
+            Password = _options.Password,
             DispatchConsumersAsync = true
         };
 
         _connection = factory.CreateConnection();
         _channel = _connection.CreateModel();
 
-        _logger.LogInformation("RabbitMQ connection established to {Hostname}:{Port}", hostname, port);
+        _logger.LogInformation("RabbitMQ connection established to {Hostname}:{Port}", _options.Hostname, _options.Port);
     }
 
     /// <summary>
@@ -48,9 +46,9 @@ public class RabbitMQPublisher : IMessagePublisher, IDisposable
     {
         _channel.QueueDeclare(
             queue: queueName,
-            durable: true,
-            exclusive: false,
-            autoDelete: false,
+            durable: _options.QueueDurable,
+            exclusive: _options.QueueExclusive,
+            autoDelete: _options.QueueAutoDelete,
             arguments: null);
 
         var json = JsonSerializer.Serialize(message);

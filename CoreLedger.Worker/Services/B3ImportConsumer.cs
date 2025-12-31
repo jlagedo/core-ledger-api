@@ -3,7 +3,9 @@ using System.Text.Json;
 using CoreLedger.Application.Constants;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.Interfaces;
+using CoreLedger.Infrastructure.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -16,35 +18,30 @@ public class B3ImportConsumer : BackgroundService
 {
     private readonly ILogger<B3ImportConsumer> _logger;
     private readonly IServiceProvider _serviceProvider;
-    private readonly IConfiguration _configuration;
+    private readonly RabbitMQOptions _rabbitMQOptions;
     private IConnection? _connection;
     private IModel? _channel;
 
     public B3ImportConsumer(
         ILogger<B3ImportConsumer> logger,
         IServiceProvider serviceProvider,
-        IConfiguration configuration)
+        IOptions<RabbitMQOptions> rabbitMQOptions)
     {
         _logger = logger;
         _serviceProvider = serviceProvider;
-        _configuration = configuration;
+        _rabbitMQOptions = rabbitMQOptions.Value;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("B3ImportConsumer starting");
 
-        var hostname = _configuration["RabbitMQ:Hostname"] ?? "localhost";
-        var port = int.Parse(_configuration["RabbitMQ:Port"] ?? "5672");
-        var username = _configuration["RabbitMQ:Username"] ?? "guest";
-        var password = _configuration["RabbitMQ:Password"] ?? "guest";
-
         var factory = new ConnectionFactory
         {
-            HostName = hostname,
-            Port = port,
-            UserName = username,
-            Password = password,
+            HostName = _rabbitMQOptions.Hostname,
+            Port = int.Parse(_rabbitMQOptions.Port),
+            UserName = _rabbitMQOptions.Username,
+            Password = _rabbitMQOptions.Password,
             DispatchConsumersAsync = true
         };
 
@@ -55,12 +52,15 @@ public class B3ImportConsumer : BackgroundService
 
             _channel.QueueDeclare(
                 queue: QueueNames.B3Import,
-                durable: true,
-                exclusive: false,
-                autoDelete: false,
+                durable: _rabbitMQOptions.QueueDurable,
+                exclusive: _rabbitMQOptions.QueueExclusive,
+                autoDelete: _rabbitMQOptions.QueueAutoDelete,
                 arguments: null);
 
-            _channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+            _channel.BasicQos(
+                prefetchSize: _rabbitMQOptions.PrefetchSize,
+                prefetchCount: _rabbitMQOptions.PrefetchCount,
+                global: false);
 
             var consumer = new AsyncEventingBasicConsumer(_channel);
             consumer.Received += async (model, ea) =>

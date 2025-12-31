@@ -1,8 +1,19 @@
 using CoreLedger.Application;
 using CoreLedger.Infrastructure;
+using CoreLedger.Infrastructure.Configuration;
+using CoreLedger.Worker.Configuration;
 using CoreLedger.Worker.Services;
+using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Events;
+
+// Build configuration to read Serilog settings before creating logger
+var configuration = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production"}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables()
+    .Build();
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -12,13 +23,9 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.WithMachineName()
     .Enrich.WithThreadId()
     .Enrich.WithProperty("Application", "CoreLedgerWorker")
-    .WriteTo.Console(outputTemplate: 
+    .WriteTo.Console(outputTemplate:
         "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
-    .WriteTo.File(
-        path: "logs/core-ledger-worker-.log",
-        rollingInterval: RollingInterval.Day,
-        retainedFileCountLimit: 30,
-        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
+    .ReadFrom.Configuration(configuration)
     .CreateLogger();
 
 try
@@ -31,6 +38,10 @@ try
 
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
+
+    // Configure options
+    builder.Services.Configure<RabbitMQOptions>(builder.Configuration.GetSection("RabbitMQ"));
+    builder.Services.Configure<TestConnectionOptions>(builder.Configuration.GetSection("TestConnection"));
 
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     builder.Services.AddHealthChecks()

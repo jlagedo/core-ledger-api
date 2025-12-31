@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using CoreLedger.Application.Interfaces;
 using CoreLedger.Domain.Interfaces;
+using CoreLedger.Infrastructure.Configuration;
 using CoreLedger.Infrastructure.Persistence;
 using CoreLedger.Infrastructure.Persistence.Repositories;
 using CoreLedger.Infrastructure.Services;
@@ -18,18 +19,27 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        // Configure options
+        services.Configure<DatabaseOptions>(configuration.GetSection("Database"));
+        services.Configure<HttpClientOptions>(configuration.GetSection("HttpClient"));
+        services.Configure<RabbitMQOptions>(configuration.GetSection("RabbitMQ"));
+        services.Configure<B3ImportOptions>(configuration.GetSection("B3Import"));
+
+        // Get database options for DbContext configuration
+        var databaseOptions = configuration.GetSection("Database").Get<DatabaseOptions>() ?? new DatabaseOptions();
+
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection");
-            
+
             options.UseNpgsql(
                 connectionString,
                 npgsqlOptions => npgsqlOptions
                     .EnableRetryOnFailure(
-                        maxRetryCount: 3,
-                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        maxRetryCount: databaseOptions.MaxRetryCount,
+                        maxRetryDelay: TimeSpan.FromSeconds(databaseOptions.MaxRetryDelaySeconds),
                         errorCodesToAdd: null)
-                    .CommandTimeout(30)
+                    .CommandTimeout(databaseOptions.CommandTimeoutSeconds)
                     .MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName));
         });
 
@@ -45,11 +55,14 @@ public static class DependencyInjection
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
 
+        // Get HTTP client options for Auth0 service configuration
+        var httpClientOptions = configuration.GetSection("HttpClient").Get<HttpClientOptions>() ?? new HttpClientOptions();
+
         // HttpClient for Auth0 API calls
         services.AddHttpClient<IAuth0Service, Auth0Service>(client =>
         {
-            client.Timeout = TimeSpan.FromSeconds(30);
-            client.DefaultRequestHeaders.Add("User-Agent", "CoreLedgerAPI/1.0");
+            client.Timeout = TimeSpan.FromSeconds(httpClientOptions.Auth0TimeoutSeconds);
+            client.DefaultRequestHeaders.Add("User-Agent", httpClientOptions.UserAgent);
         });
 
         // User management service

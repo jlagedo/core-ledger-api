@@ -1,4 +1,5 @@
 using CoreLedger.Application;
+using CoreLedger.Application.Configuration;
 using CoreLedger.Infrastructure;
 using CoreLedger.API.Middleware;
 using CoreLedger.API.Extensions;
@@ -9,6 +10,14 @@ using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 
+// Build configuration to read Serilog settings before creating logger
+var configuration = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables()
+    .Build();
+
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
@@ -17,13 +26,9 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.WithMachineName()
     .Enrich.WithThreadId()
     .Enrich.WithProperty("Application", "CoreLedgerApi")
-    .WriteTo.Console(outputTemplate: 
+    .WriteTo.Console(outputTemplate:
         "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
-    .WriteTo.File(
-        path: "logs/core-ledger-.log",
-        rollingInterval: RollingInterval.Day,
-        retainedFileCountLimit: 30,
-        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
+    .ReadFrom.Configuration(configuration)
     .CreateLogger();
 
 try
@@ -37,18 +42,21 @@ try
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
 
-    builder.Services.AddHttpsRedirection(options =>
-    {
-        options.RedirectStatusCode = StatusCodes.Status308PermanentRedirect;
-        options.HttpsPort = builder.Configuration.GetValue<int?>("HttpsPort") ?? 7109;
-    });
+    // Configure pagination options
+    builder.Services.Configure<PaginationOptions>(builder.Configuration.GetSection("Pagination"));
+    var paginationOptions = builder.Configuration.GetSection("Pagination").Get<PaginationOptions>() ?? new PaginationOptions();
+    PaginationDefaults.Initialize(paginationOptions);
 
     builder.Services.AddControllers();
     builder.Services.AddFluentValidationAutoValidation();
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-
+    
     builder.Services.AddSwaggerDocumentation();
-    builder.Services.AddAuth0Authentication(builder.Configuration);
+    
+    if(!builder.Environment.IsDevelopment())
+        builder.Services.AddAuth0Authentication(builder.Configuration);
+    else
+        builder.Services.AddDevelopmentAuthentication(builder.Configuration);
 
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     builder.Services.AddHealthChecks()
@@ -66,8 +74,18 @@ try
     app.UseSecurityHeaders();
     app.UseGlobalExceptionHandler();
 
+    if (app.Environment.IsDevelopment())
+    {
+        app.Use(async (ctx, next) =>
+        {
+            var auth = ctx.Request.Headers["Authorization"].FirstOrDefault();
+            Console.WriteLine($"Raw Authorization header: {auth}");
+            await next();
+        });
+    }
+
     // Authentication must come before correlation ID middleware to ensure user claims are available
-    app.UseAuthentication();
+    //app.UseAuthentication();
     app.UseCorrelationId();
 
     app.UseSerilogRequestLogging(options =>
@@ -79,8 +97,8 @@ try
             diagnosticContext.Set("RemoteIP", httpContext.Connection.RemoteIpAddress);
 
             // Add authenticated user information to request logs (only 'sub' claim available in access token)
-            var userId = httpContext.User?.FindFirst("sub")?.Value;
-            var isAuthenticated = httpContext.User?.Identity?.IsAuthenticated ?? false;
+            var userId = httpContext.User.FindFirst("sub")?.Value;
+            var isAuthenticated = httpContext.User.Identity?.IsAuthenticated ?? false;
 
             diagnosticContext.Set("UserId", userId ?? "anonymous");
             diagnosticContext.Set("IsAuthenticated", isAuthenticated);
@@ -93,9 +111,8 @@ try
     }
 
     app.UseAuthorization();
-
+    
     app.MapControllers();
-
     app.MapHealthChecks("/health");
     app.MapHealthChecks("/health/ready");
     app.MapHealthChecks("/health/live");
@@ -116,6 +133,7 @@ try
 
     Log.Information("Core Ledger API started successfully");
 
+
     app.Run();
 }
 catch (Exception ex)
@@ -131,4 +149,5 @@ finally
 /// <summary>
 /// Partial Program class to expose entry point for integration tests.
 /// </summary>
+// ReSharper disable once ClassNeverInstantiated.Global
 public partial class Program { }

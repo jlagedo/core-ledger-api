@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using CoreLedger.Application.Configuration;
 
 namespace CoreLedger.Application.Models;
 
@@ -7,19 +8,24 @@ namespace CoreLedger.Application.Models;
 /// </summary>
 public class QueryParameters
 {
-    private int _limit = 100;
+    private int _limit;
     private int _offset = 0;
     private string _sortDirection = "asc";
     private string? _filter;
 
+    public QueryParameters()
+    {
+        _limit = PaginationDefaults.DefaultPageSize;
+    }
+
     /// <summary>
-    /// Maximum number of items to return (hard limit: 100, minimum: 1).
-    /// Automatically clamped to valid range [1, 100].
+    /// Maximum number of items to return (configurable limit, minimum: 1).
+    /// Automatically clamped to valid range [1, MaxPageSize].
     /// </summary>
     public int Limit
     {
         get => _limit;
-        set => _limit = value < 1 ? 100 : Math.Min(value, 100);
+        set => _limit = value < 1 ? PaginationDefaults.DefaultPageSize : Math.Min(value, PaginationDefaults.MaxPageSize);
     }
 
     /// <summary>

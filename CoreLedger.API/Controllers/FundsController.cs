@@ -59,6 +59,7 @@ public class FundsController : ControllerBase
             Filter = filter
         };
 
+        //_logger.LogError(Request.Headers["Authorization"].FirstOrDefault());
         // ARCHITECTURAL DECISION: Clean Architecture pattern intentionally bypassed for performance
         // This controller directly calls the repository for query operations with filters, ordering, and pagination.
         // Rationale: Avoiding the overhead of MediatR handlers and additional mapping layers for read-heavy operations
