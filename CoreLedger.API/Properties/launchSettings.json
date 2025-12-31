@@ -10,13 +10,14 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "http": {
+    "https-useauthmock": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": false,
-      "applicationUrl": "http://localhost:5071",
+      "applicationUrl": "https://localhost:7109;http://localhost:5071",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Auth__UseMock": "true"
       }
     }
   }

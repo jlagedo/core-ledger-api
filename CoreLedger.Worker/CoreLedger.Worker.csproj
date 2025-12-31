@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <UserSecretsId>dotnet-CoreLedger.Worker-b8ce9d14-8cc9-4f46-b3ce-9fc7894b1fbe</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +28,12 @@
   <ItemGroup>
     <ProjectReference Include="..\CoreLedger.Application\CoreLedger.Application.csproj" />
     <ProjectReference Include="..\CoreLedger.Infrastructure\CoreLedger.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\.dockerignore">
+      <Link>.dockerignore</Link>
+    </Content>
   </ItemGroup>
 
 </Project>

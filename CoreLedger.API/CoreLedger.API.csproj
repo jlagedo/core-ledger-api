@@ -8,6 +8,7 @@
     <UserSecretsId>d85581a0-3411-4212-bc8b-c51b6f2e4473</UserSecretsId>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,6 +31,12 @@
   <ItemGroup>
     <ProjectReference Include="..\CoreLedger.Application\CoreLedger.Application.csproj" />
     <ProjectReference Include="..\CoreLedger.Infrastructure\CoreLedger.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\.dockerignore">
+      <Link>.dockerignore</Link>
+    </Content>
   </ItemGroup>
 
 </Project>

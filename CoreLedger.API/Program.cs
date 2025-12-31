@@ -5,8 +5,6 @@ using CoreLedger.API.Middleware;
 using CoreLedger.API.Extensions;
 using Serilog;
 using Serilog.Events;
-using FluentValidation;
-using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 
@@ -36,6 +34,9 @@ try
     Log.Information("Starting Core Ledger API");
 
     var builder = WebApplication.CreateBuilder(args);
+    
+    // Use mock authentication in development (bypasses Auth0)
+    var useMockAuth = builder.Configuration.GetValue<bool>("Auth:UseMock");
 
     builder.Host.UseSerilog();
 
@@ -48,15 +49,18 @@ try
     PaginationDefaults.Initialize(paginationOptions);
 
     builder.Services.AddControllers();
-    builder.Services.AddFluentValidationAutoValidation();
-    builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-    
+
     builder.Services.AddSwaggerDocumentation();
-    
-    if(!builder.Environment.IsDevelopment())
-        builder.Services.AddAuth0Authentication(builder.Configuration);
-    else
+
+    if (useMockAuth)
+    {
+        Log.Warning("Starting with mock auth");
         builder.Services.AddDevelopmentAuthentication(builder.Configuration);
+    }
+    else
+    {
+        builder.Services.AddAuth0Authentication(builder.Configuration);
+    }
 
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     builder.Services.AddHealthChecks()
@@ -74,18 +78,8 @@ try
     app.UseSecurityHeaders();
     app.UseGlobalExceptionHandler();
 
-    if (app.Environment.IsDevelopment())
-    {
-        app.Use(async (ctx, next) =>
-        {
-            var auth = ctx.Request.Headers["Authorization"].FirstOrDefault();
-            Console.WriteLine($"Raw Authorization header: {auth}");
-            await next();
-        });
-    }
-
     // Authentication must come before correlation ID middleware to ensure user claims are available
-    //app.UseAuthentication();
+    app.UseAuthentication();
     app.UseCorrelationId();
 
     app.UseSerilogRequestLogging(options =>
