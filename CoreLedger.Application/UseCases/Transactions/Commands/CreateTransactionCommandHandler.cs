@@ -10,25 +10,15 @@ using System.Text.Json;
 
 namespace CoreLedger.Application.UseCases.Transactions.Commands;
 
-public class CreateTransactionCommandHandler : IRequestHandler<CreateTransactionCommand, TransactionDto>
+public class CreateTransactionCommandHandler(
+    IApplicationDbContext context,
+    IMapper mapper,
+    ILogger<CreateTransactionCommandHandler> logger)
+    : IRequestHandler<CreateTransactionCommand, TransactionDto>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly ILogger<CreateTransactionCommandHandler> _logger;
-    private readonly IMapper _mapper;
-
-    public CreateTransactionCommandHandler(
-        IApplicationDbContext context,
-        IMapper mapper,
-        ILogger<CreateTransactionCommandHandler> logger)
-    {
-        _context = context;
-        _mapper = mapper;
-        _logger = logger;
-    }
-
     public async Task<TransactionDto> Handle(CreateTransactionCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation(
+        logger.LogInformation(
             "Creating transaction for fund {FundId} - SubType: {SubTypeId}, Amount: {Amount}, " +
             "Quantity: {Quantity}, Price: {Price}, Currency: {Currency}, TradeDate: {TradeDate}, " +
             "SettleDate: {SettleDate}, CreatedBy: {UserId}",
@@ -37,34 +27,34 @@ public class CreateTransactionCommandHandler : IRequestHandler<CreateTransaction
             request.SettleDate, request.CreatedByUserId);
 
         // Validate foreign keys
-        var fund = await _context.Funds.FindAsync([request.FundId], cancellationToken);
+        var fund = await context.Funds.FindAsync([request.FundId], cancellationToken);
         if (fund == null)
         {
-            _logger.LogWarning("Transaction creation failed: Fund {FundId} not found", request.FundId);
+            logger.LogWarning("Transaction creation failed: Fund {FundId} not found", request.FundId);
             throw new EntityNotFoundException("Fund", request.FundId);
         }
 
         if (request.SecurityId.HasValue)
         {
-            var security = await _context.Securities.FindAsync([request.SecurityId.Value], cancellationToken);
+            var security = await context.Securities.FindAsync([request.SecurityId.Value], cancellationToken);
             if (security == null)
             {
-                _logger.LogWarning("Transaction creation failed: Security {SecurityId} not found", request.SecurityId.Value);
+                logger.LogWarning("Transaction creation failed: Security {SecurityId} not found", request.SecurityId.Value);
                 throw new EntityNotFoundException("Security", request.SecurityId.Value);
             }
         }
 
-        var subType = await _context.TransactionSubTypes.FindAsync([request.TransactionSubTypeId], cancellationToken);
+        var subType = await context.TransactionSubTypes.FindAsync([request.TransactionSubTypeId], cancellationToken);
         if (subType == null)
         {
-            _logger.LogWarning("Transaction creation failed: TransactionSubType {SubTypeId} not found", request.TransactionSubTypeId);
+            logger.LogWarning("Transaction creation failed: TransactionSubType {SubTypeId} not found", request.TransactionSubTypeId);
             throw new EntityNotFoundException("TransactionSubType", request.TransactionSubTypeId);
         }
 
-        var status = await _context.TransactionStatuses.FindAsync([request.StatusId], cancellationToken);
+        var status = await context.TransactionStatuses.FindAsync([request.StatusId], cancellationToken);
         if (status == null)
         {
-            _logger.LogWarning("Transaction creation failed: TransactionStatus {StatusId} not found", request.StatusId);
+            logger.LogWarning("Transaction creation failed: TransactionStatus {StatusId} not found", request.StatusId);
             throw new EntityNotFoundException("TransactionStatus", request.StatusId);
         }
 
@@ -82,11 +72,11 @@ public class CreateTransactionCommandHandler : IRequestHandler<CreateTransaction
             request.StatusId,
             request.CreatedByUserId);
 
-        _context.Transactions.Add(transaction);
-        await _context.SaveChangesAsync(cancellationToken);
+        context.Transactions.Add(transaction);
+        await context.SaveChangesAsync(cancellationToken);
 
         // Reload with navigation properties
-        var transactionWithNav = await _context.Transactions
+        var transactionWithNav = await context.Transactions
             .Include(t => t.Fund)
             .Include(t => t.Security)
             .Include(t => t.TransactionSubType!)
@@ -94,13 +84,13 @@ public class CreateTransactionCommandHandler : IRequestHandler<CreateTransaction
             .Include(t => t.Status)
             .FirstOrDefaultAsync(t => t.Id == transaction.Id, cancellationToken);
 
-        _logger.LogInformation(
+        logger.LogInformation(
             "Created transaction {TransactionId} for fund {FundId} - Amount: {Amount}, " +
             "Status: {StatusId}, SettleDate: {SettleDate}",
             transaction.Id, transaction.FundId, transaction.Amount, transaction.StatusId, transaction.SettleDate);
 
         // Map to DTO
-        var transactionDto = _mapper.Map<TransactionDto>(transactionWithNav);
+        var transactionDto = mapper.Map<TransactionDto>(transactionWithNav);
 
         // Create audit log entry
         var transactionDataJson = JsonSerializer.Serialize(transactionDto);
@@ -115,8 +105,8 @@ public class CreateTransactionCommandHandler : IRequestHandler<CreateTransaction
             requestId: request.RequestId,
             source: "API");
 
-        _context.AuditLogs.Add(auditLog);
-        await _context.SaveChangesAsync(cancellationToken);
+        context.AuditLogs.Add(auditLog);
+        await context.SaveChangesAsync(cancellationToken);
 
         return transactionDto;
     }

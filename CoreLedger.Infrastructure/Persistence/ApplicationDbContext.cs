@@ -25,6 +25,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Transaction> Transactions => Set<Transaction>();
     public DbSet<User> Users => Set<User>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<TransactionIdempotency> TransactionIdempotencies => Set<TransactionIdempotency>();
+    public DbSet<TransactionCreatedOutboxMessage> TransactionCreatedOutboxMessages => Set<TransactionCreatedOutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

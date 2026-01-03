@@ -4,6 +4,7 @@ using System.Text.Json;
 using CoreLedger.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CoreLedger.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260103221107_AddTransactionIdempotency")]
+    partial class AddTransactionIdempotency
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -449,60 +452,6 @@ namespace CoreLedger.Infrastructure.Migrations
                         .HasDatabaseName("ix_transactions_fund_trade_date");
 
                     b.ToTable("transactions", (string)null);
-                });
-
-            modelBuilder.Entity("CoreLedger.Domain.Entities.TransactionCreatedOutboxMessage", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("LastError")
-                        .HasColumnType("text")
-                        .HasColumnName("last_error");
-
-                    b.Property<DateTime>("OccurredOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("occurred_on")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<byte[]>("Payload")
-                        .IsRequired()
-                        .HasColumnType("bytea")
-                        .HasColumnName("payload");
-
-                    b.Property<DateTime?>("PublishedOn")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("published_on");
-
-                    b.Property<int>("RetryCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("retry_count");
-
-                    b.Property<short>("Status")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("smallint")
-                        .HasDefaultValue((short)0)
-                        .HasColumnName("status");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("type");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OccurredOn");
-
-                    b.HasIndex("Status");
-
-                    b.ToTable("tansactioncreated_outbox_message", (string)null);
                 });
 
             modelBuilder.Entity("CoreLedger.Domain.Entities.TransactionIdempotency", b =>
