@@ -42,8 +42,7 @@ public static class DependencyInjection
                     .CommandTimeout(databaseOptions.CommandTimeoutSeconds)
                     .MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName));
         });
-
-        services.AddScoped<IToDoRepository, ToDoRepository>();
+        
         services.AddScoped<IAccountTypeRepository, AccountTypeRepository>();
         services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<ICoreJobRepository, CoreJobRepository>();
