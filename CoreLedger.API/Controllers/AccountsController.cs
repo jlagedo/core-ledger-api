@@ -79,7 +79,7 @@ public class AccountsController : ControllerBase
 
         _logger.LogInformation(
             "Accounts retrieved - Returned: {Count} of {Total} total accounts",
-            result.Data.Count, result.TotalCount);
+            result.Items.Count, result.TotalCount);
         return Ok(result);
     }
 

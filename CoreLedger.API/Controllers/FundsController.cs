@@ -62,7 +62,7 @@ public class FundsController : ControllerBase
 
         _logger.LogInformation(
             "Funds retrieved - Returned: {Count} of {Total} total funds",
-            result.Data.Count, result.TotalCount);
+            result.Items.Count, result.TotalCount);
         return Ok(result);
     }
 

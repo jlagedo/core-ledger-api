@@ -62,7 +62,7 @@ public class SecuritiesController : ControllerBase
 
         _logger.LogInformation(
             "Securities retrieved - Returned: {Count} of {Total} total securities",
-            result.Data.Count, result.TotalCount);
+            result.Items.Count, result.TotalCount);
         return Ok(result);
     }
 

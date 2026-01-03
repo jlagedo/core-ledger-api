@@ -56,7 +56,7 @@ public class TransactionsController : ControllerBase
 
         _logger.LogInformation(
             "Transactions retrieved - Returned: {Count} of {Total} total transactions",
-            result.Data.Count, result.TotalCount);
+            result.Items.Count, result.TotalCount);
         return Ok(result);
     }
 
