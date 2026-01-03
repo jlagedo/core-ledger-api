@@ -12,8 +12,7 @@ public class ApplicationDbContext : DbContext
         : base(options)
     {
     }
-
-    public DbSet<ToDo> ToDos => Set<ToDo>();
+    
     public DbSet<AccountType> AccountTypes => Set<AccountType>();
     public DbSet<Account> Accounts => Set<Account>();
     public DbSet<CoreJob> CoreJobs => Set<CoreJob>();
