@@ -1,11 +1,11 @@
+using CoreLedger.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using CoreLedger.Domain.Entities;
 
 namespace CoreLedger.Infrastructure.Persistence.Configurations;
 
 /// <summary>
-/// EF Core configuration for Fund entity.
+///     EF Core configuration for Fund entity.
 /// </summary>
 public class FundConfiguration : IEntityTypeConfiguration<Fund>
 {
@@ -50,6 +50,10 @@ public class FundConfiguration : IEntityTypeConfiguration<Fund>
 
         builder.Property(f => f.UpdatedAt)
             .HasColumnName("updated_at");
+
+        builder.Property(f => f.CreatedByUserId)
+            .HasColumnName("created_by_user_id")
+            .IsRequired();
 
         builder.HasIndex(f => f.Code)
             .IsUnique();

@@ -1,12 +1,12 @@
+using CoreLedger.Application.DTOs;
+using CoreLedger.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using CoreLedger.Domain.Enums;
-using CoreLedger.Application.DTOs;
 
 namespace CoreLedger.Application.UseCases.Securities.Queries;
 
 /// <summary>
-/// Handler for retrieving all SecurityType enum values.
+///     Handler for retrieving all SecurityType enum values.
 /// </summary>
 public class GetAllSecurityTypesQueryHandler : IRequestHandler<GetAllSecurityTypesQuery, IReadOnlyList<SecurityTypeDto>>
 {

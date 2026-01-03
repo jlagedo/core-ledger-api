@@ -1,26 +1,27 @@
-using MediatR;
 using AutoMapper;
-using Microsoft.Extensions.Logging;
-using CoreLedger.Domain.Interfaces;
 using CoreLedger.Application.DTOs;
+using CoreLedger.Application.Interfaces;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.Securities.Queries;
 
 /// <summary>
-/// Handler for retrieving all Securities.
+///     Handler for retrieving all Securities.
 /// </summary>
 public class GetAllSecuritiesQueryHandler : IRequestHandler<GetAllSecuritiesQuery, IReadOnlyList<SecurityDto>>
 {
-    private readonly ISecurityRepository _repository;
-    private readonly IMapper _mapper;
+    private readonly IApplicationDbContext _context;
     private readonly ILogger<GetAllSecuritiesQueryHandler> _logger;
+    private readonly IMapper _mapper;
 
     public GetAllSecuritiesQueryHandler(
-        ISecurityRepository repository,
+        IApplicationDbContext context,
         IMapper mapper,
         ILogger<GetAllSecuritiesQueryHandler> logger)
     {
-        _repository = repository;
+        _context = context;
         _mapper = mapper;
         _logger = logger;
     }
@@ -31,7 +32,9 @@ public class GetAllSecuritiesQueryHandler : IRequestHandler<GetAllSecuritiesQuer
     {
         _logger.LogInformation("Retrieving all Securities");
 
-        var securities = await _repository.GetAllAsync(cancellationToken);
+        var securities = await _context.Securities
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
         var result = _mapper.Map<IReadOnlyList<SecurityDto>>(securities);
 
         _logger.LogInformation("Retrieved {Count} Securities", result.Count);

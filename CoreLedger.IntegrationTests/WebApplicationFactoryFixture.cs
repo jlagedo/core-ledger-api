@@ -1,15 +1,15 @@
+using CoreLedger.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using CoreLedger.Infrastructure.Persistence;
 using Testcontainers.PostgreSql;
 
 namespace CoreLedger.IntegrationTests;
 
 /// <summary>
-/// WebApplicationFactory fixture for integration tests with Testcontainers Postgres.
+///     WebApplicationFactory fixture for integration tests with Testcontainers Postgres.
 /// </summary>
 public class WebApplicationFactoryFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
@@ -21,6 +21,18 @@ public class WebApplicationFactoryFixture : WebApplicationFactory<Program>, IAsy
         .Build();
 
     public HttpClient HttpClient { get; private set; } = null!;
+
+    public async Task InitializeAsync()
+    {
+        await _dbContainer.StartAsync();
+        HttpClient = CreateClient();
+    }
+
+    public new async Task DisposeAsync()
+    {
+        await _dbContainer.DisposeAsync();
+        HttpClient?.Dispose();
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -42,17 +54,5 @@ public class WebApplicationFactoryFixture : WebApplicationFactory<Program>, IAsy
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             dbContext.Database.Migrate();
         });
-    }
-
-    public async Task InitializeAsync()
-    {
-        await _dbContainer.StartAsync();
-        HttpClient = CreateClient();
-    }
-
-    public new async Task DisposeAsync()
-    {
-        await _dbContainer.DisposeAsync();
-        HttpClient?.Dispose();
     }
 }

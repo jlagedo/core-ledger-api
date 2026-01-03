@@ -32,6 +32,28 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+  
+  glitchtip:
+    image: glitchtip/glitchtip
+    container_name: glitchtip
+    depends_on:
+      - postgres
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@core-ledger-db:5432/glitchtip_db
+      VALKEY_URL: ""   # empty = no Redis
+      SECRET_KEY: 09bc0bd1c98d956279b430beb54303f69586e0d31323d88c638ce053f77c1d79
+      PORT: 8000
+      EMAIL_URL: consolemail://
+      GLITCHTIP_DOMAIN: http://localhost:8000
+      DEFAULT_FROM_EMAIL: email@example.com
+      CELERY_WORKER_AUTOSCALE: "1,2"
+    command: ./bin/run-all-in-one.sh
+    restart: unless-stopped
+    volumes:
+      - uploads:/code/uploads
 
 volumes:
   postgres_data:
+  uploads:

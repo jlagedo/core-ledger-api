@@ -18,7 +18,8 @@ CoreLedger.IntegrationTests/ # Integration Tests (Testcontainers + xUnit)
 ### Key Architectural Patterns
 
 - **CQRS**: Command Query Responsibility Segregation using MediatR
-- **Repository Pattern**: Abstraction over data access
+- **Direct DbContext Usage**: Entity Framework Core DbSet<T> as data access pattern
+- **Query Services**: Infrastructure layer services for complex RFC-8040 filtering operations
 - **Dependency Injection**: Constructor injection throughout
 - **Domain-Driven Design**: Rich domain models with business logic
 - **Middleware Pipeline**: Cross-cutting concerns (exception handling, logging, correlation IDs)
@@ -39,6 +40,10 @@ CoreLedger.IntegrationTests/ # Integration Tests (Testcontainers + xUnit)
 - **MediatR 14** - CQRS and mediator pattern
 - **AutoMapper 16** - Object-to-object mapping
 - **FluentValidation 12** - Input validation
+
+### Messaging & Authentication
+- **RabbitMQ** - Message broker for async processing and worker communication
+- **Auth0** - JWT Bearer authentication and user management
 
 ### Logging & Monitoring
 - **Serilog** - Structured logging
@@ -61,8 +66,9 @@ CoreLedger.IntegrationTests/ # Integration Tests (Testcontainers + xUnit)
 ## 📋 Prerequisites
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop) (for local PostgreSQL)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop) (for local PostgreSQL and RabbitMQ)
 - [PostgreSQL 18](https://www.postgresql.org/download/) (or use Docker)
+- [RabbitMQ](https://www.rabbitmq.com/download.html) (or use Docker)
 - IDE: [Visual Studio 2025](https://visualstudio.microsoft.com/), [Rider](https://www.jetbrains.com/rider/), or [VS Code](https://code.visualstudio.com/)
 
 ## 🚀 Getting Started
@@ -84,15 +90,20 @@ cp .env.template .env
 # For local development, the defaults should work with Docker Compose
 ```
 
-### 3. Start PostgreSQL with Docker
+### 3. Start PostgreSQL and RabbitMQ with Docker
 
 ```bash
-# Start PostgreSQL container
+# Start PostgreSQL and RabbitMQ containers
 docker-compose up -d
 
-# Verify the container is running
+# Verify containers are running
 docker ps
 ```
+
+The following services will be available:
+- **PostgreSQL**: localhost:5432
+- **RabbitMQ AMQP**: localhost:5672
+- **RabbitMQ Management UI**: http://localhost:15672 (guest/guest)
 
 ### 4. Apply Database Migrations
 
@@ -203,17 +214,24 @@ core-ledger-api/
 ├── CoreLedger.Domain/
 │   ├── Entities/             # Domain entities
 │   ├── Exceptions/           # Domain exceptions
-│   ├── Interfaces/           # Repository interfaces
+│   ├── Interfaces/           # Application interfaces (IApplicationDbContext)
 │   └── ValueObjects/         # Value objects
 ├── CoreLedger.Infrastructure/
-│   ├── Data/                 # DbContext and configurations
-│   ├── Migrations/           # EF Core migrations
-│   └── Repositories/         # Repository implementations
+│   ├── Persistence/          # DbContext and entity configurations
+│   │   └── Migrations/       # EF Core migrations
+│   └── Services/
+│       ├── QueryServices/    # RFC-8040 filtering and pagination
+│       └── External/         # External service integrations
+├── CoreLedger.Worker/
+│   ├── Consumers/            # RabbitMQ message consumers
+│   └── Program.cs            # Worker service entry point
 ├── CoreLedger.UnitTests/
 │   ├── Application/          # Application layer tests
 │   └── Domain/               # Domain layer tests
-└── CoreLedger.IntegrationTests/
-    └── API/                  # API integration tests
+├── CoreLedger.IntegrationTests/
+│   └── API/                  # API integration tests
+└── docs/
+    └── archive/              # Archived documentation
 ```
 
 ## 💻 Development Guidelines

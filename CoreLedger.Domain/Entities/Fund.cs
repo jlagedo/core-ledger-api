@@ -1,35 +1,45 @@
+using System.Text.RegularExpressions;
 using CoreLedger.Domain.Enums;
 using CoreLedger.Domain.Exceptions;
 
 namespace CoreLedger.Domain.Entities;
 
 /// <summary>
-/// Fund domain entity with business rules and invariants.
+///     Fund domain entity with business rules and invariants.
 /// </summary>
 public class Fund : BaseEntity
 {
+    private Fund()
+    {
+    }
+
     public string Code { get; private set; } = string.Empty;
     public string Name { get; private set; } = string.Empty;
     public string BaseCurrency { get; private set; } = string.Empty;
     public DateTime InceptionDate { get; private set; }
     public ValuationFrequency ValuationFrequency { get; private set; }
 
-    private Fund() { }
+    /// <summary>
+    ///     Identifier of the user who created this fund.
+    /// </summary>
+    public string CreatedByUserId { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Factory method to create a new Fund with validation.
+    ///     Factory method to create a new Fund with validation.
     /// </summary>
     public static Fund Create(
         string code,
         string name,
         string baseCurrency,
         DateTime inceptionDate,
-        ValuationFrequency valuationFrequency)
+        ValuationFrequency valuationFrequency,
+        string createdByUserId)
     {
         ValidateCode(code);
         ValidateName(name);
         ValidateBaseCurrency(baseCurrency);
         ValidateInceptionDate(inceptionDate);
+        ValidateCreatedByUserId(createdByUserId);
 
         return new Fund
         {
@@ -37,12 +47,13 @@ public class Fund : BaseEntity
             Name = name.Trim(),
             BaseCurrency = baseCurrency.Trim().ToUpperInvariant(),
             InceptionDate = inceptionDate.Date,
-            ValuationFrequency = valuationFrequency
+            ValuationFrequency = valuationFrequency,
+            CreatedByUserId = createdByUserId.Trim()
         };
     }
 
     /// <summary>
-    /// Updates the fund with validation.
+    ///     Updates the fund with validation.
     /// </summary>
     public void Update(
         string code,
@@ -72,7 +83,7 @@ public class Fund : BaseEntity
         if (code.Length > 10)
             throw new DomainValidationException("Fund code cannot exceed 10 characters");
 
-        if (!System.Text.RegularExpressions.Regex.IsMatch(code, "^[A-Z0-9]+$", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+        if (!Regex.IsMatch(code, "^[A-Z0-9]+$", RegexOptions.IgnoreCase))
             throw new DomainValidationException("Fund code must contain only alphanumeric characters (A-Z, 0-9)");
     }
 
@@ -98,5 +109,11 @@ public class Fund : BaseEntity
     {
         if (inceptionDate > DateTime.UtcNow.Date)
             throw new DomainValidationException("Inception date cannot be in the future");
+    }
+
+    private static void ValidateCreatedByUserId(string createdByUserId)
+    {
+        if (string.IsNullOrWhiteSpace(createdByUserId))
+            throw new DomainValidationException("CreatedByUserId cannot be empty");
     }
 }

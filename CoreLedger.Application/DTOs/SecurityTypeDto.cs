@@ -1,7 +1,7 @@
 namespace CoreLedger.Application.DTOs;
 
 /// <summary>
-/// DTO for SecurityType enum values.
+///     DTO for SecurityType enum values.
 /// </summary>
 public record SecurityTypeDto(
     int Value,

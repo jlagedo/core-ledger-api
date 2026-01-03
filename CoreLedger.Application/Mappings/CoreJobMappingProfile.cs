@@ -1,11 +1,11 @@
 using AutoMapper;
-using CoreLedger.Domain.Entities;
 using CoreLedger.Application.DTOs;
+using CoreLedger.Domain.Entities;
 
 namespace CoreLedger.Application.Mappings;
 
 /// <summary>
-/// AutoMapper profile for CoreJob entity mappings.
+///     AutoMapper profile for CoreJob entity mappings.
 /// </summary>
 public class CoreJobMappingProfile : Profile
 {

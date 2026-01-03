@@ -4,10 +4,14 @@ using CoreLedger.Domain.Exceptions;
 namespace CoreLedger.Domain.Entities;
 
 /// <summary>
-/// CoreJob domain entity representing a background job with status tracking.
+///     CoreJob domain entity representing a background job with status tracking.
 /// </summary>
 public class CoreJob : BaseEntity
 {
+    private CoreJob()
+    {
+    }
+
     public string ReferenceId { get; private set; } = string.Empty;
     public JobStatus Status { get; private set; }
     public string JobDescription { get; private set; } = string.Empty;
@@ -15,10 +19,8 @@ public class CoreJob : BaseEntity
     public DateTime? RunningDate { get; private set; }
     public DateTime? FinishedDate { get; private set; }
 
-    private CoreJob() { }
-
     /// <summary>
-    /// Factory method to create a new CoreJob with validation.
+    ///     Factory method to create a new CoreJob with validation.
     /// </summary>
     public static CoreJob Create(
         string referenceId,
@@ -37,7 +39,7 @@ public class CoreJob : BaseEntity
     }
 
     /// <summary>
-    /// Updates the job status with optional running and finished dates.
+    ///     Updates the job status with optional running and finished dates.
     /// </summary>
     public void UpdateStatus(
         JobStatus status,
@@ -57,8 +59,8 @@ public class CoreJob : BaseEntity
         if (string.IsNullOrWhiteSpace(referenceId))
             throw new DomainValidationException("Reference ID cannot be empty");
 
-        if (referenceId.Length > 20)
-            throw new DomainValidationException("Reference ID cannot exceed 20 characters");
+        if (referenceId.Length > 50)
+            throw new DomainValidationException("Reference ID cannot exceed 50 characters");
     }
 
     private static void ValidateJobDescription(string jobDescription)

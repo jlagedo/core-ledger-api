@@ -1,10 +1,10 @@
-using MediatR;
 using CoreLedger.Domain.Enums;
+using MediatR;
 
 namespace CoreLedger.Application.UseCases.Securities.Commands;
 
 /// <summary>
-/// Command to update an existing Security.
+///     Command to update an existing Security.
 /// </summary>
 public record UpdateSecurityCommand(
     int Id,

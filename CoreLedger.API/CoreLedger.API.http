@@ -578,7 +578,8 @@ Accept: application/json
 ###
 
 ### GET All Accounts with RFC-8040 Query Parameters - Complex query with all parameters
-GET {{CoreLedger.API_HostAddress}}/api/accounts?filter=name=Cash&sortBy=code&sortDirection=desc&limit=10&offset=0&fields=id,code,name,typeId
+GET {{CoreLedger.API_HostAddress}}/api/accounts?filter=name=Cash&sortBy=code&sortDirection=desc&limit=10&offset=0&
+    fields=id,code,name,typeId
 Accept: application/json
 
 ###
@@ -977,19 +978,22 @@ Accept: application/json
 ###
 
 ### GET All CoreJobs with RFC-8040 Query Parameters - Combined filter, sort, and pagination (Recent Complete Jobs)
-GET {{CoreLedger.API_HostAddress}}/api/corejobs?filter=status=Complete&sortBy=finishedDate&sortDirection=desc&limit=10&offset=0
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?filter=status=Complete&sortBy=finishedDate&sortDirection=desc&limit=10&
+    offset=0
 Accept: application/json
 
 ###
 
 ### GET All CoreJobs with RFC-8040 Query Parameters - Combined filter, sort, and pagination (Recent Failed Jobs)
-GET {{CoreLedger.API_HostAddress}}/api/corejobs?filter=status=Failed&sortBy=finishedDate&sortDirection=desc&limit=10&offset=0
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?filter=status=Failed&sortBy=finishedDate&sortDirection=desc&limit=10&
+    offset=0
 Accept: application/json
 
 ###
 
 ### GET All CoreJobs with RFC-8040 Query Parameters - Complex query with all parameters
-GET {{CoreLedger.API_HostAddress}}/api/corejobs?filter=jobDescription=calculation&sortBy=creationDate&sortDirection=desc&limit=15&offset=0
+GET {{CoreLedger.API_HostAddress}}/api/corejobs?filter=jobDescription=calculation&sortBy=creationDate&
+    sortDirection=desc&limit=15&offset=0
 Accept: application/json
 
 ###

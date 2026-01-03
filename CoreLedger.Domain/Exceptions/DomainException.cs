@@ -1,36 +1,56 @@
 namespace CoreLedger.Domain.Exceptions;
 
 /// <summary>
-/// Base exception for all domain-related exceptions.
+///     Base exception for all domain-related exceptions.
 /// </summary>
 public abstract class DomainException : Exception
 {
-    public string ErrorCode { get; }
-
     protected DomainException(string message, string errorCode) : base(message)
     {
         ErrorCode = errorCode;
     }
+
+    public string ErrorCode { get; }
 }
 
 /// <summary>
-/// Exception thrown when domain validation fails.
+///     Exception thrown when domain validation fails.
 /// </summary>
 public class DomainValidationException : DomainException
 {
-    public DomainValidationException(string message) 
+    public DomainValidationException(string message)
         : base(message, "ERR-DOMAIN-001")
     {
     }
 }
 
 /// <summary>
-/// Exception thrown when an entity is not found.
+///     Exception thrown when an entity is not found.
 /// </summary>
 public class EntityNotFoundException : DomainException
 {
-    public EntityNotFoundException(string entityName, object id) 
+    public EntityNotFoundException(string entityName, object id)
         : base($"{entityName} with id {id} not found", "ERR-NOTFOUND-001")
     {
     }
+}
+
+/// <summary>
+///     Exception thrown when an external service (like Auth0) fails.
+/// </summary>
+public class ExternalServiceException : DomainException
+{
+    public ExternalServiceException(string serviceName, string message)
+        : base($"{serviceName} service error: {message}", "ERR-EXTERNAL-001")
+    {
+        ServiceName = serviceName;
+    }
+
+    public ExternalServiceException(string serviceName, string message, Exception innerException)
+        : base($"{serviceName} service error: {message}", "ERR-EXTERNAL-001")
+    {
+        ServiceName = serviceName;
+    }
+
+    public string ServiceName { get; }
 }

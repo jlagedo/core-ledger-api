@@ -1,13 +1,23 @@
-using CoreLedger.Application;
-using CoreLedger.Infrastructure;
-using CoreLedger.API.Middleware;
+using CoreLedger.API.Endpoints;
 using CoreLedger.API.Extensions;
+using CoreLedger.API.Middleware;
+using CoreLedger.Application;
+using CoreLedger.Application.Configuration;
+using CoreLedger.Infrastructure;
 using Serilog;
 using Serilog.Events;
-using FluentValidation;
-using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
+// Build configuration to read Serilog settings before creating logger
+var configuration = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", false, true)
+    .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json",
+        true, true)
+    .AddEnvironmentVariables()
+    .Build();
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -17,13 +27,9 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.WithMachineName()
     .Enrich.WithThreadId()
     .Enrich.WithProperty("Application", "CoreLedgerApi")
-    .WriteTo.Console(outputTemplate: 
+    .WriteTo.Console(outputTemplate:
         "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
-    .WriteTo.File(
-        path: "logs/core-ledger-.log",
-        rollingInterval: RollingInterval.Day,
-        retainedFileCountLimit: 30,
-        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
+    .ReadFrom.Configuration(configuration)
     .CreateLogger();
 
 try
@@ -31,39 +37,48 @@ try
     Log.Information("Starting Core Ledger API");
 
     var builder = WebApplication.CreateBuilder(args);
+    
+    // Use mock authentication in development (bypasses Auth0)
+    var useMockAuth = builder.Configuration.GetValue<bool>("Auth:UseMock");
 
     builder.Host.UseSerilog();
 
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
 
-    builder.Services.AddHttpsRedirection(options =>
-    {
-        options.RedirectStatusCode = StatusCodes.Status308PermanentRedirect;
-        options.HttpsPort = builder.Configuration.GetValue<int?>("HttpsPort") ?? 7109;
-    });
-
-    builder.Services.AddControllers();
-    builder.Services.AddFluentValidationAutoValidation();
-    builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+    // Configure pagination options
+    builder.Services.Configure<PaginationOptions>(builder.Configuration.GetSection("Pagination"));
+    var paginationOptions = builder.Configuration.GetSection("Pagination").Get<PaginationOptions>() ??
+                            new PaginationOptions();
+    PaginationDefaults.Initialize(paginationOptions);
 
     builder.Services.AddSwaggerDocumentation();
+
+    if (useMockAuth)
+    {
+        Log.Warning("Starting with mock auth");
+        builder.Services.AddDevelopmentAuthentication(builder.Configuration);
+    }
+    else
+    {
+        builder.Services.AddAuth0Authentication(builder.Configuration);
+    }
 
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     builder.Services.AddHealthChecks()
         .AddNpgSql(connectionString ?? throw new InvalidOperationException("DefaultConnection not configured"))
-        .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy());
+        .AddCheck("self", () => HealthCheckResult.Healthy());
 
     var app = builder.Build();
 
-    if (!app.Environment.IsDevelopment())
-    {
-        app.UseHsts();
-    }
+    if (!app.Environment.IsDevelopment()) app.UseHsts();
 
     app.UseHttpsRedirection();
     app.UseSecurityHeaders();
     app.UseGlobalExceptionHandler();
+
+    // Authentication must come before correlation ID middleware to ensure user claims are available
+    app.UseAuthentication();
     app.UseCorrelationId();
 
     app.UseSerilogRequestLogging(options =>
@@ -73,15 +88,34 @@ try
             diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
             diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
             diagnosticContext.Set("RemoteIP", httpContext.Connection.RemoteIpAddress);
+
+            // Add authenticated user information to request logs (only 'sub' claim available in access token)
+            var userId = httpContext.User.FindFirst("sub")?.Value;
+            var isAuthenticated = httpContext.User.Identity?.IsAuthenticated ?? false;
+
+            diagnosticContext.Set("UserId", userId ?? "anonymous");
+            diagnosticContext.Set("IsAuthenticated", isAuthenticated);
         };
     });
 
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwaggerDocumentation();
-    }
+    if (app.Environment.IsDevelopment()) app.UseSwaggerDocumentation();
 
-    app.MapControllers();
+    app.UseAuthorization();
+
+    // Minimal API endpoint registrations
+    app.MapFundsEndpoints();
+    app.MapAccountsEndpoints();
+    app.MapTransactionsEndpoints();
+    app.MapSecuritiesEndpoints();
+    app.MapUsersEndpoints();
+    app.MapJobsIngestionEndpoints();
+    app.MapAuditLogsEndpoints();
+    app.MapCoreJobsEndpoints();
+    app.MapAccountTypesEndpoints();
+    app.MapTransactionTypesEndpoints();
+    app.MapTransactionSubTypesEndpoints();
+    app.MapTransactionStatusesEndpoints();
+    app.MapSecurityTypesEndpoints();
 
     app.MapHealthChecks("/health");
     app.MapHealthChecks("/health/ready");
@@ -94,14 +128,12 @@ try
         if (addresses != null && addresses.Any())
         {
             Log.Information("Core Ledger API is now listening on:");
-            foreach (var address in addresses)
-            {
-                Log.Information("  → {Address}", address);
-            }
+            foreach (var address in addresses) Log.Information("  → {Address}", address);
         }
     });
 
     Log.Information("Core Ledger API started successfully");
+
 
     app.Run();
 }
@@ -116,6 +148,9 @@ finally
 }
 
 /// <summary>
-/// Partial Program class to expose entry point for integration tests.
+///     Partial Program class to expose entry point for integration tests.
 /// </summary>
-public partial class Program { }
+// ReSharper disable once ClassNeverInstantiated.Global
+public partial class Program
+{
+}

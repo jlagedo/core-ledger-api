@@ -1,11 +1,11 @@
+using CoreLedger.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using CoreLedger.Domain.Entities;
 
 namespace CoreLedger.Infrastructure.Persistence.Configurations;
 
 /// <summary>
-/// Entity Framework configuration for Account entity.
+///     Entity Framework configuration for Account entity.
 /// </summary>
 public class AccountConfiguration : IEntityTypeConfiguration<Account>
 {
@@ -46,6 +46,10 @@ public class AccountConfiguration : IEntityTypeConfiguration<Account>
 
         builder.Property(a => a.UpdatedAt)
             .HasColumnName("updated_at");
+
+        builder.Property(a => a.CreatedByUserId)
+            .HasColumnName("created_by_user_id")
+            .IsRequired();
 
         builder.HasOne(a => a.Type)
             .WithMany()

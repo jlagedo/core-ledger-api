@@ -1,24 +1,30 @@
-using Microsoft.EntityFrameworkCore;
 using CoreLedger.Domain.Entities;
+using CoreLedger.Application.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace CoreLedger.Infrastructure.Persistence;
 
 /// <summary>
-/// Application database context with proper configuration for PostgreSQL.
+///     Application database context with proper configuration for PostgreSQL.
 /// </summary>
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : DbContext, IApplicationDbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
     }
-
-    public DbSet<ToDo> ToDos => Set<ToDo>();
+    
     public DbSet<AccountType> AccountTypes => Set<AccountType>();
     public DbSet<Account> Accounts => Set<Account>();
     public DbSet<CoreJob> CoreJobs => Set<CoreJob>();
     public DbSet<Fund> Funds => Set<Fund>();
     public DbSet<Security> Securities => Set<Security>();
+    public DbSet<TransactionStatus> TransactionStatuses => Set<TransactionStatus>();
+    public DbSet<TransactionType> TransactionTypes => Set<TransactionType>();
+    public DbSet<TransactionSubType> TransactionSubTypes => Set<TransactionSubType>();
+    public DbSet<Transaction> Transactions => Set<Transaction>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

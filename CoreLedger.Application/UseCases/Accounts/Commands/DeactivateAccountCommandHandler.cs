@@ -1,23 +1,23 @@
+using CoreLedger.Domain.Exceptions;
+using CoreLedger.Application.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using CoreLedger.Domain.Interfaces;
-using CoreLedger.Domain.Exceptions;
 
 namespace CoreLedger.Application.UseCases.Accounts.Commands;
 
 /// <summary>
-/// Handler for deactivating an existing Account.
+///     Handler for deactivating an existing Account.
 /// </summary>
 public class DeactivateAccountCommandHandler : IRequestHandler<DeactivateAccountCommand>
 {
-    private readonly IAccountRepository _accountRepository;
+    private readonly IApplicationDbContext _context;
     private readonly ILogger<DeactivateAccountCommandHandler> _logger;
 
     public DeactivateAccountCommandHandler(
-        IAccountRepository accountRepository,
+        IApplicationDbContext context,
         ILogger<DeactivateAccountCommandHandler> logger)
     {
-        _accountRepository = accountRepository;
+        _context = context;
         _logger = logger;
     }
 
@@ -27,17 +27,14 @@ public class DeactivateAccountCommandHandler : IRequestHandler<DeactivateAccount
     {
         _logger.LogInformation("Deactivating Account with ID: {AccountId}", request.Id);
 
-        var account = await _accountRepository.GetByIdAsync(request.Id, cancellationToken);
-        if (account == null)
-        {
-            throw new EntityNotFoundException("Account", request.Id);
-        }
+        var account = await _context.Accounts.FindAsync([request.Id], cancellationToken);
+        if (account == null) throw new EntityNotFoundException("Account", request.Id);
 
         account.Deactivate();
 
-        await _accountRepository.UpdateAsync(account, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Deactivated Account with ID: {AccountId} at {DeactivatedAt}", 
+        _logger.LogInformation("Deactivated Account with ID: {AccountId} at {DeactivatedAt}",
             request.Id, account.DeactivatedAt);
     }
 }
