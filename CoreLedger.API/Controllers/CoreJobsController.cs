@@ -1,6 +1,7 @@
 using CoreLedger.Application.DTOs;
-using CoreLedger.Application.Interfaces.QueryServices;
-using CoreLedger.Domain.Models;
+using CoreLedger.Application.Models;
+using CoreLedger.Application.UseCases.CoreJobs.Queries;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,15 +15,15 @@ namespace CoreLedger.API.Controllers;
 [Route("api/[controller]")]
 public class CoreJobsController : ControllerBase
 {
-    private readonly ICoreJobQueryService _coreJobQueryService;
     private readonly ILogger<CoreJobsController> _logger;
+    private readonly IMediator _mediator;
 
     public CoreJobsController(
-        ILogger<CoreJobsController> logger,
-        ICoreJobQueryService coreJobQueryService)
+        IMediator mediator,
+        ILogger<CoreJobsController> logger)
     {
+        _mediator = mediator;
         _logger = logger;
-        _coreJobQueryService = coreJobQueryService;
     }
 
     /// <summary>
@@ -44,37 +45,14 @@ public class CoreJobsController : ControllerBase
         [FromQuery] string? filter = null,
         CancellationToken cancellationToken = default)
     {
-        var parameters = new QueryParameters
-        {
-            Limit = limit,
-            Offset = offset,
-            SortBy = sortBy,
-            SortDirection = sortDirection,
-            Filter = filter
-        };
+        var query = new GetCoreJobsWithQueryQuery(
+            limit,
+            offset,
+            sortBy,
+            sortDirection,
+            filter);
 
-        // ARCHITECTURAL DECISION: Clean Architecture pattern intentionally bypassed for performance
-        // This controller directly calls the query service for query operations with filters, ordering, and pagination.
-        // Rationale: Avoiding the overhead of MediatR handlers and additional mapping layers for read-heavy operations
-        // that require dynamic SQL generation. The performance benefit of direct query service access outweighs
-        // the architectural purity in this specific use case. Write operations should still follow CQRS pattern.
-        var (jobs, totalCount) = await _coreJobQueryService.GetWithQueryAsync(parameters, cancellationToken);
-
-        var jobDtos = jobs.Select(j => new CoreJobDto(
-            j.Id,
-            j.ReferenceId,
-            j.Status,
-            j.Status.ToString(),
-            j.JobDescription,
-            j.CreationDate,
-            j.RunningDate,
-            j.FinishedDate,
-            j.CreatedAt,
-            j.UpdatedAt
-        )).ToList();
-
-        var result = new PagedResult<CoreJobDto>(jobDtos, totalCount, parameters.Limit, parameters.Offset);
-
+        var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }
 }

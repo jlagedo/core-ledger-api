@@ -1,8 +1,7 @@
 using CoreLedger.Application.DTOs;
-using CoreLedger.Application.Interfaces.QueryServices;
+using CoreLedger.Application.Models;
 using CoreLedger.Application.UseCases.Accounts.Commands;
 using CoreLedger.Application.UseCases.Accounts.Queries;
-using CoreLedger.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,18 +16,15 @@ namespace CoreLedger.API.Controllers;
 [Route("api/[controller]")]
 public class AccountsController : ControllerBase
 {
-    private readonly IAccountQueryService _accountQueryService;
     private readonly ILogger<AccountsController> _logger;
     private readonly IMediator _mediator;
 
     public AccountsController(
         IMediator mediator,
-        ILogger<AccountsController> logger,
-        IAccountQueryService accountQueryService)
+        ILogger<AccountsController> logger)
     {
         _mediator = mediator;
         _logger = logger;
-        _accountQueryService = accountQueryService;
     }
 
     /// <summary>
@@ -62,39 +58,14 @@ public class AccountsController : ControllerBase
         [FromQuery] string? filter = null,
         CancellationToken cancellationToken = default)
     {
-        var parameters = new QueryParameters
-        {
-            Limit = limit,
-            Offset = offset,
-            SortBy = sortBy,
-            SortDirection = sortDirection,
-            Filter = filter
-        };
+        var query = new GetAccountsWithQueryQuery(
+            limit,
+            offset,
+            sortBy,
+            sortDirection,
+            filter);
 
-        // ARCHITECTURAL DECISION: Clean Architecture pattern intentionally bypassed for performance
-        // This controller directly calls the query service for query operations with filters, ordering, and pagination.
-        // Rationale: Avoiding the overhead of MediatR handlers and additional mapping layers for read-heavy operations
-        // that require dynamic SQL generation. The performance benefit of direct query service access outweighs
-        // the architectural purity in this specific use case. Write operations should still follow CQRS pattern.
-        var (accounts, totalCount) = await _accountQueryService.GetWithQueryAsync(parameters, cancellationToken);
-
-        var accountDtos = accounts.Select(a => new AccountDto(
-            a.Id,
-            a.Code,
-            a.Name,
-            a.TypeId,
-            a.Type?.Description ?? string.Empty,
-            a.Status,
-            a.Status.ToString(),
-            a.NormalBalance,
-            a.NormalBalance.ToString(),
-            a.CreatedAt,
-            a.UpdatedAt,
-            a.DeactivatedAt
-        )).ToList();
-
-        var result = new PagedResult<AccountDto>(accountDtos, totalCount, parameters.Limit, parameters.Offset);
-
+        var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }
 

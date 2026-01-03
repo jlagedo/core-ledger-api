@@ -1,8 +1,7 @@
 using CoreLedger.Application.DTOs;
-using CoreLedger.Application.Interfaces.QueryServices;
+using CoreLedger.Application.Models;
 using CoreLedger.Application.UseCases.Transactions.Commands;
 using CoreLedger.Application.UseCases.Transactions.Queries;
-using CoreLedger.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,16 +18,13 @@ public class TransactionsController : ControllerBase
 {
     private readonly ILogger<TransactionsController> _logger;
     private readonly IMediator _mediator;
-    private readonly ITransactionQueryService _transactionQueryService;
 
     public TransactionsController(
         IMediator mediator,
-        ILogger<TransactionsController> logger,
-        ITransactionQueryService transactionQueryService)
+        ILogger<TransactionsController> logger)
     {
         _mediator = mediator;
         _logger = logger;
-        _transactionQueryService = transactionQueryService;
     }
 
     /// <summary>
@@ -44,48 +40,14 @@ public class TransactionsController : ControllerBase
         [FromQuery] string? filter = null,
         CancellationToken cancellationToken = default)
     {
-        var parameters = new QueryParameters
-        {
-            Limit = limit,
-            Offset = offset,
-            SortBy = sortBy,
-            SortDirection = sortDirection,
-            Filter = filter
-        };
+        var query = new GetTransactionsWithQueryQuery(
+            limit,
+            offset,
+            sortBy,
+            sortDirection,
+            filter);
 
-        // ARCHITECTURAL DECISION: Clean Architecture pattern intentionally bypassed for performance
-        // This controller directly calls the query service for query operations with filters, ordering, and pagination.
-        // Rationale: Avoiding the overhead of MediatR handlers and additional mapping layers for read-heavy operations
-        // that require dynamic SQL generation. The performance benefit of direct query service access outweighs
-        // the architectural purity in this specific use case. Write operations should still follow CQRS pattern.
-        var (transactions, totalCount) = await _transactionQueryService.GetWithQueryAsync(parameters, cancellationToken);
-
-        var transactionDtos = transactions.Select(t => new TransactionDto(
-            t.Id,
-            t.FundId,
-            t.Fund?.Code ?? string.Empty,
-            t.Fund?.Name ?? string.Empty,
-            t.SecurityId,
-            t.Security?.Ticker,
-            t.Security?.Name,
-            t.TransactionSubTypeId,
-            t.TransactionSubType?.ShortDescription ?? string.Empty,
-            t.TransactionSubType?.TypeId ?? 0,
-            t.TransactionSubType?.Type?.ShortDescription ?? string.Empty,
-            t.TradeDate,
-            t.SettleDate,
-            t.Quantity,
-            t.Price,
-            t.Amount,
-            t.Currency,
-            t.StatusId,
-            t.Status?.ShortDescription ?? string.Empty,
-            t.CreatedAt,
-            t.UpdatedAt
-        )).ToList();
-
-        var result = new PagedResult<TransactionDto>(transactionDtos, totalCount, parameters.Limit, parameters.Offset);
-
+        var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }
 

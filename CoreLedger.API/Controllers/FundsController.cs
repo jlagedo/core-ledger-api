@@ -1,8 +1,7 @@
 using CoreLedger.Application.DTOs;
-using CoreLedger.Application.Interfaces.QueryServices;
+using CoreLedger.Application.Models;
 using CoreLedger.Application.UseCases.Funds.Commands;
 using CoreLedger.Application.UseCases.Funds.Queries;
-using CoreLedger.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,18 +16,15 @@ namespace CoreLedger.API.Controllers;
 [Route("api/[controller]")]
 public class FundsController : ControllerBase
 {
-    private readonly IFundQueryService _fundQueryService;
     private readonly ILogger<FundsController> _logger;
     private readonly IMediator _mediator;
 
     public FundsController(
         IMediator mediator,
-        ILogger<FundsController> logger,
-        IFundQueryService fundQueryService)
+        ILogger<FundsController> logger)
     {
         _mediator = mediator;
         _logger = logger;
-        _fundQueryService = fundQueryService;
     }
 
     /// <summary>
@@ -50,36 +46,14 @@ public class FundsController : ControllerBase
         [FromQuery] string? filter = null,
         CancellationToken cancellationToken = default)
     {
-        var parameters = new QueryParameters
-        {
-            Limit = limit,
-            Offset = offset,
-            SortBy = sortBy,
-            SortDirection = sortDirection,
-            Filter = filter
-        };
+        var query = new GetFundsWithQueryQuery(
+            limit,
+            offset,
+            sortBy,
+            sortDirection,
+            filter);
 
-        // ARCHITECTURAL DECISION: Clean Architecture pattern intentionally bypassed for performance
-        // This controller directly calls the query service for query operations with filters, ordering, and pagination.
-        // Rationale: Avoiding the overhead of MediatR handlers and additional mapping layers for read-heavy operations
-        // that require dynamic SQL generation. The performance benefit of direct query service access outweighs
-        // the architectural purity in this specific use case. Write operations should still follow CQRS pattern.
-        var (funds, totalCount) = await _fundQueryService.GetWithQueryAsync(parameters, cancellationToken);
-
-        var fundDtos = funds.Select(f => new FundDto(
-            f.Id,
-            f.Code,
-            f.Name,
-            f.BaseCurrency,
-            f.InceptionDate,
-            f.ValuationFrequency,
-            f.ValuationFrequency.ToString(),
-            f.CreatedAt,
-            f.UpdatedAt
-        )).ToList();
-
-        var result = new PagedResult<FundDto>(fundDtos, totalCount, parameters.Limit, parameters.Offset);
-
+        var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }
 

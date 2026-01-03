@@ -1,6 +1,7 @@
 using CoreLedger.Application.DTOs;
-using CoreLedger.Application.Interfaces.QueryServices;
-using CoreLedger.Domain.Models;
+using CoreLedger.Application.Models;
+using CoreLedger.Application.UseCases.AuditLogs.Queries;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,14 +15,14 @@ namespace CoreLedger.API.Controllers;
 [Route("api/[controller]")]
 public class AuditLogsController : ControllerBase
 {
-    private readonly IAuditLogQueryService _auditLogQueryService;
     private readonly ILogger<AuditLogsController> _logger;
+    private readonly IMediator _mediator;
 
     public AuditLogsController(
-        IAuditLogQueryService auditLogQueryService,
+        IMediator mediator,
         ILogger<AuditLogsController> logger)
     {
-        _auditLogQueryService = auditLogQueryService;
+        _mediator = mediator;
         _logger = logger;
     }
 
@@ -45,39 +46,14 @@ public class AuditLogsController : ControllerBase
         [FromQuery] string? filter = null,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation(
-            "Retrieving audit logs with limit: {Limit}, offset: {Offset}, sortBy: {SortBy}, sortDirection: {SortDirection}, filter: {Filter}",
-            limit, offset, sortBy, sortDirection, filter);
+        var query = new GetAuditLogsWithQueryQuery(
+            limit,
+            offset,
+            sortBy,
+            sortDirection,
+            filter);
 
-        var parameters = new QueryParameters
-        {
-            Limit = limit,
-            Offset = offset,
-            SortBy = sortBy,
-            SortDirection = sortDirection,
-            Filter = filter
-        };
-
-        var (auditLogs, totalCount) = await _auditLogQueryService.GetWithQueryAsync(parameters, cancellationToken);
-
-        var auditLogDtos = auditLogs.Select(a => new AuditLogDto(
-            a.Id,
-            a.EntityName,
-            a.EntityId,
-            a.EventType,
-            a.PerformedByUserId,
-            a.PerformedAt,
-            a.DataBefore?.RootElement.Clone(),
-            a.DataAfter?.RootElement.Clone(),
-            a.CorrelationId,
-            a.RequestId,
-            a.Source
-        )).ToList();
-
-        var result = new PagedResult<AuditLogDto>(auditLogDtos, totalCount, parameters.Limit, parameters.Offset);
-
-        _logger.LogInformation("Retrieved {Count} audit logs out of {TotalCount} total", auditLogDtos.Count, totalCount);
-
+        var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }
 }

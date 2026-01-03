@@ -1,8 +1,7 @@
 using CoreLedger.Application.DTOs;
-using CoreLedger.Application.Interfaces.QueryServices;
+using CoreLedger.Application.Models;
 using CoreLedger.Application.UseCases.Securities.Commands;
 using CoreLedger.Application.UseCases.Securities.Queries;
-using CoreLedger.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,16 +18,13 @@ public class SecuritiesController : ControllerBase
 {
     private readonly ILogger<SecuritiesController> _logger;
     private readonly IMediator _mediator;
-    private readonly ISecurityQueryService _securityQueryService;
 
     public SecuritiesController(
         IMediator mediator,
-        ILogger<SecuritiesController> logger,
-        ISecurityQueryService securityQueryService)
+        ILogger<SecuritiesController> logger)
     {
         _mediator = mediator;
         _logger = logger;
-        _securityQueryService = securityQueryService;
     }
 
     /// <summary>
@@ -50,39 +46,14 @@ public class SecuritiesController : ControllerBase
         [FromQuery] string? filter = null,
         CancellationToken cancellationToken = default)
     {
-        var parameters = new QueryParameters
-        {
-            Limit = limit,
-            Offset = offset,
-            SortBy = sortBy,
-            SortDirection = sortDirection,
-            Filter = filter
-        };
+        var query = new GetSecuritiesWithQueryQuery(
+            limit,
+            offset,
+            sortBy,
+            sortDirection,
+            filter);
 
-        // ARCHITECTURAL DECISION: Clean Architecture pattern intentionally bypassed for performance
-        // This controller directly calls the query service for query operations with filters, ordering, and pagination.
-        // Rationale: Avoiding the overhead of MediatR handlers and additional mapping layers for read-heavy operations
-        // that require dynamic SQL generation. The performance benefit of direct query service access outweighs
-        // the architectural purity in this specific use case. Write operations should still follow CQRS pattern.
-        var (securities, totalCount) = await _securityQueryService.GetWithQueryAsync(parameters, cancellationToken);
-
-        var securityDtos = securities.Select(s => new SecurityDto(
-            s.Id,
-            s.Name,
-            s.Ticker,
-            s.Isin,
-            s.Type,
-            s.Type.ToString(),
-            s.Currency,
-            s.Status,
-            s.Status.ToString(),
-            s.CreatedAt,
-            s.UpdatedAt,
-            s.DeactivatedAt
-        )).ToList();
-
-        var result = new PagedResult<SecurityDto>(securityDtos, totalCount, parameters.Limit, parameters.Offset);
-
+        var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }
 
