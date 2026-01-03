@@ -1,4 +1,5 @@
 using CoreLedger.Domain.Entities;
+using CoreLedger.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace CoreLedger.Infrastructure.Persistence;
@@ -6,7 +7,7 @@ namespace CoreLedger.Infrastructure.Persistence;
 /// <summary>
 ///     Application database context with proper configuration for PostgreSQL.
 /// </summary>
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : DbContext, IApplicationDbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)

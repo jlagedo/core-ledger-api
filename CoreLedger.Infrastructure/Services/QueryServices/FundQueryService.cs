@@ -1,25 +1,22 @@
+using CoreLedger.Application.Interfaces.QueryServices;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Enums;
-using CoreLedger.Domain.Interfaces;
 using CoreLedger.Domain.Models;
+using CoreLedger.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace CoreLedger.Infrastructure.Persistence.Repositories;
+namespace CoreLedger.Infrastructure.Services.QueryServices;
 
 /// <summary>
-///     Repository implementation for Fund entity with specific queries.
+///     Query service implementation for complex Fund queries with RFC-8040 filtering, sorting, and pagination.
 /// </summary>
-public class FundRepository : Repository<Fund>, IFundRepository
+public class FundQueryService : IFundQueryService
 {
-    public FundRepository(ApplicationDbContext context) : base(context)
-    {
-    }
+    private readonly ApplicationDbContext _context;
 
-    public async Task<Fund?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
+    public FundQueryService(ApplicationDbContext context)
     {
-        return await _dbSet
-            .AsNoTracking()
-            .FirstOrDefaultAsync(f => f.Name == name, cancellationToken);
+        _context = context;
     }
 
     public async Task<(IReadOnlyList<Fund> Funds, int TotalCount)> GetWithQueryAsync(

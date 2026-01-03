@@ -6,6 +6,7 @@ using CoreLedger.Domain.Enums;
 using CoreLedger.Domain.Interfaces;
 using CoreLedger.Infrastructure.Configuration;
 using CoreLedger.Worker.Configuration;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -108,9 +109,9 @@ public class TestConnectionConsumer : BackgroundService
 
                         // Update CoreJob status to Running
                         using var scope = _serviceProvider.CreateScope();
-                        var coreJobRepository = scope.ServiceProvider.GetRequiredService<ICoreJobRepository>();
+                        var context = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
 
-                        var coreJob = await coreJobRepository.GetByIdAsync(message.CoreJobId, stoppingToken);
+                        var coreJob = await context.CoreJobs.FindAsync([message.CoreJobId], stoppingToken);
                         if (coreJob == null)
                         {
                             _logger.LogError("CoreJob not found with Id: {CoreJobId}", message.CoreJobId);
@@ -123,7 +124,7 @@ public class TestConnectionConsumer : BackgroundService
 
                         // Update status to Running
                         coreJob.UpdateStatus(JobStatus.Running, DateTime.UtcNow);
-                        await coreJobRepository.UpdateAsync(coreJob, stoppingToken);
+                        await context.SaveChangesAsync(stoppingToken);
                         _logger.LogInformation("CoreJob status updated to Running");
 
                         // Simulate processing
@@ -133,7 +134,7 @@ public class TestConnectionConsumer : BackgroundService
 
                         // Update status to Complete
                         coreJob.UpdateStatus(JobStatus.Complete, finishedDate: DateTime.UtcNow);
-                        await coreJobRepository.UpdateAsync(coreJob, stoppingToken);
+                        await context.SaveChangesAsync(stoppingToken);
                         _logger.LogInformation("CoreJob status updated to Complete");
 
                         _channel.BasicAck(ea.DeliveryTag, false);
@@ -156,12 +157,12 @@ public class TestConnectionConsumer : BackgroundService
                             if (message != null)
                             {
                                 using var scope = _serviceProvider.CreateScope();
-                                var coreJobRepository = scope.ServiceProvider.GetRequiredService<ICoreJobRepository>();
-                                var coreJob = await coreJobRepository.GetByIdAsync(message.CoreJobId, stoppingToken);
+                                var context = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
+                                var coreJob = await context.CoreJobs.FindAsync([message.CoreJobId], stoppingToken);
                                 if (coreJob != null)
                                 {
                                     coreJob.UpdateStatus(JobStatus.Failed, finishedDate: DateTime.UtcNow);
-                                    await coreJobRepository.UpdateAsync(coreJob, stoppingToken);
+                                    await context.SaveChangesAsync(stoppingToken);
                                     _logger.LogInformation("CoreJob status updated to Failed");
                                 }
                             }

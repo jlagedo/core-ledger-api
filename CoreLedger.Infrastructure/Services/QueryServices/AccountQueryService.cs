@@ -1,40 +1,22 @@
+using CoreLedger.Application.Interfaces.QueryServices;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Enums;
-using CoreLedger.Domain.Interfaces;
 using CoreLedger.Domain.Models;
+using CoreLedger.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace CoreLedger.Infrastructure.Persistence.Repositories;
+namespace CoreLedger.Infrastructure.Services.QueryServices;
 
 /// <summary>
-///     Repository implementation for Account entity with specific queries.
+///     Query service implementation for complex Account queries with RFC-8040 filtering, sorting, and pagination.
 /// </summary>
-public class AccountRepository : Repository<Account>, IAccountRepository
+public class AccountQueryService : IAccountQueryService
 {
-    public AccountRepository(ApplicationDbContext context) : base(context)
-    {
-    }
+    private readonly ApplicationDbContext _context;
 
-    public async Task<Account?> GetByCodeAsync(long code, CancellationToken cancellationToken = default)
+    public AccountQueryService(ApplicationDbContext context)
     {
-        return await _dbSet
-            .AsNoTracking()
-            .FirstOrDefaultAsync(a => a.Code == code, cancellationToken);
-    }
-
-    public async Task<Account?> GetByIdWithTypeAsync(int id, CancellationToken cancellationToken = default)
-    {
-        return await _dbSet
-            .Include(a => a.Type)
-            .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<Account>> GetAllWithTypeAsync(CancellationToken cancellationToken = default)
-    {
-        return await _dbSet
-            .AsNoTracking()
-            .Include(a => a.Type)
-            .ToListAsync(cancellationToken);
+        _context = context;
     }
 
     public async Task<(IReadOnlyList<Account> Accounts, int TotalCount)> GetWithQueryAsync(
@@ -141,11 +123,10 @@ public class AccountRepository : Repository<Account>, IAccountRepository
     }
 
     public async Task<IReadOnlyList<(int TypeId, string TypeDescription, int ActiveAccountCount)>>
-        GetActiveAccountsByTypeAsync(
-            CancellationToken cancellationToken = default)
+        GetActiveAccountsByTypeAsync(CancellationToken cancellationToken = default)
     {
         var sql = @"
-            SELECT 
+            SELECT
                 at.id AS TypeId,
                 at.description AS TypeDescription,
                 COUNT(a.id)::int AS ActiveAccountCount
@@ -164,7 +145,7 @@ public class AccountRepository : Repository<Account>, IAccountRepository
     private class AccountsByTypeReportResult
     {
         public int TypeId { get; set; }
-        public string TypeDescription { get; } = string.Empty;
+        public string TypeDescription { get; set; } = string.Empty;
         public int ActiveAccountCount { get; set; }
     }
 }

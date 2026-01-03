@@ -1,28 +1,21 @@
+using CoreLedger.Application.Interfaces.QueryServices;
 using CoreLedger.Domain.Entities;
-using CoreLedger.Domain.Interfaces;
 using CoreLedger.Domain.Models;
+using CoreLedger.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace CoreLedger.Infrastructure.Persistence.Repositories;
+namespace CoreLedger.Infrastructure.Services.QueryServices;
 
 /// <summary>
-///     Repository implementation for Transaction entity with specialized queries.
+///     Query service implementation for complex Transaction queries with RFC-8040 filtering, sorting, and pagination.
 /// </summary>
-public class TransactionRepository : Repository<Transaction>, ITransactionRepository
+public class TransactionQueryService : ITransactionQueryService
 {
-    public TransactionRepository(ApplicationDbContext context) : base(context)
-    {
-    }
+    private readonly ApplicationDbContext _context;
 
-    public async Task<Transaction?> GetByIdWithNavigationAsync(int id, CancellationToken cancellationToken = default)
+    public TransactionQueryService(ApplicationDbContext context)
     {
-        return await _dbSet
-            .Include(t => t.Fund)
-            .Include(t => t.Security)
-            .Include(t => t.TransactionSubType!)
-            .ThenInclude(tst => tst.Type)
-            .Include(t => t.Status)
-            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        _context = context;
     }
 
     public async Task<(IReadOnlyList<Transaction> Transactions, int TotalCount)> GetWithQueryAsync(

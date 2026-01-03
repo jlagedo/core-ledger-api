@@ -1,7 +1,6 @@
 using CoreLedger.Application.Interfaces;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Enums;
-using CoreLedger.Domain.Interfaces;
 using CoreLedger.Infrastructure.Configuration;
 using CoreLedger.Infrastructure.Persistence;
 using CoreLedger.Infrastructure.Persistence.Models;
@@ -17,21 +16,15 @@ namespace CoreLedger.Infrastructure.Services;
 public class B3ImportProcessor : IB3ImportProcessor
 {
     private readonly int _batchSize;
-    private readonly ICoreJobRepository _coreJobRepository;
     private readonly ApplicationDbContext _dbContext;
     private readonly ILogger<B3ImportProcessor> _logger;
-    private readonly ISecurityRepository _securityRepository;
 
     public B3ImportProcessor(
         ILogger<B3ImportProcessor> logger,
-        ICoreJobRepository coreJobRepository,
-        ISecurityRepository securityRepository,
         ApplicationDbContext dbContext,
         IOptions<B3ImportOptions> options)
     {
         _logger = logger;
-        _coreJobRepository = coreJobRepository;
-        _securityRepository = securityRepository;
         _dbContext = dbContext;
         _batchSize = options.Value.BatchSize;
     }
@@ -43,7 +36,7 @@ public class B3ImportProcessor : IB3ImportProcessor
     /// </summary>
     public async Task ProcessAsync(int coreJobId, string referenceId, CancellationToken cancellationToken = default)
     {
-        var coreJob = await _coreJobRepository.GetByIdAsync(coreJobId, cancellationToken);
+        var coreJob = await _dbContext.CoreJobs.FindAsync([coreJobId], cancellationToken);
         if (coreJob == null)
         {
             _logger.LogError("CoreJob {CoreJobId} not found", coreJobId);
@@ -64,7 +57,7 @@ public class B3ImportProcessor : IB3ImportProcessor
                 _logger.LogInformation("========================================");
 
                 coreJob.UpdateStatus(JobStatus.Running, DateTime.UtcNow);
-                await _coreJobRepository.UpdateAsync(coreJob, cancellationToken);
+                // Save changes within the transaction
                 _logger.LogInformation("CoreJob status updated to Running");
 
                 _logger.LogInformation("Querying total instrument count from b3_instruments_enriched...");
@@ -194,7 +187,7 @@ public class B3ImportProcessor : IB3ImportProcessor
 
                 _logger.LogInformation("Finalizing B3 import process...");
                 coreJob.UpdateStatus(JobStatus.Complete, finishedDate: DateTime.UtcNow);
-                await _coreJobRepository.UpdateAsync(coreJob, cancellationToken);
+                await _dbContext.SaveChangesAsync(cancellationToken);
                 _logger.LogInformation("CoreJob status updated to Complete");
 
                 await transaction.CommitAsync(cancellationToken);
@@ -232,7 +225,7 @@ public class B3ImportProcessor : IB3ImportProcessor
                 _logger.LogWarning("Transaction rolled back");
 
                 coreJob.UpdateStatus(JobStatus.Failed, finishedDate: DateTime.UtcNow);
-                await _coreJobRepository.UpdateAsync(coreJob, cancellationToken);
+                await _dbContext.SaveChangesAsync(cancellationToken);
                 _logger.LogInformation("CoreJob status updated to Failed");
 
                 throw;

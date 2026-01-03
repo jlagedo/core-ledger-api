@@ -1,5 +1,5 @@
 using CoreLedger.Application.DTOs;
-using CoreLedger.Domain.Interfaces;
+using CoreLedger.Application.Interfaces.QueryServices;
 using CoreLedger.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,15 +14,15 @@ namespace CoreLedger.API.Controllers;
 [Route("api/[controller]")]
 public class CoreJobsController : ControllerBase
 {
-    private readonly ICoreJobRepository _coreJobRepository;
+    private readonly ICoreJobQueryService _coreJobQueryService;
     private readonly ILogger<CoreJobsController> _logger;
 
     public CoreJobsController(
         ILogger<CoreJobsController> logger,
-        ICoreJobRepository coreJobRepository)
+        ICoreJobQueryService coreJobQueryService)
     {
         _logger = logger;
-        _coreJobRepository = coreJobRepository;
+        _coreJobQueryService = coreJobQueryService;
     }
 
     /// <summary>
@@ -54,11 +54,11 @@ public class CoreJobsController : ControllerBase
         };
 
         // ARCHITECTURAL DECISION: Clean Architecture pattern intentionally bypassed for performance
-        // This controller directly calls the repository for query operations with filters, ordering, and pagination.
+        // This controller directly calls the query service for query operations with filters, ordering, and pagination.
         // Rationale: Avoiding the overhead of MediatR handlers and additional mapping layers for read-heavy operations
-        // that require dynamic SQL generation. The performance benefit of direct repository access outweighs
+        // that require dynamic SQL generation. The performance benefit of direct query service access outweighs
         // the architectural purity in this specific use case. Write operations should still follow CQRS pattern.
-        var (jobs, totalCount) = await _coreJobRepository.GetWithQueryAsync(parameters, cancellationToken);
+        var (jobs, totalCount) = await _coreJobQueryService.GetWithQueryAsync(parameters, cancellationToken);
 
         var jobDtos = jobs.Select(j => new CoreJobDto(
             j.Id,

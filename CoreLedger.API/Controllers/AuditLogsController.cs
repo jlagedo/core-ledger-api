@@ -1,5 +1,5 @@
 using CoreLedger.Application.DTOs;
-using CoreLedger.Domain.Interfaces;
+using CoreLedger.Application.Interfaces.QueryServices;
 using CoreLedger.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,14 +14,14 @@ namespace CoreLedger.API.Controllers;
 [Route("api/[controller]")]
 public class AuditLogsController : ControllerBase
 {
-    private readonly IAuditLogRepository _auditLogRepository;
+    private readonly IAuditLogQueryService _auditLogQueryService;
     private readonly ILogger<AuditLogsController> _logger;
 
     public AuditLogsController(
-        IAuditLogRepository auditLogRepository,
+        IAuditLogQueryService auditLogQueryService,
         ILogger<AuditLogsController> logger)
     {
-        _auditLogRepository = auditLogRepository;
+        _auditLogQueryService = auditLogQueryService;
         _logger = logger;
     }
 
@@ -58,7 +58,7 @@ public class AuditLogsController : ControllerBase
             Filter = filter
         };
 
-        var (auditLogs, totalCount) = await _auditLogRepository.GetWithQueryAsync(parameters, cancellationToken);
+        var (auditLogs, totalCount) = await _auditLogQueryService.GetWithQueryAsync(parameters, cancellationToken);
 
         var auditLogDtos = auditLogs.Select(a => new AuditLogDto(
             a.Id,

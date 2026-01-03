@@ -1,6 +1,7 @@
 using CoreLedger.Domain.Exceptions;
 using CoreLedger.Domain.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.Funds.Commands;
@@ -10,14 +11,14 @@ namespace CoreLedger.Application.UseCases.Funds.Commands;
 /// </summary>
 public class UpdateFundCommandHandler : IRequestHandler<UpdateFundCommand>
 {
-    private readonly IFundRepository _fundRepository;
+    private readonly IApplicationDbContext _context;
     private readonly ILogger<UpdateFundCommandHandler> _logger;
 
     public UpdateFundCommandHandler(
-        IFundRepository fundRepository,
+        IApplicationDbContext context,
         ILogger<UpdateFundCommandHandler> logger)
     {
-        _fundRepository = fundRepository;
+        _context = context;
         _logger = logger;
     }
 
@@ -27,10 +28,12 @@ public class UpdateFundCommandHandler : IRequestHandler<UpdateFundCommand>
     {
         _logger.LogInformation("Updating Fund with ID: {FundId}", request.Id);
 
-        var fund = await _fundRepository.GetByIdAsync(request.Id, cancellationToken);
+        var fund = await _context.Funds.FindAsync([request.Id], cancellationToken);
         if (fund == null) throw new EntityNotFoundException("Fund", request.Id);
 
-        var existingWithName = await _fundRepository.GetByNameAsync(request.Name, cancellationToken);
+        var existingWithName = await _context.Funds
+            .AsNoTracking()
+            .FirstOrDefaultAsync(f => f.Name == request.Name, cancellationToken);
         if (existingWithName != null && existingWithName.Id != request.Id)
             throw new DomainValidationException("Fund with this name already exists");
 
@@ -41,7 +44,7 @@ public class UpdateFundCommandHandler : IRequestHandler<UpdateFundCommand>
             request.InceptionDate,
             request.ValuationFrequency);
 
-        await _fundRepository.UpdateAsync(fund, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Updated Fund with ID: {FundId}", request.Id);
     }

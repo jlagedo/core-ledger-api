@@ -3,6 +3,7 @@ using CoreLedger.Application.DTOs;
 using CoreLedger.Domain.Exceptions;
 using CoreLedger.Domain.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.Securities.Queries;
@@ -12,16 +13,16 @@ namespace CoreLedger.Application.UseCases.Securities.Queries;
 /// </summary>
 public class GetSecurityByIdQueryHandler : IRequestHandler<GetSecurityByIdQuery, SecurityDto>
 {
+    private readonly IApplicationDbContext _context;
     private readonly ILogger<GetSecurityByIdQueryHandler> _logger;
     private readonly IMapper _mapper;
-    private readonly ISecurityRepository _repository;
 
     public GetSecurityByIdQueryHandler(
-        ISecurityRepository repository,
+        IApplicationDbContext context,
         IMapper mapper,
         ILogger<GetSecurityByIdQueryHandler> logger)
     {
-        _repository = repository;
+        _context = context;
         _mapper = mapper;
         _logger = logger;
     }
@@ -32,7 +33,9 @@ public class GetSecurityByIdQueryHandler : IRequestHandler<GetSecurityByIdQuery,
     {
         _logger.LogInformation("Retrieving Security with ID: {SecurityId}", request.Id);
 
-        var security = await _repository.GetByIdAsync(request.Id, cancellationToken);
+        var security = await _context.Securities
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == request.Id, cancellationToken);
         if (security == null) throw new EntityNotFoundException("Security", request.Id);
 
         var result = _mapper.Map<SecurityDto>(security);

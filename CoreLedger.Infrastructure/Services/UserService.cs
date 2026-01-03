@@ -3,6 +3,7 @@ using CoreLedger.Application.DTOs;
 using CoreLedger.Application.Interfaces;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Infrastructure.Services;
@@ -13,17 +14,17 @@ namespace CoreLedger.Infrastructure.Services;
 public class UserService : IUserService
 {
     private readonly IAuth0Service _auth0Service;
+    private readonly IApplicationDbContext _context;
     private readonly ILogger<UserService> _logger;
     private readonly IMapper _mapper;
-    private readonly IUserRepository _userRepository;
 
     public UserService(
-        IUserRepository userRepository,
+        IApplicationDbContext context,
         IAuth0Service auth0Service,
         IMapper mapper,
         ILogger<UserService> logger)
     {
-        _userRepository = userRepository;
+        _context = context;
         _auth0Service = auth0Service;
         _mapper = mapper;
         _logger = logger;
@@ -41,10 +42,8 @@ public class UserService : IUserService
             provider);
 
         // Check if user already exists
-        var existingUser = await _userRepository.GetByAuthProviderIdAsync(
-            authProviderId,
-            provider,
-            cancellationToken);
+        var existingUser = await _context.Users
+            .FirstOrDefaultAsync(u => u.AuthProviderId == authProviderId && u.Provider == provider, cancellationToken);
 
         if (existingUser != null)
         {
@@ -59,7 +58,7 @@ public class UserService : IUserService
                 cancellationToken);
 
             existingUser.UpdateLoginInfo(auth0Profile.Email, auth0Profile.Name);
-            await _userRepository.UpdateAsync(existingUser, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation(
                 "Updated existing user from Auth0: Id={UserId}, Email={Email}",
@@ -83,7 +82,8 @@ public class UserService : IUserService
             profile.Email,
             profile.Name);
 
-        await _userRepository.AddAsync(newUser, cancellationToken);
+        _context.Users.Add(newUser);
+        await _context.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(
             "Created new user from Auth0: Id={UserId}, Email={Email}",
@@ -95,7 +95,7 @@ public class UserService : IUserService
 
     public async Task<UserDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        var user = await _userRepository.GetByIdAsync(id, cancellationToken);
+        var user = await _context.Users.FindAsync([id], cancellationToken);
         return user == null ? null : _mapper.Map<UserDto>(user);
     }
 
@@ -104,10 +104,9 @@ public class UserService : IUserService
         string provider,
         CancellationToken cancellationToken = default)
     {
-        var user = await _userRepository.GetByAuthProviderIdAsync(
-            authProviderId,
-            provider,
-            cancellationToken);
+        var user = await _context.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.AuthProviderId == authProviderId && u.Provider == provider, cancellationToken);
         return user == null ? null : _mapper.Map<UserDto>(user);
     }
 }

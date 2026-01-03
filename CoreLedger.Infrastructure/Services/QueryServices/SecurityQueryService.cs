@@ -1,25 +1,22 @@
+using CoreLedger.Application.Interfaces.QueryServices;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Enums;
-using CoreLedger.Domain.Interfaces;
 using CoreLedger.Domain.Models;
+using CoreLedger.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace CoreLedger.Infrastructure.Persistence.Repositories;
+namespace CoreLedger.Infrastructure.Services.QueryServices;
 
 /// <summary>
-///     Repository implementation for Security entity with specific queries.
+///     Query service implementation for complex Security queries with RFC-8040 filtering, sorting, and pagination.
 /// </summary>
-public class SecurityRepository : Repository<Security>, ISecurityRepository
+public class SecurityQueryService : ISecurityQueryService
 {
-    public SecurityRepository(ApplicationDbContext context) : base(context)
-    {
-    }
+    private readonly ApplicationDbContext _context;
 
-    public async Task<Security?> GetByTickerAsync(string ticker, CancellationToken cancellationToken = default)
+    public SecurityQueryService(ApplicationDbContext context)
     {
-        return await _dbSet
-            .AsNoTracking()
-            .FirstOrDefaultAsync(s => s.Ticker == ticker.ToUpperInvariant(), cancellationToken);
+        _context = context;
     }
 
     public async Task<(IReadOnlyList<Security> Securities, int TotalCount)> GetWithQueryAsync(

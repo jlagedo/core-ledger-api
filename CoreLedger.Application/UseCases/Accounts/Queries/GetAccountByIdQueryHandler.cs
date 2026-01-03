@@ -3,6 +3,7 @@ using CoreLedger.Application.DTOs;
 using CoreLedger.Domain.Exceptions;
 using CoreLedger.Domain.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.Accounts.Queries;
@@ -12,16 +13,16 @@ namespace CoreLedger.Application.UseCases.Accounts.Queries;
 /// </summary>
 public class GetAccountByIdQueryHandler : IRequestHandler<GetAccountByIdQuery, AccountDto>
 {
+    private readonly IApplicationDbContext _context;
     private readonly ILogger<GetAccountByIdQueryHandler> _logger;
     private readonly IMapper _mapper;
-    private readonly IAccountRepository _repository;
 
     public GetAccountByIdQueryHandler(
-        IAccountRepository repository,
+        IApplicationDbContext context,
         IMapper mapper,
         ILogger<GetAccountByIdQueryHandler> logger)
     {
-        _repository = repository;
+        _context = context;
         _mapper = mapper;
         _logger = logger;
     }
@@ -32,7 +33,10 @@ public class GetAccountByIdQueryHandler : IRequestHandler<GetAccountByIdQuery, A
     {
         _logger.LogInformation("Retrieving Account with ID: {AccountId}", request.Id);
 
-        var account = await _repository.GetByIdWithTypeAsync(request.Id, cancellationToken);
+        var account = await _context.Accounts
+            .AsNoTracking()
+            .Include(a => a.Type)
+            .FirstOrDefaultAsync(a => a.Id == request.Id, cancellationToken);
         if (account == null) throw new EntityNotFoundException("Account", request.Id);
 
         var result = _mapper.Map<AccountDto>(account);

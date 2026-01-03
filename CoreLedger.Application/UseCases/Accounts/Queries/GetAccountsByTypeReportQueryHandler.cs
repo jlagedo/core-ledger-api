@@ -1,5 +1,5 @@
 using CoreLedger.Application.DTOs;
-using CoreLedger.Domain.Interfaces;
+using CoreLedger.Application.Interfaces.QueryServices;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -9,14 +9,14 @@ public class
     GetAccountsByTypeReportQueryHandler : IRequestHandler<GetAccountsByTypeReportQuery,
     IReadOnlyList<AccountsByTypeReportDto>>
 {
+    private readonly IAccountQueryService _accountQueryService;
     private readonly ILogger<GetAccountsByTypeReportQueryHandler> _logger;
-    private readonly IAccountRepository _repository;
 
     public GetAccountsByTypeReportQueryHandler(
-        IAccountRepository repository,
+        IAccountQueryService accountQueryService,
         ILogger<GetAccountsByTypeReportQueryHandler> logger)
     {
-        _repository = repository;
+        _accountQueryService = accountQueryService;
         _logger = logger;
     }
 
@@ -26,7 +26,7 @@ public class
     {
         _logger.LogInformation("Retrieving accounts by type report");
 
-        var data = await _repository.GetActiveAccountsByTypeAsync(cancellationToken);
+        var data = await _accountQueryService.GetActiveAccountsByTypeAsync(cancellationToken);
 
         var result = data.Select(d => new AccountsByTypeReportDto(
             d.TypeId,

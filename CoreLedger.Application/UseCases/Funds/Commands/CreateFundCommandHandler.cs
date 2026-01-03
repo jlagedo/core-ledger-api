@@ -4,6 +4,7 @@ using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Exceptions;
 using CoreLedger.Domain.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.Funds.Commands;
@@ -13,16 +14,16 @@ namespace CoreLedger.Application.UseCases.Funds.Commands;
 /// </summary>
 public class CreateFundCommandHandler : IRequestHandler<CreateFundCommand, FundDto>
 {
-    private readonly IFundRepository _fundRepository;
+    private readonly IApplicationDbContext _context;
     private readonly ILogger<CreateFundCommandHandler> _logger;
     private readonly IMapper _mapper;
 
     public CreateFundCommandHandler(
-        IFundRepository fundRepository,
+        IApplicationDbContext context,
         IMapper mapper,
         ILogger<CreateFundCommandHandler> logger)
     {
-        _fundRepository = fundRepository;
+        _context = context;
         _mapper = mapper;
         _logger = logger;
     }
@@ -33,7 +34,9 @@ public class CreateFundCommandHandler : IRequestHandler<CreateFundCommand, FundD
     {
         _logger.LogInformation("Creating new Fund with name: {Name}", request.Name);
 
-        var existing = await _fundRepository.GetByNameAsync(request.Name, cancellationToken);
+        var existing = await _context.Funds
+            .AsNoTracking()
+            .FirstOrDefaultAsync(f => f.Name == request.Name, cancellationToken);
         if (existing != null) throw new DomainValidationException("Fund with this name already exists");
 
         var fund = Fund.Create(
@@ -44,10 +47,11 @@ public class CreateFundCommandHandler : IRequestHandler<CreateFundCommand, FundD
             request.ValuationFrequency,
             request.CreatedByUserId);
 
-        var created = await _fundRepository.AddAsync(fund, cancellationToken);
+        _context.Funds.Add(fund);
+        await _context.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Created Fund with ID: {FundId}", created.Id);
+        _logger.LogInformation("Created Fund with ID: {FundId}", fund.Id);
 
-        return _mapper.Map<FundDto>(created);
+        return _mapper.Map<FundDto>(fund);
     }
 }

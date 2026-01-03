@@ -7,26 +7,14 @@ namespace CoreLedger.Application.UseCases.Transactions.Commands;
 
 public class UpdateTransactionCommandHandler : IRequestHandler<UpdateTransactionCommand>
 {
-    private readonly IFundRepository _fundRepository;
+    private readonly IApplicationDbContext _context;
     private readonly ILogger<UpdateTransactionCommandHandler> _logger;
-    private readonly ISecurityRepository _securityRepository;
-    private readonly ITransactionRepository _transactionRepository;
-    private readonly ITransactionStatusRepository _transactionStatusRepository;
-    private readonly ITransactionSubTypeRepository _transactionSubTypeRepository;
 
     public UpdateTransactionCommandHandler(
-        ITransactionRepository transactionRepository,
-        IFundRepository fundRepository,
-        ISecurityRepository securityRepository,
-        ITransactionSubTypeRepository transactionSubTypeRepository,
-        ITransactionStatusRepository transactionStatusRepository,
+        IApplicationDbContext context,
         ILogger<UpdateTransactionCommandHandler> logger)
     {
-        _transactionRepository = transactionRepository;
-        _fundRepository = fundRepository;
-        _securityRepository = securityRepository;
-        _transactionSubTypeRepository = transactionSubTypeRepository;
-        _transactionStatusRepository = transactionStatusRepository;
+        _context = context;
         _logger = logger;
     }
 
@@ -34,27 +22,27 @@ public class UpdateTransactionCommandHandler : IRequestHandler<UpdateTransaction
     {
         _logger.LogInformation("Updating transaction with ID: {TransactionId}", request.Id);
 
-        var transaction = await _transactionRepository.GetByIdAsync(request.Id, cancellationToken);
+        var transaction = await _context.Transactions.FindAsync([request.Id], cancellationToken);
         if (transaction == null)
             throw new EntityNotFoundException("Transaction", request.Id);
 
         // Validate foreign keys
-        var fund = await _fundRepository.GetByIdAsync(request.FundId, cancellationToken);
+        var fund = await _context.Funds.FindAsync([request.FundId], cancellationToken);
         if (fund == null)
             throw new EntityNotFoundException("Fund", request.FundId);
 
         if (request.SecurityId.HasValue)
         {
-            var security = await _securityRepository.GetByIdAsync(request.SecurityId.Value, cancellationToken);
+            var security = await _context.Securities.FindAsync([request.SecurityId.Value], cancellationToken);
             if (security == null)
                 throw new EntityNotFoundException("Security", request.SecurityId.Value);
         }
 
-        var subType = await _transactionSubTypeRepository.GetByIdAsync(request.TransactionSubTypeId, cancellationToken);
+        var subType = await _context.TransactionSubTypes.FindAsync([request.TransactionSubTypeId], cancellationToken);
         if (subType == null)
             throw new EntityNotFoundException("TransactionSubType", request.TransactionSubTypeId);
 
-        var status = await _transactionStatusRepository.GetByIdAsync(request.StatusId, cancellationToken);
+        var status = await _context.TransactionStatuses.FindAsync([request.StatusId], cancellationToken);
         if (status == null)
             throw new EntityNotFoundException("TransactionStatus", request.StatusId);
 
@@ -70,7 +58,7 @@ public class UpdateTransactionCommandHandler : IRequestHandler<UpdateTransaction
             request.Currency,
             request.StatusId);
 
-        await _transactionRepository.UpdateAsync(transaction, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Updated transaction with ID: {TransactionId}", request.Id);
     }

@@ -4,6 +4,7 @@ using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Exceptions;
 using CoreLedger.Domain.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.AccountTypes.Commands;
@@ -13,16 +14,16 @@ namespace CoreLedger.Application.UseCases.AccountTypes.Commands;
 /// </summary>
 public class CreateAccountTypeCommandHandler : IRequestHandler<CreateAccountTypeCommand, AccountTypeDto>
 {
+    private readonly IApplicationDbContext _context;
     private readonly ILogger<CreateAccountTypeCommandHandler> _logger;
     private readonly IMapper _mapper;
-    private readonly IAccountTypeRepository _repository;
 
     public CreateAccountTypeCommandHandler(
-        IAccountTypeRepository repository,
+        IApplicationDbContext context,
         IMapper mapper,
         ILogger<CreateAccountTypeCommandHandler> logger)
     {
-        _repository = repository;
+        _context = context;
         _mapper = mapper;
         _logger = logger;
     }
@@ -35,14 +36,20 @@ public class CreateAccountTypeCommandHandler : IRequestHandler<CreateAccountType
             request.Description);
 
         // Check if account type with same description already exists
-        var existing = await _repository.GetByDescriptionAsync(request.Description, cancellationToken);
-        if (existing != null) throw new DomainValidationException("Account type with this description already exists");
+        var existing = await _context.AccountTypes
+            .AsNoTracking()
+            .FirstOrDefaultAsync(at => at.Description.ToLower() == request.Description.ToLower(), cancellationToken);
+
+        if (existing != null)
+            throw new DomainValidationException("Account type with this description already exists");
 
         var accountType = AccountType.Create(request.Description);
-        var created = await _repository.AddAsync(accountType, cancellationToken);
 
-        _logger.LogInformation("Created AccountType with ID: {AccountTypeId}", created.Id);
+        _context.AccountTypes.Add(accountType);
+        await _context.SaveChangesAsync(cancellationToken);
 
-        return _mapper.Map<AccountTypeDto>(created);
+        _logger.LogInformation("Created AccountType with ID: {AccountTypeId}", accountType.Id);
+
+        return _mapper.Map<AccountTypeDto>(accountType);
     }
 }

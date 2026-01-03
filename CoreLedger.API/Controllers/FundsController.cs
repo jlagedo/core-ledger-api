@@ -1,7 +1,7 @@
 using CoreLedger.Application.DTOs;
+using CoreLedger.Application.Interfaces.QueryServices;
 using CoreLedger.Application.UseCases.Funds.Commands;
 using CoreLedger.Application.UseCases.Funds.Queries;
-using CoreLedger.Domain.Interfaces;
 using CoreLedger.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -17,18 +17,18 @@ namespace CoreLedger.API.Controllers;
 [Route("api/[controller]")]
 public class FundsController : ControllerBase
 {
-    private readonly IFundRepository _fundRepository;
+    private readonly IFundQueryService _fundQueryService;
     private readonly ILogger<FundsController> _logger;
     private readonly IMediator _mediator;
 
     public FundsController(
         IMediator mediator,
         ILogger<FundsController> logger,
-        IFundRepository fundRepository)
+        IFundQueryService fundQueryService)
     {
         _mediator = mediator;
         _logger = logger;
-        _fundRepository = fundRepository;
+        _fundQueryService = fundQueryService;
     }
 
     /// <summary>
@@ -59,13 +59,12 @@ public class FundsController : ControllerBase
             Filter = filter
         };
 
-        //_logger.LogError(Request.Headers["Authorization"].FirstOrDefault());
         // ARCHITECTURAL DECISION: Clean Architecture pattern intentionally bypassed for performance
-        // This controller directly calls the repository for query operations with filters, ordering, and pagination.
+        // This controller directly calls the query service for query operations with filters, ordering, and pagination.
         // Rationale: Avoiding the overhead of MediatR handlers and additional mapping layers for read-heavy operations
-        // that require dynamic SQL generation. The performance benefit of direct repository access outweighs
+        // that require dynamic SQL generation. The performance benefit of direct query service access outweighs
         // the architectural purity in this specific use case. Write operations should still follow CQRS pattern.
-        var (funds, totalCount) = await _fundRepository.GetWithQueryAsync(parameters, cancellationToken);
+        var (funds, totalCount) = await _fundQueryService.GetWithQueryAsync(parameters, cancellationToken);
 
         var fundDtos = funds.Select(f => new FundDto(
             f.Id,

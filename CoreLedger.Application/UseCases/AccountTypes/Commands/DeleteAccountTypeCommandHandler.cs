@@ -1,6 +1,7 @@
 using CoreLedger.Domain.Exceptions;
 using CoreLedger.Domain.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.AccountTypes.Commands;
@@ -10,14 +11,14 @@ namespace CoreLedger.Application.UseCases.AccountTypes.Commands;
 /// </summary>
 public class DeleteAccountTypeCommandHandler : IRequestHandler<DeleteAccountTypeCommand>
 {
+    private readonly IApplicationDbContext _context;
     private readonly ILogger<DeleteAccountTypeCommandHandler> _logger;
-    private readonly IAccountTypeRepository _repository;
 
     public DeleteAccountTypeCommandHandler(
-        IAccountTypeRepository repository,
+        IApplicationDbContext context,
         ILogger<DeleteAccountTypeCommandHandler> logger)
     {
-        _repository = repository;
+        _context = context;
         _logger = logger;
     }
 
@@ -27,10 +28,14 @@ public class DeleteAccountTypeCommandHandler : IRequestHandler<DeleteAccountType
     {
         _logger.LogInformation("Deleting AccountType with ID: {AccountTypeId}", request.Id);
 
-        var accountType = await _repository.GetByIdAsync(request.Id, cancellationToken);
-        if (accountType == null) throw new EntityNotFoundException("AccountType", request.Id);
+        var accountType = await _context.AccountTypes
+            .FirstOrDefaultAsync(at => at.Id == request.Id, cancellationToken);
 
-        await _repository.DeleteAsync(accountType, cancellationToken);
+        if (accountType == null)
+            throw new EntityNotFoundException("AccountType", request.Id);
+
+        _context.AccountTypes.Remove(accountType);
+        await _context.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Deleted AccountType with ID: {AccountTypeId}", request.Id);
     }

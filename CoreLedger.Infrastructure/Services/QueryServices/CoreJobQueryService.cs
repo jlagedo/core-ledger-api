@@ -1,25 +1,22 @@
+using CoreLedger.Application.Interfaces.QueryServices;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Enums;
-using CoreLedger.Domain.Interfaces;
 using CoreLedger.Domain.Models;
+using CoreLedger.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace CoreLedger.Infrastructure.Persistence.Repositories;
+namespace CoreLedger.Infrastructure.Services.QueryServices;
 
 /// <summary>
-///     Repository implementation for CoreJob entity with specific queries.
+///     Query service implementation for complex CoreJob queries with RFC-8040 filtering, sorting, and pagination.
 /// </summary>
-public class CoreJobRepository : Repository<CoreJob>, ICoreJobRepository
+public class CoreJobQueryService : ICoreJobQueryService
 {
-    public CoreJobRepository(ApplicationDbContext context) : base(context)
-    {
-    }
+    private readonly ApplicationDbContext _context;
 
-    public async Task<CoreJob?> GetByReferenceIdAsync(string referenceId, CancellationToken cancellationToken = default)
+    public CoreJobQueryService(ApplicationDbContext context)
     {
-        return await _dbSet
-            .AsNoTracking()
-            .FirstOrDefaultAsync(j => j.ReferenceId == referenceId, cancellationToken);
+        _context = context;
     }
 
     public async Task<(IReadOnlyList<CoreJob> Jobs, int TotalCount)> GetWithQueryAsync(

@@ -3,6 +3,7 @@ using CoreLedger.Application.DTOs;
 using CoreLedger.Domain.Exceptions;
 using CoreLedger.Domain.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.AccountTypes.Queries;
@@ -12,16 +13,16 @@ namespace CoreLedger.Application.UseCases.AccountTypes.Queries;
 /// </summary>
 public class GetAccountTypeByIdQueryHandler : IRequestHandler<GetAccountTypeByIdQuery, AccountTypeDto>
 {
+    private readonly IApplicationDbContext _context;
     private readonly ILogger<GetAccountTypeByIdQueryHandler> _logger;
     private readonly IMapper _mapper;
-    private readonly IAccountTypeRepository _repository;
 
     public GetAccountTypeByIdQueryHandler(
-        IAccountTypeRepository repository,
+        IApplicationDbContext context,
         IMapper mapper,
         ILogger<GetAccountTypeByIdQueryHandler> logger)
     {
-        _repository = repository;
+        _context = context;
         _mapper = mapper;
         _logger = logger;
     }
@@ -32,8 +33,12 @@ public class GetAccountTypeByIdQueryHandler : IRequestHandler<GetAccountTypeById
     {
         _logger.LogInformation("Retrieving AccountType with ID: {AccountTypeId}", request.Id);
 
-        var accountType = await _repository.GetByIdAsync(request.Id, cancellationToken);
-        if (accountType == null) throw new EntityNotFoundException("AccountType", request.Id);
+        var accountType = await _context.AccountTypes
+            .AsNoTracking()
+            .FirstOrDefaultAsync(at => at.Id == request.Id, cancellationToken);
+
+        if (accountType == null)
+            throw new EntityNotFoundException("AccountType", request.Id);
 
         var result = _mapper.Map<AccountTypeDto>(accountType);
 

@@ -2,6 +2,7 @@ using AutoMapper;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Domain.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.TransactionTypes.Queries;
@@ -9,16 +10,16 @@ namespace CoreLedger.Application.UseCases.TransactionTypes.Queries;
 public class
     GetAllTransactionTypesQueryHandler : IRequestHandler<GetAllTransactionTypesQuery, IReadOnlyList<TransactionTypeDto>>
 {
+    private readonly IApplicationDbContext _context;
     private readonly ILogger<GetAllTransactionTypesQueryHandler> _logger;
     private readonly IMapper _mapper;
-    private readonly ITransactionTypeRepository _repository;
 
     public GetAllTransactionTypesQueryHandler(
-        ITransactionTypeRepository repository,
+        IApplicationDbContext context,
         IMapper mapper,
         ILogger<GetAllTransactionTypesQueryHandler> logger)
     {
-        _repository = repository;
+        _context = context;
         _mapper = mapper;
         _logger = logger;
     }
@@ -27,7 +28,9 @@ public class
         CancellationToken cancellationToken)
     {
         _logger.LogInformation("Retrieving all transaction types");
-        var types = await _repository.GetAllAsync(cancellationToken);
+        var types = await _context.TransactionTypes
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
         return _mapper.Map<IReadOnlyList<TransactionTypeDto>>(types);
     }
 }

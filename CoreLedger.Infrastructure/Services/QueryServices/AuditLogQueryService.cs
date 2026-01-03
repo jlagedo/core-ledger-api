@@ -1,29 +1,21 @@
+using CoreLedger.Application.Interfaces.QueryServices;
 using CoreLedger.Domain.Entities;
-using CoreLedger.Domain.Interfaces;
 using CoreLedger.Domain.Models;
+using CoreLedger.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace CoreLedger.Infrastructure.Persistence.Repositories;
+namespace CoreLedger.Infrastructure.Services.QueryServices;
 
 /// <summary>
-///     Repository implementation for AuditLog entity.
+///     Query service implementation for complex AuditLog queries with RFC-8040 filtering, sorting, and pagination.
 /// </summary>
-public class AuditLogRepository : IAuditLogRepository
+public class AuditLogQueryService : IAuditLogQueryService
 {
     private readonly ApplicationDbContext _context;
-    private readonly DbSet<AuditLog> _dbSet;
 
-    public AuditLogRepository(ApplicationDbContext context)
+    public AuditLogQueryService(ApplicationDbContext context)
     {
         _context = context;
-        _dbSet = context.Set<AuditLog>();
-    }
-
-    public async Task<AuditLog?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
-    {
-        return await _dbSet
-            .AsNoTracking()
-            .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
     }
 
     public async Task<(IReadOnlyList<AuditLog> AuditLogs, int TotalCount)> GetWithQueryAsync(
@@ -102,18 +94,11 @@ public class AuditLogRepository : IAuditLogRepository
             .SqlQueryRaw<int>(countSql, sqlParameters.Take(limitParam).ToArray())
             .FirstOrDefaultAsync(cancellationToken);
 
-        var auditLogs = await _dbSet
+        var auditLogs = await _context.Set<AuditLog>()
             .FromSqlRaw(dataSql, sqlParameters.ToArray())
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
         return (auditLogs, totalCount);
-    }
-
-    public async Task<AuditLog> AddAsync(AuditLog auditLog, CancellationToken cancellationToken = default)
-    {
-        await _dbSet.AddAsync(auditLog, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
-        return auditLog;
     }
 }

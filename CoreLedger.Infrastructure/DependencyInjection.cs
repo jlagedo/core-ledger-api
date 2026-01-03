@@ -1,9 +1,10 @@
 using CoreLedger.Application.Interfaces;
+using CoreLedger.Application.Interfaces.QueryServices;
 using CoreLedger.Domain.Interfaces;
 using CoreLedger.Infrastructure.Configuration;
 using CoreLedger.Infrastructure.Persistence;
-using CoreLedger.Infrastructure.Persistence.Repositories;
 using CoreLedger.Infrastructure.Services;
+using CoreLedger.Infrastructure.Services.QueryServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,18 +43,17 @@ public static class DependencyInjection
                     .CommandTimeout(databaseOptions.CommandTimeoutSeconds)
                     .MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName));
         });
-        
-        services.AddScoped<IAccountTypeRepository, AccountTypeRepository>();
-        services.AddScoped<IAccountRepository, AccountRepository>();
-        services.AddScoped<ICoreJobRepository, CoreJobRepository>();
-        services.AddScoped<IFundRepository, FundRepository>();
-        services.AddScoped<ISecurityRepository, SecurityRepository>();
-        services.AddScoped<ITransactionStatusRepository, TransactionStatusRepository>();
-        services.AddScoped<ITransactionTypeRepository, TransactionTypeRepository>();
-        services.AddScoped<ITransactionSubTypeRepository, TransactionSubTypeRepository>();
-        services.AddScoped<ITransactionRepository, TransactionRepository>();
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+
+        // Register IApplicationDbContext for handlers
+        services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+
+        // Query Services for complex RFC-8040 filtering operations
+        services.AddScoped<IAccountQueryService, AccountQueryService>();
+        services.AddScoped<IFundQueryService, FundQueryService>();
+        services.AddScoped<ISecurityQueryService, SecurityQueryService>();
+        services.AddScoped<ICoreJobQueryService, CoreJobQueryService>();
+        services.AddScoped<ITransactionQueryService, TransactionQueryService>();
+        services.AddScoped<IAuditLogQueryService, AuditLogQueryService>();
 
         // Get HTTP client options for Auth0 service configuration
         var httpClientOptions =

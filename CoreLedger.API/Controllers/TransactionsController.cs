@@ -1,7 +1,7 @@
 using CoreLedger.Application.DTOs;
+using CoreLedger.Application.Interfaces.QueryServices;
 using CoreLedger.Application.UseCases.Transactions.Commands;
 using CoreLedger.Application.UseCases.Transactions.Queries;
-using CoreLedger.Domain.Interfaces;
 using CoreLedger.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -19,16 +19,16 @@ public class TransactionsController : ControllerBase
 {
     private readonly ILogger<TransactionsController> _logger;
     private readonly IMediator _mediator;
-    private readonly ITransactionRepository _transactionRepository;
+    private readonly ITransactionQueryService _transactionQueryService;
 
     public TransactionsController(
         IMediator mediator,
         ILogger<TransactionsController> logger,
-        ITransactionRepository transactionRepository)
+        ITransactionQueryService transactionQueryService)
     {
         _mediator = mediator;
         _logger = logger;
-        _transactionRepository = transactionRepository;
+        _transactionQueryService = transactionQueryService;
     }
 
     /// <summary>
@@ -54,11 +54,11 @@ public class TransactionsController : ControllerBase
         };
 
         // ARCHITECTURAL DECISION: Clean Architecture pattern intentionally bypassed for performance
-        // This controller directly calls the repository for query operations with filters, ordering, and pagination.
+        // This controller directly calls the query service for query operations with filters, ordering, and pagination.
         // Rationale: Avoiding the overhead of MediatR handlers and additional mapping layers for read-heavy operations
-        // that require dynamic SQL generation. The performance benefit of direct repository access outweighs
+        // that require dynamic SQL generation. The performance benefit of direct query service access outweighs
         // the architectural purity in this specific use case. Write operations should still follow CQRS pattern.
-        var (transactions, totalCount) = await _transactionRepository.GetWithQueryAsync(parameters, cancellationToken);
+        var (transactions, totalCount) = await _transactionQueryService.GetWithQueryAsync(parameters, cancellationToken);
 
         var transactionDtos = transactions.Select(t => new TransactionDto(
             t.Id,

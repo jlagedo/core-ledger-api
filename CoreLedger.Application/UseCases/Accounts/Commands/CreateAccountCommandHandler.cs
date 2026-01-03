@@ -4,6 +4,7 @@ using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Exceptions;
 using CoreLedger.Domain.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.Accounts.Commands;
@@ -13,19 +14,16 @@ namespace CoreLedger.Application.UseCases.Accounts.Commands;
 /// </summary>
 public class CreateAccountCommandHandler : IRequestHandler<CreateAccountCommand, AccountDto>
 {
-    private readonly IAccountRepository _accountRepository;
-    private readonly IAccountTypeRepository _accountTypeRepository;
+    private readonly IApplicationDbContext _context;
     private readonly ILogger<CreateAccountCommandHandler> _logger;
     private readonly IMapper _mapper;
 
     public CreateAccountCommandHandler(
-        IAccountRepository accountRepository,
-        IAccountTypeRepository accountTypeRepository,
+        IApplicationDbContext context,
         IMapper mapper,
         ILogger<CreateAccountCommandHandler> logger)
     {
-        _accountRepository = accountRepository;
-        _accountTypeRepository = accountTypeRepository;
+        _context = context;
         _mapper = mapper;
         _logger = logger;
     }
@@ -37,11 +35,13 @@ public class CreateAccountCommandHandler : IRequestHandler<CreateAccountCommand,
         _logger.LogInformation("Creating new Account with code: {Code}", request.Code);
 
         // Validate that the account type exists
-        var accountType = await _accountTypeRepository.GetByIdAsync(request.TypeId, cancellationToken);
+        var accountType = await _context.AccountTypes.FindAsync([request.TypeId], cancellationToken);
         if (accountType == null) throw new EntityNotFoundException("AccountType", request.TypeId);
 
         // Check if account with same code already exists
-        var existing = await _accountRepository.GetByCodeAsync(request.Code, cancellationToken);
+        var existing = await _context.Accounts
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Code == request.Code, cancellationToken);
         if (existing != null) throw new DomainValidationException("Account with this code already exists");
 
         var account = Account.Create(
@@ -52,12 +52,15 @@ public class CreateAccountCommandHandler : IRequestHandler<CreateAccountCommand,
             request.NormalBalance,
             request.CreatedByUserId);
 
-        var created = await _accountRepository.AddAsync(account, cancellationToken);
+        _context.Accounts.Add(account);
+        await _context.SaveChangesAsync(cancellationToken);
 
         // Reload with type for mapping
-        var accountWithType = await _accountRepository.GetByIdWithTypeAsync(created.Id, cancellationToken);
+        var accountWithType = await _context.Accounts
+            .Include(a => a.Type)
+            .FirstOrDefaultAsync(a => a.Id == account.Id, cancellationToken);
 
-        _logger.LogInformation("Created Account with ID: {AccountId}", created.Id);
+        _logger.LogInformation("Created Account with ID: {AccountId}", account.Id);
 
         return _mapper.Map<AccountDto>(accountWithType);
     }

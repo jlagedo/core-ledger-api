@@ -2,6 +2,7 @@ using AutoMapper;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Domain.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.Accounts.Queries;
@@ -11,16 +12,16 @@ namespace CoreLedger.Application.UseCases.Accounts.Queries;
 /// </summary>
 public class GetAllAccountsQueryHandler : IRequestHandler<GetAllAccountsQuery, IReadOnlyList<AccountDto>>
 {
+    private readonly IApplicationDbContext _context;
     private readonly ILogger<GetAllAccountsQueryHandler> _logger;
     private readonly IMapper _mapper;
-    private readonly IAccountRepository _repository;
 
     public GetAllAccountsQueryHandler(
-        IAccountRepository repository,
+        IApplicationDbContext context,
         IMapper mapper,
         ILogger<GetAllAccountsQueryHandler> logger)
     {
-        _repository = repository;
+        _context = context;
         _mapper = mapper;
         _logger = logger;
     }
@@ -31,7 +32,10 @@ public class GetAllAccountsQueryHandler : IRequestHandler<GetAllAccountsQuery, I
     {
         _logger.LogInformation("Retrieving all Accounts");
 
-        var accounts = await _repository.GetAllWithTypeAsync(cancellationToken);
+        var accounts = await _context.Accounts
+            .AsNoTracking()
+            .Include(a => a.Type)
+            .ToListAsync(cancellationToken);
         var result = _mapper.Map<IReadOnlyList<AccountDto>>(accounts);
 
         _logger.LogInformation("Retrieved {Count} Accounts", result.Count);

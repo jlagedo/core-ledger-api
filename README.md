@@ -18,7 +18,8 @@ CoreLedger.IntegrationTests/ # Integration Tests (Testcontainers + xUnit)
 ### Key Architectural Patterns
 
 - **CQRS**: Command Query Responsibility Segregation using MediatR
-- **Repository Pattern**: Abstraction over data access
+- **Direct DbContext Usage**: Entity Framework Core DbSet<T> as data access pattern
+- **Query Services**: Infrastructure layer services for complex RFC-8040 filtering operations
 - **Dependency Injection**: Constructor injection throughout
 - **Domain-Driven Design**: Rich domain models with business logic
 - **Middleware Pipeline**: Cross-cutting concerns (exception handling, logging, correlation IDs)
@@ -213,12 +214,14 @@ core-ledger-api/
 ├── CoreLedger.Domain/
 │   ├── Entities/             # Domain entities
 │   ├── Exceptions/           # Domain exceptions
-│   ├── Interfaces/           # Repository interfaces
+│   ├── Interfaces/           # Application interfaces (IApplicationDbContext)
 │   └── ValueObjects/         # Value objects
 ├── CoreLedger.Infrastructure/
-│   ├── Data/                 # DbContext and configurations
-│   ├── Migrations/           # EF Core migrations
-│   └── Repositories/         # Repository implementations
+│   ├── Persistence/          # DbContext and entity configurations
+│   │   └── Migrations/       # EF Core migrations
+│   └── Services/
+│       ├── QueryServices/    # RFC-8040 filtering and pagination
+│       └── External/         # External service integrations
 ├── CoreLedger.Worker/
 │   ├── Consumers/            # RabbitMQ message consumers
 │   └── Program.cs            # Worker service entry point

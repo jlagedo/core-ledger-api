@@ -16,17 +16,17 @@ namespace CoreLedger.API.Controllers;
 [Route("api/jobs-ingestion")]
 public class JobsIngestionController : ControllerBase
 {
-    private readonly ICoreJobRepository _coreJobRepository;
+    private readonly IApplicationDbContext _context;
     private readonly ILogger<JobsIngestionController> _logger;
     private readonly IMessagePublisher _messagePublisher;
 
     public JobsIngestionController(
         ILogger<JobsIngestionController> logger,
-        ICoreJobRepository coreJobRepository,
+        IApplicationDbContext context,
         IMessagePublisher messagePublisher)
     {
         _logger = logger;
-        _coreJobRepository = coreJobRepository;
+        _context = context;
         _messagePublisher = messagePublisher;
     }
 
@@ -59,7 +59,8 @@ public class JobsIngestionController : ControllerBase
             referenceId,
             jobDescription);
 
-        await _coreJobRepository.AddAsync(coreJob, cancellationToken);
+        _context.CoreJobs.Add(coreJob);
+        await _context.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("CoreJob created with Id: {CoreJobId}", coreJob.Id);
 
@@ -113,7 +114,8 @@ public class JobsIngestionController : ControllerBase
             request.ReferenceId,
             request.JobDescription ?? "Test connection job");
 
-        await _coreJobRepository.AddAsync(coreJob, cancellationToken);
+        _context.CoreJobs.Add(coreJob);
+        await _context.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Test CoreJob created with Id: {CoreJobId}, Status: {Status}", coreJob.Id,
             coreJob.Status);

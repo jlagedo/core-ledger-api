@@ -1,7 +1,7 @@
 using CoreLedger.Application.DTOs;
+using CoreLedger.Application.Interfaces.QueryServices;
 using CoreLedger.Application.UseCases.Accounts.Commands;
 using CoreLedger.Application.UseCases.Accounts.Queries;
-using CoreLedger.Domain.Interfaces;
 using CoreLedger.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -17,18 +17,18 @@ namespace CoreLedger.API.Controllers;
 [Route("api/[controller]")]
 public class AccountsController : ControllerBase
 {
-    private readonly IAccountRepository _accountRepository;
+    private readonly IAccountQueryService _accountQueryService;
     private readonly ILogger<AccountsController> _logger;
     private readonly IMediator _mediator;
 
     public AccountsController(
         IMediator mediator,
         ILogger<AccountsController> logger,
-        IAccountRepository accountRepository)
+        IAccountQueryService accountQueryService)
     {
         _mediator = mediator;
         _logger = logger;
-        _accountRepository = accountRepository;
+        _accountQueryService = accountQueryService;
     }
 
     /// <summary>
@@ -72,11 +72,11 @@ public class AccountsController : ControllerBase
         };
 
         // ARCHITECTURAL DECISION: Clean Architecture pattern intentionally bypassed for performance
-        // This controller directly calls the repository for query operations with filters, ordering, and pagination.
+        // This controller directly calls the query service for query operations with filters, ordering, and pagination.
         // Rationale: Avoiding the overhead of MediatR handlers and additional mapping layers for read-heavy operations
-        // that require dynamic SQL generation. The performance benefit of direct repository access outweighs
+        // that require dynamic SQL generation. The performance benefit of direct query service access outweighs
         // the architectural purity in this specific use case. Write operations should still follow CQRS pattern.
-        var (accounts, totalCount) = await _accountRepository.GetWithQueryAsync(parameters, cancellationToken);
+        var (accounts, totalCount) = await _accountQueryService.GetWithQueryAsync(parameters, cancellationToken);
 
         var accountDtos = accounts.Select(a => new AccountDto(
             a.Id,

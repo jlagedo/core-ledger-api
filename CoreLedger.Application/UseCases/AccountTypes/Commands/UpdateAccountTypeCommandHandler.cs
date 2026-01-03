@@ -1,6 +1,7 @@
 using CoreLedger.Domain.Exceptions;
 using CoreLedger.Domain.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.AccountTypes.Commands;
@@ -10,14 +11,14 @@ namespace CoreLedger.Application.UseCases.AccountTypes.Commands;
 /// </summary>
 public class UpdateAccountTypeCommandHandler : IRequestHandler<UpdateAccountTypeCommand>
 {
+    private readonly IApplicationDbContext _context;
     private readonly ILogger<UpdateAccountTypeCommandHandler> _logger;
-    private readonly IAccountTypeRepository _repository;
 
     public UpdateAccountTypeCommandHandler(
-        IAccountTypeRepository repository,
+        IApplicationDbContext context,
         ILogger<UpdateAccountTypeCommandHandler> logger)
     {
-        _repository = repository;
+        _context = context;
         _logger = logger;
     }
 
@@ -27,16 +28,22 @@ public class UpdateAccountTypeCommandHandler : IRequestHandler<UpdateAccountType
     {
         _logger.LogInformation("Updating AccountType with ID: {AccountTypeId}", request.Id);
 
-        var accountType = await _repository.GetByIdAsync(request.Id, cancellationToken);
-        if (accountType == null) throw new EntityNotFoundException("AccountType", request.Id);
+        var accountType = await _context.AccountTypes
+            .FirstOrDefaultAsync(at => at.Id == request.Id, cancellationToken);
+
+        if (accountType == null)
+            throw new EntityNotFoundException("AccountType", request.Id);
 
         // Check if another account type with the same description already exists
-        var existing = await _repository.GetByDescriptionAsync(request.Description, cancellationToken);
+        var existing = await _context.AccountTypes
+            .AsNoTracking()
+            .FirstOrDefaultAsync(at => at.Description.ToLower() == request.Description.ToLower(), cancellationToken);
+
         if (existing != null && existing.Id != request.Id)
             throw new DomainValidationException("Account type with this description already exists");
 
         accountType.UpdateDescription(request.Description);
-        await _repository.UpdateAsync(accountType, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Updated AccountType with ID: {AccountTypeId}", request.Id);
     }

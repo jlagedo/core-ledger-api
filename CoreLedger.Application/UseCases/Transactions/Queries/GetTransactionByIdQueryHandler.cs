@@ -3,22 +3,23 @@ using CoreLedger.Application.DTOs;
 using CoreLedger.Domain.Exceptions;
 using CoreLedger.Domain.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace CoreLedger.Application.UseCases.Transactions.Queries;
 
 public class GetTransactionByIdQueryHandler : IRequestHandler<GetTransactionByIdQuery, TransactionDto>
 {
+    private readonly IApplicationDbContext _context;
     private readonly ILogger<GetTransactionByIdQueryHandler> _logger;
     private readonly IMapper _mapper;
-    private readonly ITransactionRepository _repository;
 
     public GetTransactionByIdQueryHandler(
-        ITransactionRepository repository,
+        IApplicationDbContext context,
         IMapper mapper,
         ILogger<GetTransactionByIdQueryHandler> logger)
     {
-        _repository = repository;
+        _context = context;
         _mapper = mapper;
         _logger = logger;
     }
@@ -27,7 +28,15 @@ public class GetTransactionByIdQueryHandler : IRequestHandler<GetTransactionById
     {
         _logger.LogInformation("Retrieving transaction with ID: {TransactionId}", request.Id);
 
-        var transaction = await _repository.GetByIdWithNavigationAsync(request.Id, cancellationToken);
+        var transaction = await _context.Transactions
+            .AsNoTracking()
+            .Include(t => t.Fund)
+            .Include(t => t.Security)
+            .Include(t => t.TransactionSubType!)
+                .ThenInclude(st => st.Type)
+            .Include(t => t.Status)
+            .FirstOrDefaultAsync(t => t.Id == request.Id, cancellationToken);
+
         if (transaction == null)
             throw new EntityNotFoundException("Transaction", request.Id);
 

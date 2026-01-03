@@ -96,7 +96,7 @@ CoreLedger.Worker/           → Background Worker Service
 - Business entities with rich behavior (`Entities/`)
 - Value objects (immutable, no identity)
 - Domain exceptions (business rule violations)
-- Repository interfaces (`Interfaces/`)
+- Application interfaces (`Interfaces/` - minimal: `IApplicationDbContext` only)
 - Domain enums and business logic
 - Domain events (if using event sourcing)
 
@@ -105,8 +105,9 @@ CoreLedger.Worker/           → Background Worker Service
 - DTOs or API models
 - MediatR handlers
 - Database configurations
+- Repository interfaces or implementations
 
-**Key principle:** Domain layer has ZERO external dependencies. It represents pure business logic.
+**Key principle:** Domain layer has ZERO external dependencies except `IApplicationDbContext` (minimal abstraction). It represents pure business logic.
 
 ### CoreLedger.Application (Application/Use Cases Layer)
 
@@ -131,8 +132,8 @@ CoreLedger.Worker/           → Background Worker Service
 
 **What belongs here:**
 - DbContext and entity configurations (`Persistence/`)
-- EF Core migrations (`Migrations/`)
-- Repository implementations (`Repositories/`)
+- EF Core migrations (`Persistence/Migrations/`)
+- Query Services for complex RFC-8040 filtering operations (`Services/QueryServices/`)
 - External service integrations (Auth0Service, RabbitMQ publishers)
 - Database-specific configurations
 
@@ -140,8 +141,11 @@ CoreLedger.Worker/           → Background Worker Service
 - Business logic
 - DTOs
 - Controllers
+- Repository implementations
 
 **Critical rule:** Always use explicit migrations. Never call `EnsureCreated()` or `Migrate()` in application code.
+
+**Data Access Pattern:** Use `IApplicationDbContext` directly in handlers instead of repositories. Query Services handle complex pagination, sorting, and filtering operations.
 
 ### CoreLedger.API (Presentation Layer)
 
@@ -172,7 +176,9 @@ CoreLedger.Worker/           → Background Worker Service
 - Message handling and deserialization
 - Worker service configuration
 
-**Message flow:** API publishes messages to RabbitMQ → Worker consumes and processes → Updates database via repositories.
+**Message flow:** API publishes messages to RabbitMQ → Worker consumes and processes → Updates database via `IApplicationDbContext`.
+
+**Data Access:** Use `IApplicationDbContext` injected via DI for database operations. Consumers should persist changes with single `SaveChangesAsync()` call per message.
 
 ## Key Architectural Patterns
 
@@ -190,12 +196,17 @@ All business operations use Command/Query pattern:
 4. Add AutoMapper profile if needed
 5. Create controller endpoint that sends request via `IMediator`
 
-### Repository Pattern
+### Direct DbContext Usage with Query Services
 
-All data access goes through repository interfaces:
-- Interfaces defined in `CoreLedger.Domain/Interfaces/`
-- Implementations in `CoreLedger.Infrastructure/Repositories/`
-- Always inject `IXxxRepository`, never `DbContext` directly
+Data access follows Entity Framework Core patterns:
+- **Simple Operations:** Inject `IApplicationDbContext` directly in handlers
+  - Single-entity queries: `_context.Set<T>().FindAsync(id)`
+  - Mutations: `.Add()`, `.Update()`, `.Remove()` followed by single `SaveChangesAsync()`
+  - Always use `.AsNoTracking()` for queries in read-only handlers
+- **Complex Operations:** Use Query Services in Infrastructure layer
+  - RFC-8040 filtering, pagination, sorting: `_queryService.GetWithQueryAsync(parameters)`
+  - Query Services handle dynamic SQL generation and optimization
+  - Registered in DI as `IXxxQueryService` (e.g., `IAccountQueryService`)
 
 ### Domain-Driven Design
 
@@ -210,7 +221,13 @@ Entities are rich with behavior:
 Constructor injection everywhere:
 - Services registered in extension methods (`AddApplication()`, `AddInfrastructure()`)
 - No service locator pattern
-- Scoped lifetime for repositories and DbContext
+- Scoped lifetime for `IApplicationDbContext` and Query Services
+- Example registration:
+  ```csharp
+  services.AddScoped<IApplicationDbContext>(provider =>
+      provider.GetRequiredService<ApplicationDbContext>());
+  services.AddScoped<IAccountQueryService, AccountQueryService>();
+  ```
 
 ## Critical Code Standards
 
@@ -444,14 +461,86 @@ dotnet user-secrets set "Auth0:ClientSecret" "your-secret"
 ### Adding a New Feature
 
 1. **Domain First:** Create entity in `CoreLedger.Domain/Entities/` with factory methods and business logic
-2. **Repository:** Add repository interface in `CoreLedger.Domain/Interfaces/`, implement in `CoreLedger.Infrastructure/Repositories/`
-3. **Use Case:** Create Command/Query in `CoreLedger.Application/UseCases/` with MediatR handler
-4. **DTO:** Add request/response DTOs in `CoreLedger.Application/DTOs/`
-5. **Validation:** Add FluentValidation validator in `CoreLedger.Application/Validators/`
-6. **Mapping:** Add AutoMapper profile in `CoreLedger.Application/Mappings/`
-7. **Controller:** Create endpoint in `CoreLedger.API/Controllers/` that uses MediatR
-8. **Migration:** Create and apply database migration
-9. **Tests:** Write unit tests (Application, Domain) and integration tests
+2. **Use Case:** Create Command/Query in `CoreLedger.Application/UseCases/` with MediatR handler
+3. **DbContext Usage in Handler:** Inject `IApplicationDbContext` for data access
+   - For simple queries: Use `_context.Set<T>().FindAsync(id)`, `FirstOrDefaultAsync()`, etc.
+   - For complex queries with filtering/pagination: Create Query Service interface + implementation
+   - For mutations: Use `.Add()`, `.Update()`, `.Remove()` with single `SaveChangesAsync()` at end
+4. **Query Service (if needed):** Add `IXxxQueryService` interface in `CoreLedger.Application/Interfaces/QueryServices/`, implement in `CoreLedger.Infrastructure/Services/QueryServices/`
+5. **DTO:** Add request/response DTOs in `CoreLedger.Application/DTOs/`
+6. **Validation:** Add FluentValidation validator in `CoreLedger.Application/Validators/`
+7. **Mapping:** Add AutoMapper profile in `CoreLedger.Application/Mappings/`
+8. **Controller:** Create endpoint in `CoreLedger.API/Controllers/` that uses MediatR
+9. **Migration:** Create and apply database migration
+10. **Tests:** Write unit tests (Application, Domain) and integration tests
+
+### Handler Patterns with Direct DbContext Usage
+
+**Query Handler (read-only):**
+```csharp
+public class GetMyEntityByIdQueryHandler : IRequestHandler<GetMyEntityByIdQuery, MyDto>
+{
+    private readonly IApplicationDbContext _context;
+
+    public GetMyEntityByIdQueryHandler(IApplicationDbContext context) => _context = context;
+
+    public async Task<MyDto> Handle(GetMyEntityByIdQuery request, CancellationToken cancellationToken)
+    {
+        var entity = await _context.MyEntities
+            .AsNoTracking() // Critical: use AsNoTracking() for queries
+            .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
+
+        return entity == null ? throw new NotFoundException(...) : MapToDto(entity);
+    }
+}
+```
+
+**Command Handler (mutation):**
+```csharp
+public class CreateMyEntityCommandHandler : IRequestHandler<CreateMyEntityCommand, MyDto>
+{
+    private readonly IApplicationDbContext _context;
+
+    public CreateMyEntityCommandHandler(IApplicationDbContext context) => _context = context;
+
+    public async Task<MyDto> Handle(CreateMyEntityCommand request, CancellationToken cancellationToken)
+    {
+        var entity = MyEntity.Create(request.Name, request.Description);
+
+        _context.MyEntities.Add(entity); // Add entity
+        await _context.SaveChangesAsync(cancellationToken); // Single SaveChangesAsync() at end
+
+        return MapToDto(entity);
+    }
+}
+```
+
+**Query Handler with Filtering/Pagination:**
+```csharp
+public class GetMyEntitiesQueryHandler : IRequestHandler<GetMyEntitiesQuery, PagedResult<MyDto>>
+{
+    private readonly IMyEntityQueryService _queryService; // Use Query Service for complex queries
+
+    public GetMyEntitiesQueryHandler(IMyEntityQueryService queryService) => _queryService = queryService;
+
+    public async Task<PagedResult<MyDto>> Handle(GetMyEntitiesQuery request, CancellationToken cancellationToken)
+    {
+        var parameters = new QueryParameters
+        {
+            Limit = request.Limit,
+            Offset = request.Offset,
+            SortBy = request.SortBy,
+            SortDirection = request.SortDirection,
+            Filter = request.Filter
+        };
+
+        var (entities, totalCount) = await _queryService.GetWithQueryAsync(parameters, cancellationToken);
+        var dtos = entities.Select(MapToDto).ToList();
+
+        return new PagedResult<MyDto>(dtos, totalCount, parameters.Limit, parameters.Offset);
+    }
+}
+```
 
 ### Adding a New API Endpoint
 
@@ -474,7 +563,7 @@ public class MyController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var query = new GetMyEntityQuery(id);
+        var query = new GetMyEntityByIdQuery(id);
         var result = await _mediator.Send(query);
         return Ok(result);
     }

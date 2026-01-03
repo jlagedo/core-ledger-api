@@ -10,14 +10,14 @@ namespace CoreLedger.Application.UseCases.Accounts.Commands;
 /// </summary>
 public class DeleteAccountCommandHandler : IRequestHandler<DeleteAccountCommand>
 {
+    private readonly IApplicationDbContext _context;
     private readonly ILogger<DeleteAccountCommandHandler> _logger;
-    private readonly IAccountRepository _repository;
 
     public DeleteAccountCommandHandler(
-        IAccountRepository repository,
+        IApplicationDbContext context,
         ILogger<DeleteAccountCommandHandler> logger)
     {
-        _repository = repository;
+        _context = context;
         _logger = logger;
     }
 
@@ -27,10 +27,11 @@ public class DeleteAccountCommandHandler : IRequestHandler<DeleteAccountCommand>
     {
         _logger.LogInformation("Deleting Account with ID: {AccountId}", request.Id);
 
-        var account = await _repository.GetByIdAsync(request.Id, cancellationToken);
+        var account = await _context.Accounts.FindAsync([request.Id], cancellationToken);
         if (account == null) throw new EntityNotFoundException("Account", request.Id);
 
-        await _repository.DeleteAsync(account, cancellationToken);
+        _context.Accounts.Remove(account);
+        await _context.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Deleted Account with ID: {AccountId}", request.Id);
     }

@@ -1,7 +1,7 @@
 using CoreLedger.Application.DTOs;
+using CoreLedger.Application.Interfaces.QueryServices;
 using CoreLedger.Application.UseCases.Securities.Commands;
 using CoreLedger.Application.UseCases.Securities.Queries;
-using CoreLedger.Domain.Interfaces;
 using CoreLedger.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -19,16 +19,16 @@ public class SecuritiesController : ControllerBase
 {
     private readonly ILogger<SecuritiesController> _logger;
     private readonly IMediator _mediator;
-    private readonly ISecurityRepository _securityRepository;
+    private readonly ISecurityQueryService _securityQueryService;
 
     public SecuritiesController(
         IMediator mediator,
         ILogger<SecuritiesController> logger,
-        ISecurityRepository securityRepository)
+        ISecurityQueryService securityQueryService)
     {
         _mediator = mediator;
         _logger = logger;
-        _securityRepository = securityRepository;
+        _securityQueryService = securityQueryService;
     }
 
     /// <summary>
@@ -60,11 +60,11 @@ public class SecuritiesController : ControllerBase
         };
 
         // ARCHITECTURAL DECISION: Clean Architecture pattern intentionally bypassed for performance
-        // This controller directly calls the repository for query operations with filters, ordering, and pagination.
+        // This controller directly calls the query service for query operations with filters, ordering, and pagination.
         // Rationale: Avoiding the overhead of MediatR handlers and additional mapping layers for read-heavy operations
-        // that require dynamic SQL generation. The performance benefit of direct repository access outweighs
+        // that require dynamic SQL generation. The performance benefit of direct query service access outweighs
         // the architectural purity in this specific use case. Write operations should still follow CQRS pattern.
-        var (securities, totalCount) = await _securityRepository.GetWithQueryAsync(parameters, cancellationToken);
+        var (securities, totalCount) = await _securityQueryService.GetWithQueryAsync(parameters, cancellationToken);
 
         var securityDtos = securities.Select(s => new SecurityDto(
             s.Id,
