@@ -28,7 +28,13 @@ public class CreateTransactionCommandHandler : IRequestHandler<CreateTransaction
 
     public async Task<TransactionDto> Handle(CreateTransactionCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Creating new transaction for fund {FundId}", request.FundId);
+        _logger.LogInformation(
+            "Creating transaction for fund {FundId} - SubType: {SubTypeId}, Amount: {Amount}, " +
+            "Quantity: {Quantity}, Price: {Price}, Currency: {Currency}, TradeDate: {TradeDate}, " +
+            "SettleDate: {SettleDate}, CreatedBy: {UserId}",
+            request.FundId, request.TransactionSubTypeId, request.Amount,
+            request.Quantity, request.Price, request.Currency, request.TradeDate,
+            request.SettleDate, request.CreatedByUserId);
 
         // Validate foreign keys
         var fund = await _context.Funds.FindAsync([request.FundId], cancellationToken);
@@ -76,7 +82,10 @@ public class CreateTransactionCommandHandler : IRequestHandler<CreateTransaction
             .Include(t => t.Status)
             .FirstOrDefaultAsync(t => t.Id == transaction.Id, cancellationToken);
 
-        _logger.LogInformation("Created transaction with ID: {TransactionId}", transaction.Id);
+        _logger.LogInformation(
+            "Created transaction {TransactionId} for fund {FundId} - Amount: {Amount}, " +
+            "Status: {StatusId}, SettleDate: {SettleDate}",
+            transaction.Id, transaction.FundId, transaction.Amount, transaction.StatusId, transaction.SettleDate);
 
         // Map to DTO
         var transactionDto = _mapper.Map<TransactionDto>(transactionWithNav);

@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using CoreLedger.Application.Interfaces;
+using CoreLedger.Domain.Exceptions;
 using CoreLedger.Infrastructure.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -58,36 +59,49 @@ public class RabbitMQPublisher : IMessagePublisher, IDisposable
     public Task PublishAsync<T>(string queueName, T message, string? correlationId = null,
         CancellationToken cancellationToken = default) where T : class
     {
-        _channel.QueueDeclare(
-            queueName,
-            _options.QueueDurable,
-            _options.QueueExclusive,
-            _options.QueueAutoDelete,
-            null);
-
-        var json = JsonSerializer.Serialize(message);
-        var body = Encoding.UTF8.GetBytes(json);
-
-        var properties = _channel.CreateBasicProperties();
-        properties.Persistent = true;
-        properties.ContentType = "application/json";
-
-        // Add correlation ID to message headers for distributed tracing
-        if (!string.IsNullOrWhiteSpace(correlationId))
+        try
         {
-            properties.CorrelationId = correlationId;
-            properties.Headers ??= new Dictionary<string, object>();
-            properties.Headers["X-Correlation-ID"] = correlationId;
+            _channel.QueueDeclare(
+                queueName,
+                _options.QueueDurable,
+                _options.QueueExclusive,
+                _options.QueueAutoDelete,
+                null);
+
+            var json = JsonSerializer.Serialize(message);
+            var body = Encoding.UTF8.GetBytes(json);
+
+            var properties = _channel.CreateBasicProperties();
+            properties.Persistent = true;
+            properties.ContentType = "application/json";
+
+            // Add correlation ID to message headers for distributed tracing
+            if (!string.IsNullOrWhiteSpace(correlationId))
+            {
+                properties.CorrelationId = correlationId;
+                properties.Headers ??= new Dictionary<string, object>();
+                properties.Headers["X-Correlation-ID"] = correlationId;
+            }
+
+            _channel.BasicPublish(
+                string.Empty,
+                queueName,
+                properties,
+                body);
+
+            _logger.LogInformation(
+                "Message published to queue {QueueName} with CorrelationId {CorrelationId}",
+                queueName, correlationId ?? "none");
         }
-
-        _channel.BasicPublish(
-            string.Empty,
-            queueName,
-            properties,
-            body);
-
-        _logger.LogInformation("Message published to queue {QueueName} with CorrelationId {CorrelationId}: {Message}",
-            queueName, correlationId ?? "none", json);
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Failed to publish message to queue {QueueName} with CorrelationId {CorrelationId}. " +
+                "Message type: {MessageType}",
+                queueName, correlationId ?? "none", typeof(T).Name);
+            throw new ExternalServiceException("RabbitMQ",
+                $"Failed to publish message to queue {queueName}", ex);
+        }
 
         return Task.CompletedTask;
     }

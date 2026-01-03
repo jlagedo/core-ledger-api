@@ -46,6 +46,11 @@ public class FundsController : ControllerBase
         [FromQuery] string? filter = null,
         CancellationToken cancellationToken = default)
     {
+        var userId = User.FindFirst("sub")?.Value;
+        _logger.LogInformation(
+            "Retrieving funds - Limit: {Limit}, Offset: {Offset}, SortBy: {SortBy}, Filter: {Filter}, User: {UserId}",
+            limit, offset, sortBy ?? "none", filter ?? "none", userId);
+
         var query = new GetFundsWithQueryQuery(
             limit,
             offset,
@@ -54,6 +59,10 @@ public class FundsController : ControllerBase
             filter);
 
         var result = await _mediator.Send(query, cancellationToken);
+
+        _logger.LogInformation(
+            "Funds retrieved - Returned: {Count} of {Total} total funds",
+            result.Data.Count, result.TotalCount);
         return Ok(result);
     }
 
@@ -65,8 +74,13 @@ public class FundsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
+        var userId = User.FindFirst("sub")?.Value;
+        _logger.LogInformation("Retrieving fund {FundId} for user {UserId}", id, userId);
+
         var query = new GetFundByIdQuery(id);
         var result = await _mediator.Send(query, cancellationToken);
+
+        _logger.LogInformation("Fund retrieved - Code: {Code}, Name: {Name}, Currency: {Currency}", result.Code, result.Name, result.BaseCurrency);
         return Ok(result);
     }
 
@@ -84,9 +98,13 @@ public class FundsController : ControllerBase
         var userId = User.FindFirst("sub")?.Value;
         if (string.IsNullOrEmpty(userId))
         {
-            _logger.LogWarning("User claim 'sub' not found in token");
+            _logger.LogError("Authentication failed: 'sub' claim missing from token for endpoint {Endpoint}", HttpContext.Request.Path);
             return Unauthorized(new { message = "Invalid authentication token" });
         }
+
+        _logger.LogInformation(
+            "Creating fund - Code: {Code}, Name: {Name}, Currency: {Currency}, CreatedBy: {UserId}",
+            dto.Code, dto.Name, dto.BaseCurrency, userId);
 
         var command = new CreateFundCommand(
             dto.Code,
@@ -96,6 +114,8 @@ public class FundsController : ControllerBase
             dto.ValuationFrequency,
             userId);
         var result = await _mediator.Send(command, cancellationToken);
+
+        _logger.LogInformation("Fund created successfully - Id: {FundId}, Code: {Code}", result.Id, result.Code);
         return CreatedAtRoute("GetFundById", new { id = result.Id }, result);
     }
 
@@ -111,6 +131,11 @@ public class FundsController : ControllerBase
         [FromBody] UpdateFundDto dto,
         CancellationToken cancellationToken)
     {
+        var userId = User.FindFirst("sub")?.Value;
+        _logger.LogInformation(
+            "Updating fund {FundId} - Code: {Code}, Name: {Name}, Currency: {Currency}, UpdatedBy: {UserId}",
+            id, dto.Code, dto.Name, dto.BaseCurrency, userId);
+
         var command = new UpdateFundCommand(
             id,
             dto.Code,
@@ -119,6 +144,8 @@ public class FundsController : ControllerBase
             dto.InceptionDate,
             dto.ValuationFrequency);
         await _mediator.Send(command, cancellationToken);
+
+        _logger.LogInformation("Fund updated successfully - Id: {FundId}", id);
         return NoContent();
     }
 }

@@ -26,6 +26,13 @@ public class UpdateTransactionCommandHandler : IRequestHandler<UpdateTransaction
         if (transaction == null)
             throw new EntityNotFoundException("Transaction", request.Id);
 
+        // Capture old values for audit trail
+        var oldAmount = transaction.Amount;
+        var oldQuantity = transaction.Quantity;
+        var oldPrice = transaction.Price;
+        var oldCurrency = transaction.Currency;
+        var oldStatusId = transaction.StatusId;
+
         // Validate foreign keys
         var fund = await _context.Funds.FindAsync([request.FundId], cancellationToken);
         if (fund == null)
@@ -60,6 +67,12 @@ public class UpdateTransactionCommandHandler : IRequestHandler<UpdateTransaction
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Updated transaction with ID: {TransactionId}", request.Id);
+        _logger.LogInformation(
+            "Updated transaction {TransactionId} - Amount: {OldAmount} → {NewAmount}, " +
+            "Quantity: {OldQuantity} → {NewQuantity}, Price: {OldPrice} → {NewPrice}, " +
+            "Currency: {OldCurrency} → {NewCurrency}, Status: {OldStatusId} → {NewStatusId}",
+            transaction.Id, oldAmount, transaction.Amount,
+            oldQuantity, transaction.Quantity, oldPrice, transaction.Price,
+            oldCurrency, transaction.Currency, oldStatusId, transaction.StatusId);
     }
 }

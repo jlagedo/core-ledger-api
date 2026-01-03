@@ -34,8 +34,13 @@ public class AccountsController : ControllerBase
     [ProducesResponseType(typeof(IReadOnlyList<AccountsByTypeReportDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAccountsByTypeReport(CancellationToken cancellationToken)
     {
+        var userId = User.FindFirst("sub")?.Value;
+        _logger.LogInformation("Retrieving account type report for user {UserId}", userId);
+
         var query = new GetAccountsByTypeReportQuery();
         var result = await _mediator.Send(query, cancellationToken);
+
+        _logger.LogInformation("Account type report retrieved - {Count} account types", result.Count);
         return Ok(result);
     }
 
@@ -58,6 +63,11 @@ public class AccountsController : ControllerBase
         [FromQuery] string? filter = null,
         CancellationToken cancellationToken = default)
     {
+        var userId = User.FindFirst("sub")?.Value;
+        _logger.LogInformation(
+            "Retrieving accounts - Limit: {Limit}, Offset: {Offset}, SortBy: {SortBy}, Filter: {Filter}, User: {UserId}",
+            limit, offset, sortBy ?? "none", filter ?? "none", userId);
+
         var query = new GetAccountsWithQueryQuery(
             limit,
             offset,
@@ -66,6 +76,10 @@ public class AccountsController : ControllerBase
             filter);
 
         var result = await _mediator.Send(query, cancellationToken);
+
+        _logger.LogInformation(
+            "Accounts retrieved - Returned: {Count} of {Total} total accounts",
+            result.Data.Count, result.TotalCount);
         return Ok(result);
     }
 
@@ -77,8 +91,13 @@ public class AccountsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
+        var userId = User.FindFirst("sub")?.Value;
+        _logger.LogInformation("Retrieving account {AccountId} for user {UserId}", id, userId);
+
         var query = new GetAccountByIdQuery(id);
         var result = await _mediator.Send(query, cancellationToken);
+
+        _logger.LogInformation("Account retrieved - Code: {Code}, Name: {Name}", result.Code, result.Name);
         return Ok(result);
     }
 
@@ -96,9 +115,13 @@ public class AccountsController : ControllerBase
         var userId = User.FindFirst("sub")?.Value;
         if (string.IsNullOrEmpty(userId))
         {
-            _logger.LogWarning("User claim 'sub' not found in token");
+            _logger.LogError("Authentication failed: 'sub' claim missing from token for endpoint {Endpoint}", HttpContext.Request.Path);
             return Unauthorized(new { message = "Invalid authentication token" });
         }
+
+        _logger.LogInformation(
+            "Creating account - Code: {Code}, Name: {Name}, Type: {TypeId}, NormalBalance: {NormalBalance}, CreatedBy: {UserId}",
+            dto.Code, dto.Name, dto.TypeId, dto.NormalBalance, userId);
 
         var command = new CreateAccountCommand(
             dto.Code,
@@ -108,6 +131,8 @@ public class AccountsController : ControllerBase
             dto.NormalBalance,
             userId);
         var result = await _mediator.Send(command, cancellationToken);
+
+        _logger.LogInformation("Account created successfully - Id: {AccountId}, Code: {Code}", result.Id, result.Code);
         return CreatedAtRoute("GetAccountsById", new { id = result.Id }, result);
     }
 
@@ -123,6 +148,11 @@ public class AccountsController : ControllerBase
         [FromBody] UpdateAccountDto dto,
         CancellationToken cancellationToken)
     {
+        var userId = User.FindFirst("sub")?.Value;
+        _logger.LogInformation(
+            "Updating account {AccountId} - Code: {Code}, Name: {Name}, Type: {TypeId}, NormalBalance: {NormalBalance}, UpdatedBy: {UserId}",
+            id, dto.Code, dto.Name, dto.TypeId, dto.NormalBalance, userId);
+
         var command = new UpdateAccountCommand(
             id,
             dto.Code,
@@ -131,6 +161,8 @@ public class AccountsController : ControllerBase
             dto.Status,
             dto.NormalBalance);
         await _mediator.Send(command, cancellationToken);
+
+        _logger.LogInformation("Account updated successfully - Id: {AccountId}", id);
         return NoContent();
     }
 
@@ -143,8 +175,13 @@ public class AccountsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Deactivate(int id, CancellationToken cancellationToken)
     {
+        var userId = User.FindFirst("sub")?.Value;
+        _logger.LogInformation("Deactivating account {AccountId} - DeactivatedBy: {UserId}", id, userId);
+
         var command = new DeactivateAccountCommand(id);
         await _mediator.Send(command, cancellationToken);
+
+        _logger.LogInformation("Account deactivated successfully - Id: {AccountId}", id);
         return NoContent();
     }
 }

@@ -46,6 +46,11 @@ public class SecuritiesController : ControllerBase
         [FromQuery] string? filter = null,
         CancellationToken cancellationToken = default)
     {
+        var userId = User.FindFirst("sub")?.Value;
+        _logger.LogInformation(
+            "Retrieving securities - Limit: {Limit}, Offset: {Offset}, SortBy: {SortBy}, Filter: {Filter}, User: {UserId}",
+            limit, offset, sortBy ?? "none", filter ?? "none", userId);
+
         var query = new GetSecuritiesWithQueryQuery(
             limit,
             offset,
@@ -54,6 +59,10 @@ public class SecuritiesController : ControllerBase
             filter);
 
         var result = await _mediator.Send(query, cancellationToken);
+
+        _logger.LogInformation(
+            "Securities retrieved - Returned: {Count} of {Total} total securities",
+            result.Data.Count, result.TotalCount);
         return Ok(result);
     }
 
@@ -65,8 +74,13 @@ public class SecuritiesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
+        var userId = User.FindFirst("sub")?.Value;
+        _logger.LogInformation("Retrieving security {SecurityId} for user {UserId}", id, userId);
+
         var query = new GetSecurityByIdQuery(id);
         var result = await _mediator.Send(query, cancellationToken);
+
+        _logger.LogInformation("Security retrieved - Name: {Name}, Ticker: {Ticker}, Type: {Type}", result.Name, result.Ticker, result.Type);
         return Ok(result);
     }
 
@@ -84,9 +98,13 @@ public class SecuritiesController : ControllerBase
         var userId = User.FindFirst("sub")?.Value;
         if (string.IsNullOrEmpty(userId))
         {
-            _logger.LogWarning("User claim 'sub' not found in token");
+            _logger.LogError("Authentication failed: 'sub' claim missing from token for endpoint {Endpoint}", HttpContext.Request.Path);
             return Unauthorized(new { message = "Invalid authentication token" });
         }
+
+        _logger.LogInformation(
+            "Creating security - Name: {Name}, Ticker: {Ticker}, Isin: {Isin}, Type: {Type}, Currency: {Currency}, CreatedBy: {UserId}",
+            dto.Name, dto.Ticker, dto.Isin, dto.Type, dto.Currency, userId);
 
         var command = new CreateSecurityCommand(
             dto.Name,
@@ -96,6 +114,8 @@ public class SecuritiesController : ControllerBase
             dto.Currency,
             userId);
         var result = await _mediator.Send(command, cancellationToken);
+
+        _logger.LogInformation("Security created successfully - Id: {SecurityId}, Name: {Name}", result.Id, result.Name);
         return CreatedAtRoute("GetSecuritiesById", new { id = result.Id }, result);
     }
 
@@ -111,6 +131,11 @@ public class SecuritiesController : ControllerBase
         [FromBody] UpdateSecurityDto dto,
         CancellationToken cancellationToken)
     {
+        var userId = User.FindFirst("sub")?.Value;
+        _logger.LogInformation(
+            "Updating security {SecurityId} - Name: {Name}, Ticker: {Ticker}, Type: {Type}, Currency: {Currency}, UpdatedBy: {UserId}",
+            id, dto.Name, dto.Ticker, dto.Type, dto.Currency, userId);
+
         var command = new UpdateSecurityCommand(
             id,
             dto.Name,
@@ -119,6 +144,8 @@ public class SecuritiesController : ControllerBase
             dto.Type,
             dto.Currency);
         await _mediator.Send(command, cancellationToken);
+
+        _logger.LogInformation("Security updated successfully - Id: {SecurityId}", id);
         return NoContent();
     }
 
