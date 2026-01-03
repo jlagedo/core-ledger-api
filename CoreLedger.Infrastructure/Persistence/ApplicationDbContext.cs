@@ -1,5 +1,5 @@
 using CoreLedger.Domain.Entities;
-using CoreLedger.Domain.Interfaces;
+using CoreLedger.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace CoreLedger.Infrastructure.Persistence;

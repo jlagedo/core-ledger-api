@@ -1,7 +1,7 @@
 using CoreLedger.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace CoreLedger.Domain.Interfaces;
+namespace CoreLedger.Application.Interfaces;
 
 /// <summary>
 ///     Interface for the application database context exposing DbSets for direct use in handlers.

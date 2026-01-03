@@ -1,6 +1,6 @@
 using AutoMapper;
 using CoreLedger.Application.DTOs;
-using CoreLedger.Domain.Interfaces;
+using CoreLedger.Application.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

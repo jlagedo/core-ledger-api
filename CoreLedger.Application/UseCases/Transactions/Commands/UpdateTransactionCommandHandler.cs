@@ -1,5 +1,5 @@
 using CoreLedger.Domain.Exceptions;
-using CoreLedger.Domain.Interfaces;
+using CoreLedger.Application.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
 

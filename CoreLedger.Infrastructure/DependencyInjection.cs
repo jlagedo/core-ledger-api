@@ -1,6 +1,5 @@
 using CoreLedger.Application.Interfaces;
 using CoreLedger.Application.Interfaces.QueryServices;
-using CoreLedger.Domain.Interfaces;
 using CoreLedger.Infrastructure.Configuration;
 using CoreLedger.Infrastructure.Persistence;
 using CoreLedger.Infrastructure.Services;

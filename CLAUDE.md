@@ -96,18 +96,18 @@ CoreLedger.Worker/           → Background Worker Service
 - Business entities with rich behavior (`Entities/`)
 - Value objects (immutable, no identity)
 - Domain exceptions (business rule violations)
-- Application interfaces (`Interfaces/` - minimal: `IApplicationDbContext` only)
 - Domain enums and business logic
 - Domain events (if using event sourcing)
+- Models (QueryParameters, etc.)
 
 **What doesn't belong here:**
 - Infrastructure concerns (EF Core, HTTP clients, RabbitMQ)
 - DTOs or API models
 - MediatR handlers
 - Database configurations
-- Repository interfaces or implementations
+- Repository or application interfaces
 
-**Key principle:** Domain layer has ZERO external dependencies except `IApplicationDbContext` (minimal abstraction). It represents pure business logic.
+**Key principle:** Domain layer has ZERO external dependencies. It represents pure business logic.
 
 ### CoreLedger.Application (Application/Use Cases Layer)
 
@@ -117,7 +117,7 @@ CoreLedger.Worker/           → Background Worker Service
 - DTOs for API contracts (`DTOs/`)
 - FluentValidation validators (`Validators/`)
 - AutoMapper profiles (`Mappings/`)
-- Application-level interfaces for external services
+- Application-level interfaces (`Interfaces/` - including `IApplicationDbContext`)
 - MediatR pipeline behaviors (cross-cutting concerns)
 
 **What doesn't belong here:**

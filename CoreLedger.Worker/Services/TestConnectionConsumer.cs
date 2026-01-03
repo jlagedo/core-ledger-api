@@ -3,7 +3,7 @@ using System.Text.Json;
 using CoreLedger.Application.Constants;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Domain.Enums;
-using CoreLedger.Domain.Interfaces;
+using CoreLedger.Application.Interfaces;
 using CoreLedger.Infrastructure.Configuration;
 using CoreLedger.Worker.Configuration;
 using Microsoft.EntityFrameworkCore;
