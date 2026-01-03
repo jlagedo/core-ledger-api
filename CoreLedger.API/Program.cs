@@ -3,6 +3,10 @@ using CoreLedger.API.Middleware;
 using CoreLedger.Application;
 using CoreLedger.Application.Configuration;
 using CoreLedger.Infrastructure;
+using CoreLedger.API.Middleware;
+using CoreLedger.API.Extensions;
+using Serilog;
+using Serilog.Events;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -36,7 +40,7 @@ try
     Log.Information("Starting Core Ledger API");
 
     var builder = WebApplication.CreateBuilder(args);
-
+    
     // Use mock authentication in development (bypasses Auth0)
     var useMockAuth = builder.Configuration.GetValue<bool>("Auth:UseMock");
 
