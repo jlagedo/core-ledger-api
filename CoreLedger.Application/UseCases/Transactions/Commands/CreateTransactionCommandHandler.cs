@@ -6,6 +6,7 @@ using CoreLedger.Domain.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace CoreLedger.Application.UseCases.Transactions.Commands;
 
@@ -77,6 +78,25 @@ public class CreateTransactionCommandHandler : IRequestHandler<CreateTransaction
 
         _logger.LogInformation("Created transaction with ID: {TransactionId}", transaction.Id);
 
-        return _mapper.Map<TransactionDto>(transactionWithNav);
+        // Map to DTO
+        var transactionDto = _mapper.Map<TransactionDto>(transactionWithNav);
+
+        // Create audit log entry
+        var transactionDataJson = JsonSerializer.Serialize(transactionDto);
+        var dataAfter = JsonDocument.Parse(transactionDataJson);
+        var auditLog = AuditLog.Create(
+            entityName: "Transaction",
+            entityId: transaction.Id.ToString(),
+            eventType: "Created",
+            performedByUserId: request.CreatedByUserId,
+            dataAfter: dataAfter,
+            correlationId: request.CorrelationId,
+            requestId: request.RequestId,
+            source: "API");
+
+        _context.AuditLogs.Add(auditLog);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return transactionDto;
     }
 }

@@ -14,5 +14,7 @@ public record CreateTransactionCommand(
     decimal Amount,
     string Currency,
     int StatusId,
-    string CreatedByUserId
+    string CreatedByUserId,
+    string? CorrelationId = null,
+    string? RequestId = null
 ) : IRequest<TransactionDto>;

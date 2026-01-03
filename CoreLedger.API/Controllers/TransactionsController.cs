@@ -120,6 +120,10 @@ public class TransactionsController : ControllerBase
             return Unauthorized(new { message = "Invalid authentication token" });
         }
 
+        // Extract correlation ID and request ID from HttpContext for audit logging
+        var correlationId = HttpContext.Items["CorrelationId"]?.ToString();
+        var requestId = HttpContext.TraceIdentifier;
+
         var command = new CreateTransactionCommand(
             dto.FundId,
             dto.SecurityId,
@@ -131,7 +135,9 @@ public class TransactionsController : ControllerBase
             dto.Amount,
             dto.Currency,
             dto.StatusId,
-            userId);
+            userId,
+            correlationId,
+            requestId);
         var result = await _mediator.Send(command, cancellationToken);
         return CreatedAtRoute("GetTransactionById", new { id = result.Id }, result);
     }
