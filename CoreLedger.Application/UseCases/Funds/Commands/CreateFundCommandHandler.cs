@@ -32,7 +32,10 @@ public class CreateFundCommandHandler : IRequestHandler<CreateFundCommand, FundD
         CreateFundCommand request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Creating new Fund with name: {Name}", request.Name);
+        _logger.LogInformation(
+            "Creating fund {Code} - Name: {Name}, Currency: {BaseCurrency}, " +
+            "InceptionDate: {InceptionDate}, ValuationFrequency: {ValuationFrequency}, CreatedBy: {UserId}",
+            request.Code, request.Name, request.BaseCurrency, request.InceptionDate, request.ValuationFrequency, request.CreatedByUserId);
 
         var existing = await _context.Funds
             .AsNoTracking()

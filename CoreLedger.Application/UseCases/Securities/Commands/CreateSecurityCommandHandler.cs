@@ -30,7 +30,9 @@ public class CreateSecurityCommandHandler : IRequestHandler<CreateSecurityComman
 
     public async Task<SecurityDto> Handle(CreateSecurityCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Creating new Security with ticker: {Ticker}", request.Ticker);
+        _logger.LogInformation(
+            "Creating security {Ticker} - Name: {Name}, Isin: {Isin}, Type: {Type}, Currency: {Currency}, CreatedBy: {UserId}",
+            request.Ticker, request.Name, request.Isin, request.Type, request.Currency, request.CreatedByUserId);
 
         // Check if security with same ticker already exists
         var existing = await _context.Securities

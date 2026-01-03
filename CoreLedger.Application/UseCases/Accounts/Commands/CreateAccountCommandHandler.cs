@@ -32,7 +32,10 @@ public class CreateAccountCommandHandler : IRequestHandler<CreateAccountCommand,
         CreateAccountCommand request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Creating new Account with code: {Code}", request.Code);
+        _logger.LogInformation(
+            "Creating account {Code} - Name: {Name}, Type: {TypeId}, Status: {Status}, " +
+            "NormalBalance: {NormalBalance}, CreatedBy: {UserId}",
+            request.Code, request.Name, request.TypeId, request.Status, request.NormalBalance, request.CreatedByUserId);
 
         // Validate that the account type exists
         var accountType = await _context.AccountTypes.FindAsync([request.TypeId], cancellationToken);
