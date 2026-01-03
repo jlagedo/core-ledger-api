@@ -3,15 +3,11 @@ using CoreLedger.API.Middleware;
 using CoreLedger.Application;
 using CoreLedger.Application.Configuration;
 using CoreLedger.Infrastructure;
-using CoreLedger.API.Middleware;
-using CoreLedger.API.Extensions;
 using Serilog;
 using Serilog.Events;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Serilog;
-using Serilog.Events;
 
 // Build configuration to read Serilog settings before creating logger
 var configuration = new ConfigurationBuilder()
