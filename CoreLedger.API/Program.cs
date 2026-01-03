@@ -1,3 +1,4 @@
+using CoreLedger.API.Endpoints;
 using CoreLedger.API.Extensions;
 using CoreLedger.API.Middleware;
 using CoreLedger.Application;
@@ -51,8 +52,6 @@ try
                             new PaginationOptions();
     PaginationDefaults.Initialize(paginationOptions);
 
-    builder.Services.AddControllers();
-
     builder.Services.AddSwaggerDocumentation();
 
     if (useMockAuth)
@@ -103,7 +102,21 @@ try
 
     app.UseAuthorization();
 
-    app.MapControllers();
+    // Minimal API endpoint registrations
+    app.MapFundsEndpoints();
+    app.MapAccountsEndpoints();
+    app.MapTransactionsEndpoints();
+    app.MapSecuritiesEndpoints();
+    app.MapUsersEndpoints();
+    app.MapJobsIngestionEndpoints();
+    app.MapAuditLogsEndpoints();
+    app.MapCoreJobsEndpoints();
+    app.MapAccountTypesEndpoints();
+    app.MapTransactionTypesEndpoints();
+    app.MapTransactionSubTypesEndpoints();
+    app.MapTransactionStatusesEndpoints();
+    app.MapSecurityTypesEndpoints();
+
     app.MapHealthChecks("/health");
     app.MapHealthChecks("/health/ready");
     app.MapHealthChecks("/health/live");
