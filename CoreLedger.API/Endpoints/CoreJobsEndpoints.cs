@@ -17,12 +17,9 @@ public static class CoreJobsEndpoints
             .RequireAuthorization();
 
         group.MapGet("/", GetAll)
-            .WithName("GetAllCoreJobs")
-            .WithSummary("Retrieves all core jobs with optional filtering, sorting, and pagination")
-            .Produces<PagedResult<CoreJobDto>>()
-            ;
+            .WithName("GetAllCoreJobs");
 
-        return routes;
+        return group;
     }
 
     private static async Task<IResult> GetAll(

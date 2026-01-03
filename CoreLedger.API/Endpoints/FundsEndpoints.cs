@@ -13,6 +13,7 @@ namespace CoreLedger.API.Endpoints;
 /// </summary>
 public static class FundsEndpoints
 {
+    private static readonly string LoggerName = typeof(FundsEndpoints).Name;
     public static IEndpointRouteBuilder MapFundsEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/funds")
@@ -20,35 +21,18 @@ public static class FundsEndpoints
             .RequireAuthorization();
 
         group.MapGet("/", GetAll)
-            .WithName("GetAllFunds")
-            .WithSummary("Retrieves all funds with optional filtering, sorting, and pagination")
-            .Produces<PagedResult<FundDto>>()
-            ;
+            .WithName("GetAllFunds");
 
         group.MapGet("/{id:int}", GetById)
-            .WithName("GetFundById")
-            .WithSummary("Retrieves a specific fund by ID")
-            .Produces<FundDto>()
-            .Produces(StatusCodes.Status404NotFound)
-            ;
+            .WithName("GetFundById");
 
         group.MapPost("/", Create)
-            .WithName("CreateFund")
-            .WithSummary("Creates a new fund")
-            .Produces<FundDto>(StatusCodes.Status201Created)
-            .Produces(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status401Unauthorized)
-            ;
+            .WithName("CreateFund");
 
         group.MapPut("/{id:int}", Update)
-            .WithName("UpdateFund")
-            .WithSummary("Updates an existing fund")
-            .Produces(StatusCodes.Status204NoContent)
-            .Produces(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status404NotFound)
-            ;
+            .WithName("UpdateFund");
 
-        return routes;
+        return group;
     }
 
     private static async Task<IResult> GetAll(
@@ -58,7 +42,7 @@ public static class FundsEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(FundsEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
         var userId = context.GetUserId();
 
         logger.LogInformation(
@@ -88,7 +72,7 @@ public static class FundsEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(FundsEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
         var userId = context.GetUserId();
 
         logger.LogInformation("Retrieving fund {FundId} for user {UserId}", id, userId);
@@ -109,7 +93,7 @@ public static class FundsEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(FundsEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
         var userId = context.GetUserId();
 
         if (string.IsNullOrEmpty(userId))
@@ -146,7 +130,7 @@ public static class FundsEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(FundsEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
         var userId = context.GetUserId();
 
         logger.LogInformation(

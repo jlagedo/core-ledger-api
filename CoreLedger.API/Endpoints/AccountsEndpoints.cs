@@ -13,6 +13,7 @@ namespace CoreLedger.API.Endpoints;
 /// </summary>
 public static class AccountsEndpoints
 {
+    private static readonly string LoggerName = typeof(AccountsEndpoints).Name;
     public static IEndpointRouteBuilder MapAccountsEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/accounts")
@@ -20,49 +21,24 @@ public static class AccountsEndpoints
             .RequireAuthorization();
 
         group.MapGet("/", GetAll)
-            .WithName("GetAllAccounts")
-            .WithSummary("Retrieves all accounts with optional filtering, sorting, and pagination")
-            .Produces<PagedResult<AccountDto>>()
-            ;
+            .WithName("GetAllAccounts");
 
         group.MapGet("/{id:int}", GetById)
-            .WithName("GetAccountsById")
-            .WithSummary("Retrieves a specific account by ID")
-            .Produces<AccountDto>()
-            .Produces(StatusCodes.Status404NotFound)
-            ;
+            .WithName("GetAccountsById");
 
         group.MapGet("/reports/by-type", GetAccountsByTypeReport)
-            .WithName("GetAccountsByTypeReport")
-            .WithSummary("Gets a report of total active accounts grouped by account type")
-            .Produces<IReadOnlyList<AccountsByTypeReportDto>>()
-            ;
+            .WithName("GetAccountsByTypeReport");
 
         group.MapPost("/", Create)
-            .WithName("CreateAccount")
-            .WithSummary("Creates a new account")
-            .Produces<AccountDto>(StatusCodes.Status201Created)
-            .Produces(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status401Unauthorized)
-            ;
+            .WithName("CreateAccount");
 
         group.MapPut("/{id:int}", Update)
-            .WithName("UpdateAccount")
-            .WithSummary("Updates an existing account")
-            .Produces(StatusCodes.Status204NoContent)
-            .Produces(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status404NotFound)
-            ;
+            .WithName("UpdateAccount");
 
         group.MapPatch("/{id:int}/deactivate", Deactivate)
-            .WithName("DeactivateAccount")
-            .WithSummary("Deactivates an account and records the deactivation date")
-            .Produces(StatusCodes.Status204NoContent)
-            .Produces(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status404NotFound)
-            ;
+            .WithName("DeactivateAccount");
 
-        return routes;
+        return group;
     }
 
     private static async Task<IResult> GetAll(
@@ -72,7 +48,7 @@ public static class AccountsEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(AccountsEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
         var userId = context.GetUserId();
 
         logger.LogInformation(
@@ -102,7 +78,7 @@ public static class AccountsEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(AccountsEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
         var userId = context.GetUserId();
 
         logger.LogInformation("Retrieving account {AccountId} for user {UserId}", id, userId);
@@ -121,7 +97,7 @@ public static class AccountsEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(AccountsEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
         var userId = context.GetUserId();
 
         logger.LogInformation("Retrieving account type report for user {UserId}", userId);
@@ -141,7 +117,7 @@ public static class AccountsEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(AccountsEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
         var userId = context.GetUserId();
 
         if (string.IsNullOrEmpty(userId))
@@ -178,7 +154,7 @@ public static class AccountsEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(AccountsEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
         var userId = context.GetUserId();
 
         logger.LogInformation(
@@ -207,7 +183,7 @@ public static class AccountsEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(AccountsEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
         var userId = context.GetUserId();
 
         logger.LogInformation("Deactivating account {AccountId} - DeactivatedBy: {UserId}", id, userId);

@@ -13,6 +13,7 @@ namespace CoreLedger.API.Endpoints;
 /// </summary>
 public static class TransactionsEndpoints
 {
+    private static readonly string LoggerName = typeof(TransactionsEndpoints).Name;
     public static IEndpointRouteBuilder MapTransactionsEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/transactions")
@@ -20,35 +21,18 @@ public static class TransactionsEndpoints
             .RequireAuthorization();
 
         group.MapGet("/", GetAll)
-            .WithName("GetAllTransactions")
-            .WithSummary("Retrieves all transactions with optional filtering, sorting, and pagination")
-            .Produces<PagedResult<TransactionDto>>()
-            ;
+            .WithName("GetAllTransactions");
 
         group.MapGet("/{id:int}", GetById)
-            .WithName("GetTransactionById")
-            .WithSummary("Retrieves a specific transaction by ID")
-            .Produces<TransactionDto>()
-            .Produces(StatusCodes.Status404NotFound)
-            ;
+            .WithName("GetTransactionById");
 
         group.MapPost("/", Create)
-            .WithName("CreateTransaction")
-            .WithSummary("Creates a new transaction")
-            .Produces<TransactionDto>(StatusCodes.Status201Created)
-            .Produces(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status401Unauthorized)
-            ;
+            .WithName("CreateTransaction");
 
         group.MapPut("/{id:int}", Update)
-            .WithName("UpdateTransaction")
-            .WithSummary("Updates an existing transaction")
-            .Produces(StatusCodes.Status204NoContent)
-            .Produces(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status404NotFound)
-            ;
+            .WithName("UpdateTransaction");
 
-        return routes;
+        return group;
     }
 
     private static async Task<IResult> GetAll(
@@ -58,7 +42,7 @@ public static class TransactionsEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(TransactionsEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
         var userId = context.GetUserId();
         var correlationId = context.GetCorrelationId();
 
@@ -89,7 +73,7 @@ public static class TransactionsEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(TransactionsEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
         var userId = context.GetUserId();
         var correlationId = context.GetCorrelationId();
 
@@ -112,7 +96,7 @@ public static class TransactionsEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(TransactionsEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
         var userId = context.GetUserId();
 
         if (string.IsNullOrEmpty(userId))
@@ -163,7 +147,7 @@ public static class TransactionsEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(TransactionsEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
         var userId = context.GetUserId();
 
         logger.LogInformation(

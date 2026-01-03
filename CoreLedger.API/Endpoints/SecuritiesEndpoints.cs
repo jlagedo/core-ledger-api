@@ -13,6 +13,7 @@ namespace CoreLedger.API.Endpoints;
 /// </summary>
 public static class SecuritiesEndpoints
 {
+    private static readonly string LoggerName = typeof(SecuritiesEndpoints).Name;
     public static IEndpointRouteBuilder MapSecuritiesEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/securities")
@@ -20,43 +21,21 @@ public static class SecuritiesEndpoints
             .RequireAuthorization();
 
         group.MapGet("/", GetAll)
-            .WithName("GetAllSecurities")
-            .WithSummary("Retrieves all securities with optional filtering, sorting, and pagination")
-            .Produces<PagedResult<SecurityDto>>()
-            ;
+            .WithName("GetAllSecurities");
 
         group.MapGet("/{id:int}", GetById)
-            .WithName("GetSecuritiesById")
-            .WithSummary("Retrieves a specific security by ID")
-            .Produces<SecurityDto>()
-            .Produces(StatusCodes.Status404NotFound)
-            ;
+            .WithName("GetSecuritiesById");
 
         group.MapPost("/", Create)
-            .WithName("CreateSecurity")
-            .WithSummary("Creates a new security")
-            .Produces<SecurityDto>(StatusCodes.Status201Created)
-            .Produces(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status401Unauthorized)
-            ;
+            .WithName("CreateSecurity");
 
         group.MapPut("/{id:int}", Update)
-            .WithName("UpdateSecurity")
-            .WithSummary("Updates an existing security")
-            .Produces(StatusCodes.Status204NoContent)
-            .Produces(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status404NotFound)
-            ;
+            .WithName("UpdateSecurity");
 
         group.MapPatch("/{id:int}/deactivate", Deactivate)
-            .WithName("DeactivateSecurity")
-            .WithSummary("Deactivates a security and records the deactivation date")
-            .Produces(StatusCodes.Status204NoContent)
-            .Produces(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status404NotFound)
-            ;
+            .WithName("DeactivateSecurity");
 
-        return routes;
+        return group;
     }
 
     private static async Task<IResult> GetAll(
@@ -66,7 +45,7 @@ public static class SecuritiesEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(SecuritiesEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
         var userId = context.GetUserId();
 
         logger.LogInformation(
@@ -96,7 +75,7 @@ public static class SecuritiesEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(SecuritiesEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
         var userId = context.GetUserId();
 
         logger.LogInformation("Retrieving security {SecurityId} for user {UserId}", id, userId);
@@ -117,7 +96,7 @@ public static class SecuritiesEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(SecuritiesEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
         var userId = context.GetUserId();
 
         if (string.IsNullOrEmpty(userId))
@@ -154,7 +133,7 @@ public static class SecuritiesEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(SecuritiesEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
         var userId = context.GetUserId();
 
         logger.LogInformation(
@@ -183,7 +162,7 @@ public static class SecuritiesEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(SecuritiesEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
         var userId = context.GetUserId();
 
         logger.LogInformation("Deactivating security {SecurityId} - DeactivatedBy: {UserId}", id, userId);

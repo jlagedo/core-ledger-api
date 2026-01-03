@@ -17,41 +17,21 @@ public static class AccountTypesEndpoints
             .RequireAuthorization();
 
         group.MapGet("/", GetAll)
-            .WithName("GetAllAccountTypes")
-            .WithSummary("Retrieves all account types")
-            .Produces<IReadOnlyList<AccountTypeDto>>()
-            ;
+            .WithName("GetAllAccountTypes");
 
         group.MapGet("/{id:int}", GetById)
-            .WithName("GetAccountTypeById")
-            .WithSummary("Retrieves a specific account type by ID")
-            .Produces<AccountTypeDto>()
-            .Produces(StatusCodes.Status404NotFound)
-            ;
+            .WithName("GetAccountTypeById");
 
         group.MapPost("/", Create)
-            .WithName("CreateAccountType")
-            .WithSummary("Creates a new account type")
-            .Produces<AccountTypeDto>(StatusCodes.Status201Created)
-            .Produces(StatusCodes.Status400BadRequest)
-            ;
+            .WithName("CreateAccountType");
 
         group.MapPut("/{id:int}", Update)
-            .WithName("UpdateAccountType")
-            .WithSummary("Updates an existing account type")
-            .Produces(StatusCodes.Status204NoContent)
-            .Produces(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status404NotFound)
-            ;
+            .WithName("UpdateAccountType");
 
         group.MapDelete("/{id:int}", Delete)
-            .WithName("DeleteAccountType")
-            .WithSummary("Deletes an account type")
-            .Produces(StatusCodes.Status204NoContent)
-            .Produces(StatusCodes.Status404NotFound)
-            ;
+            .WithName("DeleteAccountType");
 
-        return routes;
+        return group;
     }
 
     private static async Task<IResult> GetAll(

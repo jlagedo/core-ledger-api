@@ -11,6 +11,7 @@ namespace CoreLedger.API.Endpoints;
 /// </summary>
 public static class JobsIngestionEndpoints
 {
+    private static readonly string LoggerName = typeof(JobsIngestionEndpoints).Name;
     public static IEndpointRouteBuilder MapJobsIngestionEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/jobs-ingestion")
@@ -18,22 +19,12 @@ public static class JobsIngestionEndpoints
             .RequireAuthorization();
 
         group.MapPost("/import-b3-instruction-file", ImportB3InstructionFile)
-            .WithName("ImportB3InstructionFile")
-            .WithSummary("Imports a B3 instruction file by creating a CoreJob and sending a message to RabbitMQ")
-            .WithDescription("The job reference ID and description are auto-generated with the current datetime")
-            .Produces<ImportB3InstructionFileResponse>(StatusCodes.Status202Accepted)
-            .Produces(StatusCodes.Status400BadRequest)
-            ;
+            .WithName("ImportB3InstructionFile");
 
         group.MapPost("/test-connection", TestConnection)
-            .WithName("TestConnection")
-            .WithSummary("Tests the API -> Queue -> Worker connection by creating a CoreJob and sending a test message")
-            .WithDescription("The worker will only log the message and update the job status")
-            .Produces<TestConnectionResponse>(StatusCodes.Status202Accepted)
-            .Produces(StatusCodes.Status400BadRequest)
-            ;
+            .WithName("TestConnection");
 
-        return routes;
+        return group;
     }
 
     private static async Task<IResult> ImportB3InstructionFile(
@@ -43,7 +34,7 @@ public static class JobsIngestionEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(JobsIngestionEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
 
         // Extract user and correlation ID from HttpContext
         var userId = httpContext.GetUserId() ?? "anonymous";
@@ -105,7 +96,7 @@ public static class JobsIngestionEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(JobsIngestionEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
 
         // Extract user and correlation ID from HttpContext
         var userId = httpContext.GetUserId() ?? "anonymous";

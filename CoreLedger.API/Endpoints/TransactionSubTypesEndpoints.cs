@@ -16,19 +16,12 @@ public static class TransactionSubTypesEndpoints
             .RequireAuthorization();
 
         group.MapGet("/", GetAll)
-            .WithName("GetAllTransactionSubTypes")
-            .WithSummary("Retrieves all transaction subtypes with optional filtering by type ID")
-            .Produces<IReadOnlyList<TransactionSubTypeDto>>()
-            ;
+            .WithName("GetAllTransactionSubTypes");
 
         group.MapGet("/{id:int}", GetById)
-            .WithName("GetTransactionSubTypeById")
-            .WithSummary("Retrieves a specific transaction subtype by ID")
-            .Produces<TransactionSubTypeDto>()
-            .Produces(StatusCodes.Status404NotFound)
-            ;
+            .WithName("GetTransactionSubTypeById");
 
-        return routes;
+        return group;
     }
 
     private static async Task<IResult> GetAll(

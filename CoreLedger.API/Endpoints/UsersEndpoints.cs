@@ -9,6 +9,7 @@ namespace CoreLedger.API.Endpoints;
 /// </summary>
 public static class UsersEndpoints
 {
+    private static readonly string LoggerName = typeof(UsersEndpoints).Name;
     public static IEndpointRouteBuilder MapUsersEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/users")
@@ -16,15 +17,9 @@ public static class UsersEndpoints
             .RequireAuthorization();
 
         group.MapGet("/me", GetCurrentUser)
-            .WithName("GetCurrentUser")
-            .WithSummary("Retrieves the current authenticated user's profile")
-            .WithDescription("Creates user record if first login, or updates profile from Auth0 on subsequent logins")
-            .Produces<UserDto>()
-            .Produces(StatusCodes.Status401Unauthorized)
-            .Produces(StatusCodes.Status503ServiceUnavailable)
-            ;
+            .WithName("GetCurrentUser");
 
-        return routes;
+        return group;
     }
 
     private static async Task<IResult> GetCurrentUser(
@@ -33,7 +28,7 @@ public static class UsersEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(typeof(UsersEndpoints));
+        var logger = loggerFactory.CreateLogger(LoggerName);
 
         // Extract claims from JWT
         var authProviderId = context.GetUserId();

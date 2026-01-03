@@ -16,12 +16,9 @@ public static class SecurityTypesEndpoints
             .RequireAuthorization();
 
         group.MapGet("/", GetAll)
-            .WithName("GetAllSecurityTypes")
-            .WithSummary("Retrieves all SecurityType enum values")
-            .Produces<IReadOnlyList<SecurityTypeDto>>()
-            ;
+            .WithName("GetAllSecurityTypes");
 
-        return routes;
+        return group;
     }
 
     private static async Task<IResult> GetAll(

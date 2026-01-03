@@ -17,13 +17,9 @@ public static class AuditLogsEndpoints
             .RequireAuthorization();
 
         group.MapGet("/", GetAll)
-            .WithName("GetAllAuditLogs")
-            .WithSummary("Retrieves audit log entries with optional filtering, sorting, and pagination")
-            .WithDescription("Supported filter fields: entityName, entityId, eventType, performedByUserId, source, correlationId. Supported sort fields: id, entityName, entityId, eventType, performedAt, source.")
-            .Produces<PagedResult<AuditLogDto>>()
-            ;
+            .WithName("GetAllAuditLogs");
 
-        return routes;
+        return group;
     }
 
     private static async Task<IResult> GetAll(
