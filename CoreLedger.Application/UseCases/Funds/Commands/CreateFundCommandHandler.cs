@@ -37,7 +37,11 @@ public class CreateFundCommandHandler : IRequestHandler<CreateFundCommand, FundD
         var existing = await _context.Funds
             .AsNoTracking()
             .FirstOrDefaultAsync(f => f.Name == request.Name, cancellationToken);
-        if (existing != null) throw new DomainValidationException("Fund with this name already exists");
+        if (existing != null)
+        {
+            _logger.LogWarning("Fund creation failed: Duplicate name {FundName} already exists as fund {ExistingId}", request.Name, existing.Id);
+            throw new DomainValidationException("Fund with this name already exists");
+        }
 
         var fund = Fund.Create(
             request.Code,

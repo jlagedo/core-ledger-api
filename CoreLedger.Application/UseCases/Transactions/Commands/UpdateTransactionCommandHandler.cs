@@ -36,22 +36,34 @@ public class UpdateTransactionCommandHandler : IRequestHandler<UpdateTransaction
         // Validate foreign keys
         var fund = await _context.Funds.FindAsync([request.FundId], cancellationToken);
         if (fund == null)
+        {
+            _logger.LogWarning("Transaction update failed: Fund {FundId} not found for transaction {TransactionId}", request.FundId, request.Id);
             throw new EntityNotFoundException("Fund", request.FundId);
+        }
 
         if (request.SecurityId.HasValue)
         {
             var security = await _context.Securities.FindAsync([request.SecurityId.Value], cancellationToken);
             if (security == null)
+            {
+                _logger.LogWarning("Transaction update failed: Security {SecurityId} not found for transaction {TransactionId}", request.SecurityId.Value, request.Id);
                 throw new EntityNotFoundException("Security", request.SecurityId.Value);
+            }
         }
 
         var subType = await _context.TransactionSubTypes.FindAsync([request.TransactionSubTypeId], cancellationToken);
         if (subType == null)
+        {
+            _logger.LogWarning("Transaction update failed: TransactionSubType {SubTypeId} not found for transaction {TransactionId}", request.TransactionSubTypeId, request.Id);
             throw new EntityNotFoundException("TransactionSubType", request.TransactionSubTypeId);
+        }
 
         var status = await _context.TransactionStatuses.FindAsync([request.StatusId], cancellationToken);
         if (status == null)
+        {
+            _logger.LogWarning("Transaction update failed: TransactionStatus {StatusId} not found for transaction {TransactionId}", request.StatusId, request.Id);
             throw new EntityNotFoundException("TransactionStatus", request.StatusId);
+        }
 
         transaction.Update(
             request.FundId,

@@ -36,13 +36,21 @@ public class CreateAccountCommandHandler : IRequestHandler<CreateAccountCommand,
 
         // Validate that the account type exists
         var accountType = await _context.AccountTypes.FindAsync([request.TypeId], cancellationToken);
-        if (accountType == null) throw new EntityNotFoundException("AccountType", request.TypeId);
+        if (accountType == null)
+        {
+            _logger.LogWarning("Account creation failed: AccountType {TypeId} not found", request.TypeId);
+            throw new EntityNotFoundException("AccountType", request.TypeId);
+        }
 
         // Check if account with same code already exists
         var existing = await _context.Accounts
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Code == request.Code, cancellationToken);
-        if (existing != null) throw new DomainValidationException("Account with this code already exists");
+        if (existing != null)
+        {
+            _logger.LogWarning("Account creation failed: Duplicate code {Code} already exists as account {ExistingId}", request.Code, existing.Id);
+            throw new DomainValidationException("Account with this code already exists");
+        }
 
         var account = Account.Create(
             request.Code,

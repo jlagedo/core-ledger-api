@@ -36,7 +36,11 @@ public class CreateSecurityCommandHandler : IRequestHandler<CreateSecurityComman
         var existing = await _context.Securities
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.Ticker == request.Ticker, cancellationToken);
-        if (existing != null) throw new DomainValidationException("Security with this ticker already exists");
+        if (existing != null)
+        {
+            _logger.LogWarning("Security creation failed: Duplicate ticker {Ticker} already exists as security {ExistingId}", request.Ticker, existing.Id);
+            throw new DomainValidationException("Security with this ticker already exists");
+        }
 
         var security = Security.Create(
             request.Name,

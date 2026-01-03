@@ -39,22 +39,34 @@ public class CreateTransactionCommandHandler : IRequestHandler<CreateTransaction
         // Validate foreign keys
         var fund = await _context.Funds.FindAsync([request.FundId], cancellationToken);
         if (fund == null)
+        {
+            _logger.LogWarning("Transaction creation failed: Fund {FundId} not found", request.FundId);
             throw new EntityNotFoundException("Fund", request.FundId);
+        }
 
         if (request.SecurityId.HasValue)
         {
             var security = await _context.Securities.FindAsync([request.SecurityId.Value], cancellationToken);
             if (security == null)
+            {
+                _logger.LogWarning("Transaction creation failed: Security {SecurityId} not found", request.SecurityId.Value);
                 throw new EntityNotFoundException("Security", request.SecurityId.Value);
+            }
         }
 
         var subType = await _context.TransactionSubTypes.FindAsync([request.TransactionSubTypeId], cancellationToken);
         if (subType == null)
+        {
+            _logger.LogWarning("Transaction creation failed: TransactionSubType {SubTypeId} not found", request.TransactionSubTypeId);
             throw new EntityNotFoundException("TransactionSubType", request.TransactionSubTypeId);
+        }
 
         var status = await _context.TransactionStatuses.FindAsync([request.StatusId], cancellationToken);
         if (status == null)
+        {
+            _logger.LogWarning("Transaction creation failed: TransactionStatus {StatusId} not found", request.StatusId);
             throw new EntityNotFoundException("TransactionStatus", request.StatusId);
+        }
 
         // Create transaction
         var transaction = Transaction.Create(
