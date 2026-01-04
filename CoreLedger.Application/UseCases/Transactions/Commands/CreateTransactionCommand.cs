@@ -13,8 +13,8 @@ public record CreateTransactionCommand(
     decimal Price,
     decimal Amount,
     string Currency,
-    int StatusId,
     string CreatedByUserId,
+    Guid IdempotencyKey,
     string? CorrelationId = null,
     string? RequestId = null
 ) : IRequest<TransactionDto>;

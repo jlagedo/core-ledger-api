@@ -12,7 +12,7 @@ public class TransactionCreatedOutboxMessageConfiguration : IEntityTypeConfigura
 {
     public void Configure(EntityTypeBuilder<TransactionCreatedOutboxMessage> builder)
     {
-        builder.ToTable("tansactioncreated_outbox_message");
+        builder.ToTable("transaction_created_outbox_message");
 
         builder.HasKey(m => m.Id);
 

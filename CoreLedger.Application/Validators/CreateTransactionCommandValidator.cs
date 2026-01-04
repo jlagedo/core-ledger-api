@@ -18,10 +18,6 @@ public class CreateTransactionCommandValidator : AbstractValidator<CreateTransac
             .GreaterThan(0)
             .WithMessage("TransactionSubTypeId must be a valid positive identifier");
 
-        RuleFor(x => x.StatusId)
-            .GreaterThan(0)
-            .WithMessage("StatusId must be a valid positive identifier");
-
         RuleFor(x => x.TradeDate)
             .LessThanOrEqualTo(x => x.SettleDate)
             .WithMessage("Trade date must be on or before settle date");
@@ -51,5 +47,9 @@ public class CreateTransactionCommandValidator : AbstractValidator<CreateTransac
             .WithMessage("Currency must be exactly 3 characters")
             .Matches("^[A-Z]{3}$")
             .WithMessage("Currency must be 3 uppercase letters (ISO code)");
+
+        RuleFor(x => x.IdempotencyKey)
+            .NotEmpty()
+            .WithMessage("IdempotencyKey is required");
     }
 }

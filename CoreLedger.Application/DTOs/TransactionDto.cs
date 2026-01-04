@@ -39,7 +39,7 @@ public record CreateTransactionDto(
     decimal Price,
     decimal Amount,
     string Currency,
-    int StatusId);
+    Guid? IdempotencyKey);
 
 /// <summary>
 ///     DTO for updating an existing Transaction.

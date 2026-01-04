@@ -1,10 +1,12 @@
 using AutoMapper;
 using CoreLedger.Application.DTOs;
+using CoreLedger.Application.Extensions;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Exceptions;
 using CoreLedger.Application.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
@@ -19,82 +21,183 @@ public class CreateTransactionCommandHandler(
     public async Task<TransactionDto> Handle(CreateTransactionCommand request, CancellationToken cancellationToken)
     {
         logger.LogInformation(
-            "Creating transaction for fund {FundId} - SubType: {SubTypeId}, Amount: {Amount}, " +
-            "Quantity: {Quantity}, Price: {Price}, Currency: {Currency}, TradeDate: {TradeDate}, " +
-            "SettleDate: {SettleDate}, CreatedBy: {UserId}",
-            request.FundId, request.TransactionSubTypeId, request.Amount,
-            request.Quantity, request.Price, request.Currency, request.TradeDate,
-            request.SettleDate, request.CreatedByUserId);
+            "Processing transaction creation request - IdempotencyKey: {IdempotencyKey}, FundId: {FundId}, " +
+            "SubType: {SubTypeId}, Amount: {Amount}, CorrelationId: {CorrelationId}",
+            request.IdempotencyKey, request.FundId, request.TransactionSubTypeId,
+            request.Amount, request.CorrelationId);
 
-        // Validate foreign keys
-        var fund = await context.Funds.FindAsync([request.FundId], cancellationToken);
-        if (fund == null)
+        try
         {
-            logger.LogWarning("Transaction creation failed: Fund {FundId} not found", request.FundId);
-            throw new EntityNotFoundException("Fund", request.FundId);
+            var strategy = context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(ProcessTransactionAsync);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex,
+                "Execution strategy failed for transaction creation - IdempotencyKey: {IdempotencyKey}, FundId: {FundId}",
+                request.IdempotencyKey, request.FundId);
+            throw;
         }
 
-        if (request.SecurityId.HasValue)
+        async Task<TransactionDto> ProcessTransactionAsync()
         {
-            var security = await context.Securities.FindAsync([request.SecurityId.Value], cancellationToken);
-            if (security == null)
+            // Begin explicit database transaction for atomicity
+            await using IDbContextTransaction dbTransaction =
+                await context.Database.BeginTransactionAsync(cancellationToken);
+
+            try
             {
-                logger.LogWarning("Transaction creation failed: Security {SecurityId} not found", request.SecurityId.Value);
-                throw new EntityNotFoundException("Security", request.SecurityId.Value);
+                // STEP 1: Check idempotency (fail fast before validation)
+                var existingTransaction = await TryGetIdempotentTransactionAsync(
+                    request.IdempotencyKey, cancellationToken);
+
+                if (existingTransaction != null)
+                {
+                    await dbTransaction.CommitAsync(cancellationToken);
+                    return existingTransaction;
+                }
+
+                // STEP 2: Validate foreign keys using extension method
+                await context.Funds.ValidateEntityExistsAsync(
+                    [request.FundId], "Fund", logger, cancellationToken);
+
+                if (request.SecurityId.HasValue)
+                    await context.Securities.ValidateEntityExistsAsync(
+                        [request.SecurityId.Value], "Security", logger, cancellationToken);
+
+                await context.TransactionSubTypes.ValidateEntityExistsAsync(
+                    [request.TransactionSubTypeId], "TransactionSubType", logger, cancellationToken);
+
+                // STEP 3: Create transaction entity
+                var transaction = Transaction.Create(
+                    request.FundId,
+                    request.SecurityId,
+                    request.TransactionSubTypeId,
+                    request.TradeDate,
+                    request.SettleDate,
+                    request.Quantity,
+                    request.Price,
+                    request.Amount,
+                    request.Currency,
+                    1,
+                    request.CreatedByUserId);
+
+                context.Transactions.Add(transaction);
+
+                // STEP 4: First SaveChanges to get database-generated Transaction.Id
+                await context.SaveChangesAsync(cancellationToken);
+
+                logger.LogInformation(
+                    "Transaction entity persisted - TransactionId: {TransactionId}, IdempotencyKey: {IdempotencyKey}",
+                    transaction.Id, request.IdempotencyKey);
+
+                // STEP 5: Reload transaction with navigation properties using extension
+                var transactionWithNav = await context.Transactions
+                    .WithNavigationProperties()
+                    .FirstOrDefaultAsync(t => t.Id == transaction.Id, cancellationToken)
+                    ?? throw new InvalidOperationException(
+                        $"Failed to reload transaction {transaction.Id} after persistence");
+
+                // STEP 6: Create idempotency record with transaction ID
+                var idempotencyRecord = TransactionIdempotency.Create(
+                    request.IdempotencyKey,
+                    transaction.Id);
+
+                context.TransactionIdempotencies.Add(idempotencyRecord);
+
+                // STEP 7: Create domain event using extension method
+                var domainEvent = transactionWithNav.ToTransactionCreatedEvent(
+                    request.CorrelationId, request.RequestId);
+
+                // STEP 8: Serialize event to Protobuf using extension
+                var eventPayload = domainEvent.SerializeToProtobuf();
+
+                logger.LogDebug(
+                    "Serialized TransactionCreatedEvent - Size: {PayloadSize} bytes, TransactionId: {TransactionId}",
+                    eventPayload.Length, transaction.Id);
+
+                // STEP 9: Create outbox message
+                var outboxMessage = TransactionCreatedOutboxMessage.Create(
+                    type: typeof(Events.TransactionCreatedEvent).FullName ?? nameof(Events.TransactionCreatedEvent),
+                    payload: eventPayload,
+                    occurredOn: domainEvent.OccurredOn);
+
+                context.TransactionCreatedOutboxMessages.Add(outboxMessage);
+
+                // STEP 10: Create audit log
+                var transactionDto = mapper.Map<TransactionDto>(transactionWithNav);
+                await CreateAuditLogAsync(transaction, transactionDto, request);
+
+                // STEP 11: Second SaveChanges - persist idempotency, outbox, and audit atomically
+                await context.SaveChangesAsync(cancellationToken);
+
+                // STEP 12: Commit database transaction
+                await dbTransaction.CommitAsync(cancellationToken);
+
+                logger.LogInformation(
+                    "Transaction creation completed - TransactionId: {TransactionId}, IdempotencyKey: {IdempotencyKey}, " +
+                    "Amount: {Amount}, Status: {StatusId}, OutboxMessageId: {OutboxMessageId}",
+                    transaction.Id, request.IdempotencyKey, transaction.Amount,
+                    transaction.StatusId, outboxMessage.Id);
+
+                return transactionDto;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex,
+                    "Transaction creation failed - IdempotencyKey: {IdempotencyKey}, FundId: {FundId}, " +
+                    "Rolling back transaction",
+                    request.IdempotencyKey, request.FundId);
+
+                await dbTransaction.RollbackAsync(cancellationToken);
+                throw;
             }
         }
+    }
 
-        var subType = await context.TransactionSubTypes.FindAsync([request.TransactionSubTypeId], cancellationToken);
-        if (subType == null)
+    /// <summary>
+    /// Checks for existing idempotent transaction and returns it if found.
+    /// </summary>
+    private async Task<TransactionDto?> TryGetIdempotentTransactionAsync(
+        Guid idempotencyKey,
+        CancellationToken cancellationToken)
+    {
+        var existingIdempotency = await context.TransactionIdempotencies
+            .AsNoTracking()
+            .FirstOrDefaultAsync(ti => ti.IdempotencyKey == idempotencyKey, cancellationToken);
+
+        if (existingIdempotency?.TransactionId == null)
         {
-            logger.LogWarning("Transaction creation failed: TransactionSubType {SubTypeId} not found", request.TransactionSubTypeId);
-            throw new EntityNotFoundException("TransactionSubType", request.TransactionSubTypeId);
+            return null;
         }
-
-        var status = await context.TransactionStatuses.FindAsync([request.StatusId], cancellationToken);
-        if (status == null)
-        {
-            logger.LogWarning("Transaction creation failed: TransactionStatus {StatusId} not found", request.StatusId);
-            throw new EntityNotFoundException("TransactionStatus", request.StatusId);
-        }
-
-        // Create transaction
-        var transaction = Transaction.Create(
-            request.FundId,
-            request.SecurityId,
-            request.TransactionSubTypeId,
-            request.TradeDate,
-            request.SettleDate,
-            request.Quantity,
-            request.Price,
-            request.Amount,
-            request.Currency,
-            request.StatusId,
-            request.CreatedByUserId);
-
-        context.Transactions.Add(transaction);
-        await context.SaveChangesAsync(cancellationToken);
-
-        // Reload with navigation properties
-        var transactionWithNav = await context.Transactions
-            .Include(t => t.Fund)
-            .Include(t => t.Security)
-            .Include(t => t.TransactionSubType!)
-                .ThenInclude(st => st.Type)
-            .Include(t => t.Status)
-            .FirstOrDefaultAsync(t => t.Id == transaction.Id, cancellationToken);
 
         logger.LogInformation(
-            "Created transaction {TransactionId} for fund {FundId} - Amount: {Amount}, " +
-            "Status: {StatusId}, SettleDate: {SettleDate}",
-            transaction.Id, transaction.FundId, transaction.Amount, transaction.StatusId, transaction.SettleDate);
+            "Idempotent request detected - IdempotencyKey: {IdempotencyKey}, " +
+            "Returning existing TransactionId: {TransactionId}",
+            idempotencyKey, existingIdempotency.TransactionId);
 
-        // Map to DTO
-        var transactionDto = mapper.Map<TransactionDto>(transactionWithNav);
+        // Load existing transaction with navigation properties using extension
+        var existingTransaction = await context.Transactions
+            .AsNoTracking()
+            .WithNavigationProperties()
+            .FirstOrDefaultAsync(t => t.Id == existingIdempotency.TransactionId, cancellationToken)
+            ?? throw new DomainValidationException(
+                $"Idempotency record exists but transaction {existingIdempotency.TransactionId} not found");
 
-        // Create audit log entry
+        return mapper.Map<TransactionDto>(existingTransaction);
+    }
+
+    /// <summary>
+    /// Creates audit log entry for the transaction creation.
+    /// </summary>
+    private Task CreateAuditLogAsync(
+        Transaction transaction,
+        TransactionDto transactionDto,
+        CreateTransactionCommand request)
+    {
         var transactionDataJson = JsonSerializer.Serialize(transactionDto);
         var dataAfter = JsonDocument.Parse(transactionDataJson);
+
         var auditLog = AuditLog.Create(
             entityName: "Transaction",
             entityId: transaction.Id.ToString(),
@@ -106,8 +209,6 @@ public class CreateTransactionCommandHandler(
             source: "API");
 
         context.AuditLogs.Add(auditLog);
-        await context.SaveChangesAsync(cancellationToken);
-
-        return transactionDto;
+        return Task.CompletedTask;
     }
 }

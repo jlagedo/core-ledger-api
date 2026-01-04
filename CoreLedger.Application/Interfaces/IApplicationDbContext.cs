@@ -1,5 +1,6 @@
 using CoreLedger.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace CoreLedger.Application.Interfaces;
 
@@ -8,6 +9,7 @@ namespace CoreLedger.Application.Interfaces;
 /// </summary>
 public interface IApplicationDbContext
 {
+    DatabaseFacade Database { get; }
     DbSet<AccountType> AccountTypes { get; }
     DbSet<Account> Accounts { get; }
     DbSet<CoreJob> CoreJobs { get; }
@@ -17,6 +19,8 @@ public interface IApplicationDbContext
     DbSet<TransactionType> TransactionTypes { get; }
     DbSet<TransactionSubType> TransactionSubTypes { get; }
     DbSet<Transaction> Transactions { get; }
+    DbSet<TransactionIdempotency> TransactionIdempotencies { get; }
+    DbSet<TransactionCreatedOutboxMessage> TransactionCreatedOutboxMessages { get; }
     DbSet<User> Users { get; }
     DbSet<AuditLog> AuditLogs { get; }
 

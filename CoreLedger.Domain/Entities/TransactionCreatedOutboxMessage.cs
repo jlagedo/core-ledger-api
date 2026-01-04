@@ -34,7 +34,7 @@ public class TransactionCreatedOutboxMessage
     public string Type { get; private set; }
 
     /// <summary>
-    ///     Serialized message payload (MessagePack binary format).
+    ///     Serialized message payload (Protobuf binary format).
     /// </summary>
     public byte[] Payload { get; private set; }
 
@@ -62,7 +62,7 @@ public class TransactionCreatedOutboxMessage
     ///     Factory method to create a new transaction created outbox message.
     /// </summary>
     /// <param name="type">Fully qualified type name of the event.</param>
-    /// <param name="payload">MessagePack-serialized event payload.</param>
+    /// <param name="payload">Protobuf-serialized event payload.</param>
     /// <param name="occurredOn">Optional timestamp of when the event occurred (defaults to UTC now).</param>
     /// <returns>A new TransactionCreatedOutboxMessage instance.</returns>
     /// <exception cref="ArgumentException">Thrown when type or payload is invalid.</exception>

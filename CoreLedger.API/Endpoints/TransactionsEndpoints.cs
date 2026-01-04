@@ -13,7 +13,7 @@ namespace CoreLedger.API.Endpoints;
 /// </summary>
 public static class TransactionsEndpoints
 {
-    private static readonly string LoggerName = typeof(TransactionsEndpoints).Name;
+    private static readonly string LoggerName = nameof(TransactionsEndpoints);
     public static IEndpointRouteBuilder MapTransactionsEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/transactions")
@@ -106,15 +106,31 @@ public static class TransactionsEndpoints
             return Results.Unauthorized();
         }
 
+        // Extract or generate idempotency key
+        var idempotencyKey = dto.IdempotencyKey ?? Guid.CreateVersion7();
+
+        if (!dto.IdempotencyKey.HasValue)
+        {
+            logger.LogInformation(
+                "No Idempotency-Key provided, auto-generated UUID v7: {IdempotencyKey}",
+                idempotencyKey);
+        }
+        else
+        {
+            logger.LogInformation(
+                "Using client-provided Idempotency-Key: {IdempotencyKey}",
+                idempotencyKey);
+        }
+
         // Extract correlation ID and request ID from HttpContext for audit logging
         var correlationId = context.GetCorrelationId();
         var requestId = context.TraceIdentifier;
 
         logger.LogInformation(
             "Creating transaction - Fund: {FundId}, SubType: {SubTypeId}, Amount: {Amount}, " +
-            "Quantity: {Quantity}, Price: {Price}, Currency: {Currency}, CreatedBy: {UserId}",
+            "Quantity: {Quantity}, Price: {Price}, Currency: {Currency}, IdempotencyKey: {IdempotencyKey}, CreatedBy: {UserId}",
             dto.FundId, dto.TransactionSubTypeId, dto.Amount,
-            dto.Quantity, dto.Price, dto.Currency, userId);
+            dto.Quantity, dto.Price, dto.Currency, idempotencyKey, userId);
 
         var command = new CreateTransactionCommand(
             dto.FundId,
@@ -126,15 +142,16 @@ public static class TransactionsEndpoints
             dto.Price,
             dto.Amount,
             dto.Currency,
-            dto.StatusId,
             userId,
+            idempotencyKey,
             correlationId,
             requestId);
 
         var result = await mediator.Send(command, cancellationToken);
 
-        logger.LogInformation("Transaction created successfully - Id: {TransactionId}, Amount: {Amount}",
-            result.Id, result.Amount);
+        logger.LogInformation(
+            "Transaction created successfully - Id: {TransactionId}, Amount: {Amount}, IdempotencyKey: {IdempotencyKey}",
+            result.Id, result.Amount, idempotencyKey);
 
         return Results.CreatedAtRoute("GetTransactionById", new { id = result.Id }, result);
     }
