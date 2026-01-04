@@ -43,14 +43,31 @@ try
     // Configure options
     builder.Services.Configure<RabbitMQOptions>(builder.Configuration.GetSection("RabbitMQ"));
     builder.Services.Configure<TestConnectionOptions>(builder.Configuration.GetSection("TestConnection"));
+    builder.Services.Configure<OutboxProcessorOptions>(builder.Configuration.GetSection("OutboxProcessor"));
+    builder.Services.Configure<QueueNamesOptions>(builder.Configuration.GetSection("QueueNames"));
+    builder.Services.Configure<WorkerHttpClientOptions>(builder.Configuration.GetSection("WorkerHttpClient"));
 
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     builder.Services.AddHealthChecks()
         .AddNpgSql(connectionString ?? throw new InvalidOperationException("DefaultConnection not configured"))
         .AddCheck("self", () => HealthCheckResult.Healthy());
 
+    // Configure HttpClient for Worker -> API communication
+    var workerHttpClientOptions = builder.Configuration.GetSection("WorkerHttpClient")
+        .Get<WorkerHttpClientOptions>() ?? new WorkerHttpClientOptions();
+
+    builder.Services.AddHttpClient("WorkerHttpClient", client =>
+    {
+        client.BaseAddress = new Uri(workerHttpClientOptions.ApiBaseUrl);
+        client.Timeout = TimeSpan.FromSeconds(workerHttpClientOptions.TimeoutSeconds);
+        client.DefaultRequestHeaders.Add("User-Agent", workerHttpClientOptions.UserAgent);
+        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {workerHttpClientOptions.MockJwtToken}");
+    });
+
     builder.Services.AddHostedService<B3ImportConsumer>();
     builder.Services.AddHostedService<TestConnectionConsumer>();
+    builder.Services.AddHostedService<TransactionOutboxProcessor>();
+    builder.Services.AddHostedService<TransactionProcessingConsumer>();
 
     var host = builder.Build();
 

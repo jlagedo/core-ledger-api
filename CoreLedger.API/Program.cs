@@ -109,6 +109,7 @@ try
     app.MapSecuritiesEndpoints();
     app.MapUsersEndpoints();
     app.MapJobsIngestionEndpoints();
+    app.MapWorkerNotificationsEndpoints();
     app.MapAuditLogsEndpoints();
     app.MapCoreJobsEndpoints();
     app.MapAccountTypesEndpoints();

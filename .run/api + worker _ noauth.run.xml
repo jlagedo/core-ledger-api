@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="api + worker | noauth" type="CompoundRunConfigurationType">
+    <toRun name="CoreLedger.Worker" type="LaunchSettings" />
+    <toRun name="api: https-noauth" type="LaunchSettings" />
+    <method v="2" />
+  </configuration>
+</component>

@@ -19,4 +19,30 @@ public static class ProtobufExtensions
         Serializer.Serialize(memoryStream, message);
         return memoryStream.ToArray();
     }
+
+    /// <summary>
+    ///     Deserializes a Protobuf binary payload to a strongly-typed message.
+    /// </summary>
+    /// <typeparam name="T">The type of the message to deserialize.</typeparam>
+    /// <param name="payload">Byte array containing the Protobuf-serialized message.</param>
+    /// <returns>Deserialized message instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when payload is null or empty.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when deserialization fails.</exception>
+    public static T DeserializeFromProtobuf<T>(this byte[] payload)
+    {
+        if (payload == null || payload.Length == 0)
+            throw new ArgumentException("Payload cannot be null or empty.", nameof(payload));
+
+        try
+        {
+            using var memoryStream = new MemoryStream(payload);
+            return Serializer.Deserialize<T>(memoryStream);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException(
+                $"Failed to deserialize Protobuf payload to type {typeof(T).Name}. " +
+                $"Payload size: {payload.Length} bytes.", ex);
+        }
+    }
 }

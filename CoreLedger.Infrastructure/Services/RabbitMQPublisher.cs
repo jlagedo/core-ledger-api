@@ -105,4 +105,55 @@ public class RabbitMQPublisher : IMessagePublisher, IDisposable
 
         return Task.CompletedTask;
     }
+
+    /// <summary>
+    ///     Publishes a raw binary payload to the specified queue.
+    /// </summary>
+    public Task PublishRawAsync(string queueName, byte[] payload, string? correlationId = null,
+        string contentType = "application/protobuf", CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _channel.QueueDeclare(
+                queueName,
+                _options.QueueDurable,
+                _options.QueueExclusive,
+                _options.QueueAutoDelete,
+                null);
+
+            var properties = _channel.CreateBasicProperties();
+            properties.Persistent = true;
+            properties.ContentType = contentType;
+
+            // Add correlation ID to message headers for distributed tracing
+            if (!string.IsNullOrWhiteSpace(correlationId))
+            {
+                properties.CorrelationId = correlationId;
+                properties.Headers ??= new Dictionary<string, object>();
+                properties.Headers["X-Correlation-ID"] = correlationId;
+            }
+
+            _channel.BasicPublish(
+                string.Empty,
+                queueName,
+                properties,
+                payload);
+
+            _logger.LogInformation(
+                "Raw payload published to queue {QueueName} - Size: {PayloadSize} bytes, " +
+                "ContentType: {ContentType}, CorrelationId: {CorrelationId}",
+                queueName, payload.Length, contentType, correlationId ?? "none");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Failed to publish raw payload to queue {QueueName} with CorrelationId {CorrelationId}. " +
+                "ContentType: {ContentType}, PayloadSize: {PayloadSize} bytes",
+                queueName, correlationId ?? "none", contentType, payload.Length);
+            throw new ExternalServiceException("RabbitMQ",
+                $"Failed to publish raw payload to queue {queueName}", ex);
+        }
+
+        return Task.CompletedTask;
+    }
 }

@@ -14,4 +14,9 @@ public static class QueueNames
     ///     Queue for testing API to Worker connectivity.
     /// </summary>
     public const string TestConnection = "worker.test.queue";
+
+    /// <summary>
+    ///     Queue for transaction created events published from the outbox.
+    /// </summary>
+    public const string TransactionCreated = "transaction.created.queue";
 }
