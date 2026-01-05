@@ -1,3 +1,5 @@
+using CoreLedger.API.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using Serilog.Context;
 
 namespace CoreLedger.API.Endpoints;
@@ -25,9 +27,11 @@ public static class WorkerNotificationsEndpoints
 
     /// <summary>
     /// Receives notification from Worker that a transaction has been processed.
+    /// Broadcasts to the user who created the transaction via SignalR.
     /// </summary>
-    private static IResult TransactionProcessed(
+    private static async Task<IResult> TransactionProcessed(
         TransactionProcessedNotification notification,
+        IHubContext<NotificationHub> hubContext,
         ILoggerFactory loggerFactory)
     {
         var logger = loggerFactory.CreateLogger(LoggerName);
@@ -36,16 +40,30 @@ public static class WorkerNotificationsEndpoints
         {
             logger.LogInformation(
                 "Transaction processing notification received - TransactionId: {TransactionId}, " +
-                "Success: {Success}, FinalStatus: {Status}, ErrorMessage: {Error}",
+                "Success: {Success}, FinalStatus: {Status}, UserId: {UserId}",
                 notification.TransactionId,
                 notification.Success,
                 notification.FinalStatusId,
-                notification.ErrorMessage);
+                notification.CreatedByUserId);
 
-            // TODO: Broadcast via SignalR for real-time UI updates
-            // Example: await _hubContext.Clients.All.SendAsync("TransactionProcessed", notification);
+            // Send notification to the specific user who created the transaction
+            var signalRMessage = new
+            {
+                message = notification.Success
+                    ? $"Transaction {notification.TransactionId} processed successfully"
+                    : $"Transaction {notification.TransactionId} failed: {notification.ErrorMessage ?? "Unknown error"}",
+                type = notification.Success ? "success" : "error"
+            };
 
-            return Results.Ok(new { Message = "Notification received successfully" });
+            await hubContext.Clients
+                .User(notification.CreatedByUserId)
+                .SendAsync("ReceiveNotification", signalRMessage);
+
+            logger.LogInformation(
+                "SignalR notification sent to user - TransactionId: {TransactionId}, UserId: {UserId}, Type: {Type}",
+                notification.TransactionId, notification.CreatedByUserId, signalRMessage.type);
+
+            return Results.Ok(new { Message = "Notification received and broadcast successfully" });
         }
     }
 }
@@ -59,11 +77,13 @@ public static class WorkerNotificationsEndpoints
 /// <param name="ErrorMessage">Error message if processing failed.</param>
 /// <param name="ProcessedAt">UTC timestamp when processing completed.</param>
 /// <param name="CorrelationId">Correlation ID for distributed tracing.</param>
+/// <param name="CreatedByUserId">User ID of the person who created the transaction.</param>
 public record TransactionProcessedNotification(
     int TransactionId,
     bool Success,
     int FinalStatusId,
     string? ErrorMessage,
     DateTime ProcessedAt,
-    string? CorrelationId
+    string? CorrelationId,
+    string CreatedByUserId
 );

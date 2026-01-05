@@ -17,33 +17,22 @@ namespace CoreLedger.Worker.Services;
 /// Background service that consumes transaction created events from RabbitMQ,
 /// validates domain rules, updates transaction status, and notifies the API.
 /// </summary>
-public class TransactionProcessingConsumer : BackgroundService
+public class TransactionProcessingConsumer(
+    ILogger<TransactionProcessingConsumer> logger,
+    IServiceProvider serviceProvider,
+    IHttpClientFactory httpClientFactory,
+    IOptions<RabbitMQOptions> rabbitMqOptions,
+    IOptions<QueueNamesOptions> queueNames)
+    : BackgroundService
 {
-    private readonly ILogger<TransactionProcessingConsumer> _logger;
-    private readonly RabbitMQOptions _rabbitMQOptions;
-    private readonly QueueNamesOptions _queueNames;
-    private readonly IServiceProvider _serviceProvider;
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly RabbitMQOptions _rabbitMQOptions = rabbitMqOptions.Value;
+    private readonly QueueNamesOptions _queueNames = queueNames.Value;
     private IModel? _channel;
     private IConnection? _connection;
 
-    public TransactionProcessingConsumer(
-        ILogger<TransactionProcessingConsumer> logger,
-        IServiceProvider serviceProvider,
-        IHttpClientFactory httpClientFactory,
-        IOptions<RabbitMQOptions> rabbitMQOptions,
-        IOptions<QueueNamesOptions> queueNames)
-    {
-        _logger = logger;
-        _serviceProvider = serviceProvider;
-        _httpClientFactory = httpClientFactory;
-        _rabbitMQOptions = rabbitMQOptions.Value;
-        _queueNames = queueNames.Value;
-    }
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("TransactionProcessingConsumer starting");
+        logger.LogInformation("TransactionProcessingConsumer starting");
 
         var factory = new ConnectionFactory
         {
@@ -94,7 +83,7 @@ public class TransactionProcessingConsumer : BackgroundService
                             transactionEvent = Serializer.Deserialize<TransactionCreatedEvent>(memoryStream);
                         }
 
-                        _logger.LogInformation(
+                        logger.LogInformation(
                             "Transaction message received - TransactionId: {TransactionId}, " +
                             "FundCode: {FundCode}, Amount: {Amount} {Currency}",
                             transactionEvent.TransactionId,
@@ -103,7 +92,7 @@ public class TransactionProcessingConsumer : BackgroundService
                             transactionEvent.Currency);
 
                         // 2. Process transaction via MediatR
-                        using var scope = _serviceProvider.CreateScope();
+                        using var scope = serviceProvider.CreateScope();
                         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
                         var command = new ProcessTransactionCommand(
@@ -112,7 +101,7 @@ public class TransactionProcessingConsumer : BackgroundService
 
                         var result = await mediator.Send(command, stoppingToken);
 
-                        _logger.LogInformation(
+                        logger.LogInformation(
                             "Transaction processing completed - TransactionId: {TransactionId}, " +
                             "Success: {Success}, Status: {Status}",
                             result.TransactionId, result.Success, result.FinalStatusId);
@@ -124,7 +113,7 @@ public class TransactionProcessingConsumer : BackgroundService
                         }
                         catch (Exception notifyEx)
                         {
-                            _logger.LogWarning(notifyEx,
+                            logger.LogWarning(notifyEx,
                                 "Failed to notify API of transaction processing - TransactionId: {TransactionId}",
                                 result.TransactionId);
                             // Don't fail the message - notification is best-effort
@@ -135,7 +124,7 @@ public class TransactionProcessingConsumer : BackgroundService
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex,
+                        logger.LogError(ex,
                             "Error processing transaction message - Payload size: {PayloadSize} bytes",
                             body.Length);
 
@@ -147,7 +136,7 @@ public class TransactionProcessingConsumer : BackgroundService
 
             _channel.BasicConsume(_queueNames.TransactionCreated, false, consumer);
 
-            _logger.LogInformation(
+            logger.LogInformation(
                 "TransactionProcessingConsumer started and listening on queue: {QueueName}",
                 _queueNames.TransactionCreated);
 
@@ -155,7 +144,7 @@ public class TransactionProcessingConsumer : BackgroundService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in TransactionProcessingConsumer");
+            logger.LogError(ex, "Error in TransactionProcessingConsumer");
             throw;
         }
     }
@@ -168,7 +157,7 @@ public class TransactionProcessingConsumer : BackgroundService
         string correlationId,
         CancellationToken cancellationToken)
     {
-        var httpClient = _httpClientFactory.CreateClient("WorkerHttpClient");
+        var httpClient = httpClientFactory.CreateClient("WorkerHttpClient");
 
         var notification = new
         {
@@ -177,7 +166,8 @@ public class TransactionProcessingConsumer : BackgroundService
             FinalStatusId = result.FinalStatusId,
             ErrorMessage = result.ErrorMessage,
             ProcessedAt = DateTime.UtcNow,
-            CorrelationId = correlationId
+            CorrelationId = correlationId,
+            CreatedByUserId = result.CreatedByUserId
         };
 
         var response = await httpClient.PostAsJsonAsync(
@@ -187,7 +177,7 @@ public class TransactionProcessingConsumer : BackgroundService
 
         response.EnsureSuccessStatusCode();
 
-        _logger.LogInformation(
+        logger.LogInformation(
             "API notification sent successfully - TransactionId: {TransactionId}, StatusCode: {StatusCode}",
             result.TransactionId, response.StatusCode);
     }
@@ -197,6 +187,6 @@ public class TransactionProcessingConsumer : BackgroundService
         _channel?.Close();
         _connection?.Close();
         base.Dispose();
-        _logger.LogInformation("TransactionProcessingConsumer disposed");
+        logger.LogInformation("TransactionProcessingConsumer disposed");
     }
 }

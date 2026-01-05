@@ -55,6 +55,7 @@ public class ProcessTransactionCommandHandler : IRequestHandler<ProcessTransacti
                 false,
                 request.TransactionId,
                 StatusFailed,
+                string.Empty,
                 "Transaction not found");
         }
 
@@ -69,6 +70,7 @@ public class ProcessTransactionCommandHandler : IRequestHandler<ProcessTransacti
                 false,
                 transaction.Id,
                 transaction.StatusId,
+                transaction.CreatedByUserId,
                 $"Transaction not in Pending status (current: {transaction.StatusId})");
         }
 
@@ -102,7 +104,8 @@ public class ProcessTransactionCommandHandler : IRequestHandler<ProcessTransacti
             return new ProcessTransactionResult(
                 true,
                 transaction.Id,
-                StatusExecuted);
+                StatusExecuted,
+                transaction.CreatedByUserId);
         }
         catch (DomainValidationException ex)
         {
@@ -135,6 +138,7 @@ public class ProcessTransactionCommandHandler : IRequestHandler<ProcessTransacti
                 false,
                 transaction.Id,
                 StatusFailed,
+                transaction.CreatedByUserId,
                 ex.Message);
         }
         catch (Exception ex)

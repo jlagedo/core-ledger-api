@@ -53,6 +53,7 @@ try
     PaginationDefaults.Initialize(paginationOptions);
 
     builder.Services.AddSwaggerDocumentation();
+    builder.Services.AddSignalRWithRedis(builder.Configuration);
 
     if (useMockAuth)
     {
@@ -101,6 +102,9 @@ try
     if (app.Environment.IsDevelopment()) app.UseSwaggerDocumentation();
 
     app.UseAuthorization();
+
+    // Map SignalR hubs
+    app.MapSignalRHubs();
 
     // Minimal API endpoint registrations
     app.MapFundsEndpoints();

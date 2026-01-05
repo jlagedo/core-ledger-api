@@ -19,10 +19,12 @@ public record ProcessTransactionCommand(
 /// <param name="Success">Whether the transaction processing succeeded.</param>
 /// <param name="TransactionId">The ID of the processed transaction.</param>
 /// <param name="FinalStatusId">The final status ID (2=Executed, 8=Failed).</param>
+/// <param name="CreatedByUserId">User ID of the person who created the transaction.</param>
 /// <param name="ErrorMessage">Error message if processing failed.</param>
 public record ProcessTransactionResult(
     bool Success,
     int TransactionId,
     int FinalStatusId,
+    string CreatedByUserId,
     string? ErrorMessage = null
 );
