@@ -18,13 +18,13 @@ namespace CoreLedger.Worker.Services;
 ///     Background service that consumes test connection messages from RabbitMQ.
 ///     This consumer is used to test the API -> Queue -> Worker flow.
 /// </summary>
-public class TestConnectionConsumer : BackgroundService
+public class TestConnectionConsumer : BackgroundService, IAsyncDisposable
 {
     private readonly ILogger<TestConnectionConsumer> _logger;
     private readonly RabbitMQOptions _rabbitMQOptions;
     private readonly IServiceProvider _serviceProvider;
     private readonly TestConnectionOptions _testConnectionOptions;
-    private IModel? _channel;
+    private IChannel? _channel;
     private IConnection? _connection;
 
     public TestConnectionConsumer(
@@ -48,29 +48,30 @@ public class TestConnectionConsumer : BackgroundService
             HostName = _rabbitMQOptions.Hostname,
             Port = int.Parse(_rabbitMQOptions.Port),
             UserName = _rabbitMQOptions.Username,
-            Password = _rabbitMQOptions.Password,
-            DispatchConsumersAsync = true
+            Password = _rabbitMQOptions.Password
         };
 
         try
         {
-            _connection = factory.CreateConnection();
-            _channel = _connection.CreateModel();
+            _connection = await factory.CreateConnectionAsync(stoppingToken);
+            _channel = await _connection.CreateChannelAsync(cancellationToken: stoppingToken);
 
-            _channel.QueueDeclare(
+            await _channel.QueueDeclareAsync(
                 QueueNames.TestConnection,
                 _rabbitMQOptions.QueueDurable,
                 _rabbitMQOptions.QueueExclusive,
                 _rabbitMQOptions.QueueAutoDelete,
-                null);
+                null,
+                cancellationToken: stoppingToken);
 
-            _channel.BasicQos(
+            await _channel.BasicQosAsync(
                 _rabbitMQOptions.PrefetchSize,
                 _rabbitMQOptions.PrefetchCount,
-                false);
+                false,
+                stoppingToken);
 
             var consumer = new AsyncEventingBasicConsumer(_channel);
-            consumer.Received += async (model, ea) =>
+            consumer.ReceivedAsync += async (model, ea) =>
             {
                 var body = ea.Body.ToArray();
                 var messageJson = Encoding.UTF8.GetString(body);
@@ -78,8 +79,8 @@ public class TestConnectionConsumer : BackgroundService
                 // Extract correlation ID from message headers or properties
                 var correlationId = ea.BasicProperties?.CorrelationId;
                 if (string.IsNullOrWhiteSpace(correlationId) && ea.BasicProperties?.Headers != null)
-                    if (ea.BasicProperties.Headers.TryGetValue("X-Correlation-ID", out var headerValue))
-                        correlationId = Encoding.UTF8.GetString((byte[])headerValue);
+                    if (ea.BasicProperties.Headers.TryGetValue("X-Correlation-ID", out var headerValue) && headerValue is byte[] bytes)
+                        correlationId = Encoding.UTF8.GetString(bytes);
 
                 // Set up Serilog LogContext with correlation ID for distributed tracing
                 using (LogContext.PushProperty("CorrelationId", correlationId ?? "unknown"))
@@ -97,7 +98,7 @@ public class TestConnectionConsumer : BackgroundService
                         if (message == null)
                         {
                             _logger.LogError("Failed to deserialize test message: {MessageJson}", messageJson);
-                            _channel.BasicNack(ea.DeliveryTag, false, false);
+                            await _channel.BasicNackAsync(ea.DeliveryTag, false, false, stoppingToken);
                             return;
                         }
 
@@ -115,7 +116,7 @@ public class TestConnectionConsumer : BackgroundService
                         if (coreJob == null)
                         {
                             _logger.LogError("CoreJob not found with Id: {CoreJobId}", message.CoreJobId);
-                            _channel.BasicNack(ea.DeliveryTag, false, false);
+                            await _channel.BasicNackAsync(ea.DeliveryTag, false, false, stoppingToken);
                             return;
                         }
 
@@ -137,7 +138,7 @@ public class TestConnectionConsumer : BackgroundService
                         await context.SaveChangesAsync(stoppingToken);
                         _logger.LogInformation("CoreJob status updated to Complete");
 
-                        _channel.BasicAck(ea.DeliveryTag, false);
+                        await _channel.BasicAckAsync(ea.DeliveryTag, false, stoppingToken);
 
                         _logger.LogInformation("========================================");
                         _logger.LogInformation("TEST CONNECTION COMPLETED SUCCESSFULLY");
@@ -172,12 +173,12 @@ public class TestConnectionConsumer : BackgroundService
                             _logger.LogError(updateEx, "Failed to update CoreJob status to Failed");
                         }
 
-                        _channel.BasicNack(ea.DeliveryTag, false, true);
+                        await _channel.BasicNackAsync(ea.DeliveryTag, false, true, stoppingToken);
                     }
                 }
             };
 
-            _channel.BasicConsume(QueueNames.TestConnection, false, consumer);
+            await _channel.BasicConsumeAsync(QueueNames.TestConnection, false, consumer, stoppingToken);
 
             _logger.LogInformation("TestConnectionConsumer started and listening on queue: {QueueNames.TestConnection}",
                 QueueNames.TestConnection);
@@ -191,11 +192,13 @@ public class TestConnectionConsumer : BackgroundService
         }
     }
 
-    public override void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        _channel?.Close();
-        _connection?.Close();
-        base.Dispose();
+        if (_channel != null)
+            await _channel.CloseAsync();
+        if (_connection != null)
+            await _connection.CloseAsync();
         _logger.LogInformation("TestConnectionConsumer disposed");
+        GC.SuppressFinalize(this);
     }
 }

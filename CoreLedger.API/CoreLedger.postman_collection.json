@@ -899,7 +899,7 @@
   "variable": [
     {
       "key": "CoreLedger_API_HostAddress",
-      "value": "https://localhost:7057",
+      "value": "http://localhost:5071",
       "type": "string"
     }
   ]

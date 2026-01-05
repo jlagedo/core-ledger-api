@@ -23,11 +23,11 @@ public class TransactionProcessingConsumer(
     IHttpClientFactory httpClientFactory,
     IOptions<RabbitMQOptions> rabbitMqOptions,
     IOptions<QueueNamesOptions> queueNames)
-    : BackgroundService
+    : BackgroundService, IAsyncDisposable
 {
     private readonly RabbitMQOptions _rabbitMQOptions = rabbitMqOptions.Value;
     private readonly QueueNamesOptions _queueNames = queueNames.Value;
-    private IModel? _channel;
+    private IChannel? _channel;
     private IConnection? _connection;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -39,37 +39,38 @@ public class TransactionProcessingConsumer(
             HostName = _rabbitMQOptions.Hostname,
             Port = int.Parse(_rabbitMQOptions.Port),
             UserName = _rabbitMQOptions.Username,
-            Password = _rabbitMQOptions.Password,
-            DispatchConsumersAsync = true
+            Password = _rabbitMQOptions.Password
         };
 
         try
         {
-            _connection = factory.CreateConnection();
-            _channel = _connection.CreateModel();
+            _connection = await factory.CreateConnectionAsync(stoppingToken);
+            _channel = await _connection.CreateChannelAsync(cancellationToken: stoppingToken);
 
-            _channel.QueueDeclare(
+            await _channel.QueueDeclareAsync(
                 _queueNames.TransactionCreated,
                 _rabbitMQOptions.QueueDurable,
                 _rabbitMQOptions.QueueExclusive,
                 _rabbitMQOptions.QueueAutoDelete,
-                null);
+                null,
+                cancellationToken: stoppingToken);
 
-            _channel.BasicQos(
+            await _channel.BasicQosAsync(
                 _rabbitMQOptions.PrefetchSize,
                 _rabbitMQOptions.PrefetchCount,
-                false);
+                false,
+                stoppingToken);
 
             var consumer = new AsyncEventingBasicConsumer(_channel);
-            consumer.Received += async (model, ea) =>
+            consumer.ReceivedAsync += async (model, ea) =>
             {
                 var body = ea.Body.ToArray();
 
                 // Extract correlation ID from message headers or properties
                 var correlationId = ea.BasicProperties?.CorrelationId;
                 if (string.IsNullOrWhiteSpace(correlationId) && ea.BasicProperties?.Headers != null)
-                    if (ea.BasicProperties.Headers.TryGetValue("X-Correlation-ID", out var headerValue))
-                        correlationId = Encoding.UTF8.GetString((byte[])headerValue);
+                    if (ea.BasicProperties.Headers.TryGetValue("X-Correlation-ID", out var headerValue) && headerValue is byte[] bytes)
+                        correlationId = Encoding.UTF8.GetString(bytes);
 
                 // Set up Serilog LogContext with correlation ID for distributed tracing
                 using (LogContext.PushProperty("CorrelationId", correlationId ?? "unknown"))
@@ -120,7 +121,7 @@ public class TransactionProcessingConsumer(
                         }
 
                         // 4. Acknowledge message
-                        _channel.BasicAck(ea.DeliveryTag, false);
+                        await _channel.BasicAckAsync(ea.DeliveryTag, false, stoppingToken);
                     }
                     catch (Exception ex)
                     {
@@ -129,12 +130,12 @@ public class TransactionProcessingConsumer(
                             body.Length);
 
                         // Requeue for retry on unexpected errors
-                        _channel.BasicNack(ea.DeliveryTag, false, true);
+                        await _channel.BasicNackAsync(ea.DeliveryTag, false, true, stoppingToken);
                     }
                 }
             };
 
-            _channel.BasicConsume(_queueNames.TransactionCreated, false, consumer);
+            await _channel.BasicConsumeAsync(_queueNames.TransactionCreated, false, consumer, stoppingToken);
 
             logger.LogInformation(
                 "TransactionProcessingConsumer started and listening on queue: {QueueName}",
@@ -182,11 +183,13 @@ public class TransactionProcessingConsumer(
             result.TransactionId, response.StatusCode);
     }
 
-    public override void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        _channel?.Close();
-        _connection?.Close();
-        base.Dispose();
+        if (_channel != null)
+            await _channel.CloseAsync();
+        if (_connection != null)
+            await _connection.CloseAsync();
         logger.LogInformation("TransactionProcessingConsumer disposed");
+        GC.SuppressFinalize(this);
     }
 }

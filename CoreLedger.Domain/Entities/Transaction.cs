@@ -63,8 +63,8 @@ public class Transaction : BaseEntity
             FundId = fundId,
             SecurityId = securityId,
             TransactionSubTypeId = transactionSubTypeId,
-            TradeDate = tradeDate,
-            SettleDate = settleDate,
+            TradeDate = DateTime.SpecifyKind(tradeDate.Date, DateTimeKind.Utc),
+            SettleDate = DateTime.SpecifyKind(settleDate.Date, DateTimeKind.Utc),
             Quantity = quantity,
             Price = price,
             Amount = amount,
@@ -101,8 +101,8 @@ public class Transaction : BaseEntity
         FundId = fundId;
         SecurityId = securityId;
         TransactionSubTypeId = transactionSubTypeId;
-        TradeDate = tradeDate;
-        SettleDate = settleDate;
+        TradeDate = DateTime.SpecifyKind(tradeDate.Date, DateTimeKind.Utc);
+        SettleDate = DateTime.SpecifyKind(settleDate.Date, DateTimeKind.Utc);
         Quantity = quantity;
         Price = price;
         Amount = amount;

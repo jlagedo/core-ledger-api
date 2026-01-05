@@ -1,6 +1,11 @@
-﻿FROM mcr.microsoft.com/dotnet/runtime:10.0 AS base
+﻿FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+# Install curl for health checks
+USER root
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+ARG APP_UID=1654
 USER $APP_UID
 WORKDIR /app
+EXPOSE 8080
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
@@ -12,11 +17,11 @@ COPY ["CoreLedger.Infrastructure/CoreLedger.Infrastructure.csproj", "CoreLedger.
 RUN dotnet restore "CoreLedger.Worker/CoreLedger.Worker.csproj"
 COPY . .
 WORKDIR "/src/CoreLedger.Worker"
-RUN dotnet build "./CoreLedger.Worker.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./CoreLedger.Worker.csproj" -c $BUILD_CONFIGURATION -o /app/build --no-restore
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./CoreLedger.Worker.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./CoreLedger.Worker.csproj" -c $BUILD_CONFIGURATION -o /app/publish --no-restore /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app

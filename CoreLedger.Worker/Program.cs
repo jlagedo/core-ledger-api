@@ -33,7 +33,7 @@ try
 {
     Log.Information("Starting Core Ledger Worker");
 
-    var builder = Host.CreateApplicationBuilder(args);
+    var builder = WebApplication.CreateBuilder(args);
 
     builder.Services.AddSerilog(Log.Logger);
 
@@ -47,10 +47,33 @@ try
     builder.Services.Configure<QueueNamesOptions>(builder.Configuration.GetSection("QueueNames"));
     builder.Services.Configure<WorkerHttpClientOptions>(builder.Configuration.GetSection("WorkerHttpClient"));
 
+    // Configure health checks
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    var rabbitMqOptions = builder.Configuration.GetSection("RabbitMQ").Get<RabbitMQOptions>()
+        ?? throw new InvalidOperationException("RabbitMQ configuration not found");
+
+    // Create shared RabbitMQ connection for health check (singleton pattern per RabbitMQ best practices)
+    builder.Services.AddSingleton<Task<RabbitMQ.Client.IConnection>>(sp =>
+    {
+        var factory = new RabbitMQ.Client.ConnectionFactory
+        {
+            HostName = rabbitMqOptions.Hostname,
+            Port = int.Parse(rabbitMqOptions.Port),
+            UserName = rabbitMqOptions.Username,
+            Password = rabbitMqOptions.Password
+        };
+        return factory.CreateConnectionAsync();
+    });
+
     builder.Services.AddHealthChecks()
-        .AddNpgSql(connectionString ?? throw new InvalidOperationException("DefaultConnection not configured"))
-        .AddCheck("self", () => HealthCheckResult.Healthy());
+        .AddNpgSql(
+            connectionString ?? throw new InvalidOperationException("DefaultConnection not configured"),
+            name: "database",
+            tags: ["db", "sql", "postgres"])
+        .AddRabbitMQ(sp => sp.GetRequiredService<Task<RabbitMQ.Client.IConnection>>(),
+            name: "rabbitmq",
+            tags: ["messaging", "rabbitmq"])
+        .AddCheck("self", () => HealthCheckResult.Healthy(), tags: ["self"]);
 
     // Configure HttpClient for Worker -> API communication
     var workerHttpClientOptions = builder.Configuration.GetSection("WorkerHttpClient")
@@ -69,11 +92,22 @@ try
     builder.Services.AddHostedService<TransactionOutboxProcessor>();
     builder.Services.AddHostedService<TransactionProcessingConsumer>();
 
-    var host = builder.Build();
+    var app = builder.Build();
+
+    // Map health check endpoints
+    app.MapHealthChecks("/health");
+    app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+    {
+        Predicate = check => check.Tags.Contains("db") || check.Tags.Contains("messaging")
+    });
+    app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+    {
+        Predicate = check => check.Tags.Contains("self")
+    });
 
     Log.Information("Core Ledger Worker started successfully");
 
-    host.Run();
+    app.Run();
 }
 catch (Exception ex)
 {

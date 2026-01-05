@@ -8,8 +8,9 @@ public class WorkerHttpClientOptions
 {
     /// <summary>
     /// Base URL of the Core Ledger API.
+    /// Default is HTTP for development. Override via configuration for production HTTPS.
     /// </summary>
-    public string ApiBaseUrl { get; set; } = "https://localhost:7109";
+    public string ApiBaseUrl { get; set; } = "http://localhost:5071";
 
     /// <summary>
     /// HTTP client timeout in seconds.

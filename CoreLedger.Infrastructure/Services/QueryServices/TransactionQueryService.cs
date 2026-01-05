@@ -36,6 +36,7 @@ public class TransactionQueryService : ITransactionQueryService
 
                 whereClause = field switch
                 {
+                    "id" => $"WHERE t.id = {{{sqlParameters.Count}}}",
                     "fundId" => $"WHERE t.fund_id = {{{sqlParameters.Count}}}",
                     "securityId" => $"WHERE t.security_id = {{{sqlParameters.Count}}}",
                     "transactionSubTypeId" => $"WHERE t.transaction_subtype_id = {{{sqlParameters.Count}}}",

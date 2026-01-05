@@ -14,12 +14,12 @@ namespace CoreLedger.Worker.Services;
 /// <summary>
 ///     Background service that consumes B3 import messages from RabbitMQ.
 /// </summary>
-public class B3ImportConsumer : BackgroundService
+public class B3ImportConsumer : BackgroundService, IAsyncDisposable
 {
     private readonly ILogger<B3ImportConsumer> _logger;
     private readonly RabbitMQOptions _rabbitMQOptions;
     private readonly IServiceProvider _serviceProvider;
-    private IModel? _channel;
+    private IChannel? _channel;
     private IConnection? _connection;
 
     public B3ImportConsumer(
@@ -41,29 +41,30 @@ public class B3ImportConsumer : BackgroundService
             HostName = _rabbitMQOptions.Hostname,
             Port = int.Parse(_rabbitMQOptions.Port),
             UserName = _rabbitMQOptions.Username,
-            Password = _rabbitMQOptions.Password,
-            DispatchConsumersAsync = true
+            Password = _rabbitMQOptions.Password
         };
 
         try
         {
-            _connection = factory.CreateConnection();
-            _channel = _connection.CreateModel();
+            _connection = await factory.CreateConnectionAsync(stoppingToken);
+            _channel = await _connection.CreateChannelAsync(cancellationToken: stoppingToken);
 
-            _channel.QueueDeclare(
+            await _channel.QueueDeclareAsync(
                 QueueNames.B3Import,
                 _rabbitMQOptions.QueueDurable,
                 _rabbitMQOptions.QueueExclusive,
                 _rabbitMQOptions.QueueAutoDelete,
-                null);
+                null,
+                cancellationToken: stoppingToken);
 
-            _channel.BasicQos(
+            await _channel.BasicQosAsync(
                 _rabbitMQOptions.PrefetchSize,
                 _rabbitMQOptions.PrefetchCount,
-                false);
+                false,
+                stoppingToken);
 
             var consumer = new AsyncEventingBasicConsumer(_channel);
-            consumer.Received += async (model, ea) =>
+            consumer.ReceivedAsync += async (model, ea) =>
             {
                 var body = ea.Body.ToArray();
                 var messageJson = Encoding.UTF8.GetString(body);
@@ -71,8 +72,8 @@ public class B3ImportConsumer : BackgroundService
                 // Extract correlation ID from message headers or properties
                 var correlationId = ea.BasicProperties?.CorrelationId;
                 if (string.IsNullOrWhiteSpace(correlationId) && ea.BasicProperties?.Headers != null)
-                    if (ea.BasicProperties.Headers.TryGetValue("X-Correlation-ID", out var headerValue))
-                        correlationId = Encoding.UTF8.GetString((byte[])headerValue);
+                    if (ea.BasicProperties.Headers.TryGetValue("X-Correlation-ID", out var headerValue) && headerValue is byte[] bytes)
+                        correlationId = Encoding.UTF8.GetString(bytes);
 
                 // Set up Serilog LogContext with correlation ID for distributed tracing
                 using (LogContext.PushProperty("CorrelationId", correlationId ?? "unknown"))
@@ -86,14 +87,14 @@ public class B3ImportConsumer : BackgroundService
                         if (message == null)
                         {
                             _logger.LogError("Failed to deserialize message: {MessageJson}", messageJson);
-                            _channel.BasicNack(ea.DeliveryTag, false, false);
+                            await _channel.BasicNackAsync(ea.DeliveryTag, false, false, stoppingToken);
                             return;
                         }
 
                         if (message.CommandType != "CoreJobB3Import")
                         {
                             _logger.LogWarning("Unexpected command type: {CommandType}", message.CommandType);
-                            _channel.BasicNack(ea.DeliveryTag, false, false);
+                            await _channel.BasicNackAsync(ea.DeliveryTag, false, false, stoppingToken);
                             return;
                         }
 
@@ -102,19 +103,19 @@ public class B3ImportConsumer : BackgroundService
 
                         await processor.ProcessAsync(message.CoreJobId, message.ReferenceId, stoppingToken);
 
-                        _channel.BasicAck(ea.DeliveryTag, false);
+                        await _channel.BasicAckAsync(ea.DeliveryTag, false, stoppingToken);
                         _logger.LogInformation("Successfully processed B3 import for CoreJob {CoreJobId}",
                             message.CoreJobId);
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Error processing message: {Message}", messageJson);
-                        _channel.BasicNack(ea.DeliveryTag, false, true);
+                        await _channel.BasicNackAsync(ea.DeliveryTag, false, true, stoppingToken);
                     }
                 }
             };
 
-            _channel.BasicConsume(QueueNames.B3Import, false, consumer);
+            await _channel.BasicConsumeAsync(QueueNames.B3Import, false, consumer, stoppingToken);
 
             _logger.LogInformation("B3ImportConsumer started and listening on queue: {QueueName}", QueueNames.B3Import);
 
@@ -127,11 +128,13 @@ public class B3ImportConsumer : BackgroundService
         }
     }
 
-    public override void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        _channel?.Close();
-        _connection?.Close();
-        base.Dispose();
+        if (_channel != null)
+            await _channel.CloseAsync();
+        if (_connection != null)
+            await _connection.CloseAsync();
         _logger.LogInformation("B3ImportConsumer disposed");
+        GC.SuppressFinalize(this);
     }
 }
