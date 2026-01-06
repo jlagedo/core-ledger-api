@@ -5,6 +5,7 @@ using CoreLedger.Application.Models;
 using CoreLedger.Application.UseCases.Securities.Commands;
 using CoreLedger.Application.UseCases.Securities.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CoreLedger.API.Endpoints;
 
@@ -25,6 +26,9 @@ public static class SecuritiesEndpoints
 
         group.MapGet("/{id:int}", GetById)
             .WithName("GetSecuritiesById");
+
+        group.MapGet("/autocomplete", Autocomplete)
+            .WithName("AutocompleteSecurities");
 
         group.MapPost("/", Create)
             .WithName("CreateSecurity");
@@ -85,6 +89,30 @@ public static class SecuritiesEndpoints
 
         logger.LogInformation("Security retrieved - Name: {Name}, Ticker: {Ticker}, Type: {Type}",
             result.Name, result.Ticker, result.Type);
+
+        return Results.Ok(result);
+    }
+
+    private static async Task<IResult> Autocomplete(
+        [FromQuery] string? q,
+        IMediator mediator,
+        HttpContext context,
+        ILoggerFactory loggerFactory,
+        CancellationToken cancellationToken)
+    {
+        var logger = loggerFactory.CreateLogger(LoggerName);
+        var userId = context.GetUserId();
+
+        logger.LogInformation(
+            "Autocomplete search for securities - Query: {Query}, User: {UserId}",
+            q ?? "<empty>", userId);
+
+        var query = new AutocompleteSecuritiesQuery(q);
+        var result = await mediator.Send(query, cancellationToken);
+
+        logger.LogInformation(
+            "Autocomplete returned {Count} securities for query: {Query}",
+            result.Count, q ?? "<empty>");
 
         return Results.Ok(result);
     }

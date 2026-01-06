@@ -5,6 +5,7 @@ using CoreLedger.Application.Models;
 using CoreLedger.Application.UseCases.Funds.Commands;
 using CoreLedger.Application.UseCases.Funds.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CoreLedger.API.Endpoints;
 
@@ -25,6 +26,9 @@ public static class FundsEndpoints
 
         group.MapGet("/{id:int}", GetById)
             .WithName("GetFundById");
+
+        group.MapGet("/autocomplete", Autocomplete)
+            .WithName("AutocompleteFunds");
 
         group.MapPost("/", Create)
             .WithName("CreateFund");
@@ -82,6 +86,30 @@ public static class FundsEndpoints
 
         logger.LogInformation("Fund retrieved - Code: {Code}, Name: {Name}, Currency: {Currency}",
             result.Code, result.Name, result.BaseCurrency);
+
+        return Results.Ok(result);
+    }
+
+    private static async Task<IResult> Autocomplete(
+        [FromQuery] string? q,
+        IMediator mediator,
+        HttpContext context,
+        ILoggerFactory loggerFactory,
+        CancellationToken cancellationToken)
+    {
+        var logger = loggerFactory.CreateLogger(LoggerName);
+        var userId = context.GetUserId();
+
+        logger.LogInformation(
+            "Autocomplete search for funds - Query: {Query}, User: {UserId}",
+            q ?? "<empty>", userId);
+
+        var query = new AutocompleteFundsQuery(q);
+        var result = await mediator.Send(query, cancellationToken);
+
+        logger.LogInformation(
+            "Autocomplete returned {Count} funds for query: {Query}",
+            result.Count, q ?? "<empty>");
 
         return Results.Ok(result);
     }

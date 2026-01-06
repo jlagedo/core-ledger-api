@@ -114,4 +114,50 @@ public class SecurityQueryService : ISecurityQueryService
 
         return (securities, totalCount);
     }
+
+    public async Task<IReadOnlyList<Security>> AutocompleteAsync(
+        string searchTerm,
+        CancellationToken cancellationToken = default)
+    {
+        // Split on whitespace and process each term separately for tsquery
+        var terms = searchTerm.Split(new[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+
+        // Escape special tsquery characters for each term and create prefix queries
+        var tsQueryTerms = terms.Select(term =>
+        {
+            var escapedTerm = term
+                .Replace("'", "''")
+                .Replace("&", "")
+                .Replace("|", "")
+                .Replace("!", "")
+                .Replace("(", "")
+                .Replace(")", "")
+                .Replace(":", "")
+                .Replace("*", "");
+            return escapedTerm + ":*";
+        });
+
+        // Join terms with & (AND operator) for tsquery
+        var tsQueryTerm = string.Join(" & ", tsQueryTerms);
+        var prefixPattern = searchTerm + "%";
+        var sqlParameters = new List<object> { tsQueryTerm, prefixPattern };
+
+        var sql = @"
+            SELECT s.*
+            FROM securities s
+            WHERE
+                to_tsvector('simple', coalesce(s.ticker, '') || ' ' || coalesce(s.name, ''))
+                @@ to_tsquery('simple', {0})
+            ORDER BY
+                CASE WHEN s.ticker ILIKE {1} THEN 1 ELSE 2 END,
+                s.name ASC
+            LIMIT 10";
+
+        var securities = await _context.Set<Security>()
+            .FromSqlRaw(sql, sqlParameters.ToArray())
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        return securities;
+    }
 }

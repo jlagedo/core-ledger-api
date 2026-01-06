@@ -1,0 +1,39 @@
+# This is a generated file. Not intended for manual editing.
+services:
+  api:
+    build:
+      context: "/Users/jlagedo/Developer/angular/core-ledger-api"
+      dockerfile: "CoreLedger.API/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net10.0/CoreLedger.API.dll"
+    environment:
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "coreledger.api:dev"
+    ports: []
+    volumes:
+    - "/Users/jlagedo/Developer/angular/core-ledger-api/CoreLedger.API:/app:rw"
+    - "/Users/jlagedo/Developer/angular/core-ledger-api:/src:rw"
+    - "/Users/jlagedo/.microsoft/usersecrets:/home/app/.microsoft/usersecrets"
+    - "/Users/jlagedo/.nuget/packages:/home/app/.nuget/packages"
+    working_dir: "/app"
+  worker:
+    build:
+      context: "/Users/jlagedo/Developer/angular/core-ledger-api"
+      dockerfile: "CoreLedger.Worker/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net10.0/CoreLedger.Worker.dll"
+    environment:
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "coreledger.worker:dev"
+    ports: []
+    volumes:
+    - "/Users/jlagedo/Developer/angular/core-ledger-api/CoreLedger.Worker:/app:rw"
+    - "/Users/jlagedo/Developer/angular/core-ledger-api:/src:rw"
+    - "/Users/jlagedo/.nuget/packages:/home/app/.nuget/packages"
+    working_dir: "/app"

@@ -107,4 +107,50 @@ public class FundQueryService : IFundQueryService
 
         return (funds, totalCount);
     }
+
+    public async Task<IReadOnlyList<Fund>> AutocompleteAsync(
+        string searchTerm,
+        CancellationToken cancellationToken = default)
+    {
+        // Split on whitespace and process each term separately for tsquery
+        var terms = searchTerm.Split(new[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+
+        // Escape special tsquery characters for each term and create prefix queries
+        var tsQueryTerms = terms.Select(term =>
+        {
+            var escapedTerm = term
+                .Replace("'", "''")
+                .Replace("&", "")
+                .Replace("|", "")
+                .Replace("!", "")
+                .Replace("(", "")
+                .Replace(")", "")
+                .Replace(":", "")
+                .Replace("*", "");
+            return escapedTerm + ":*";
+        });
+
+        // Join terms with & (AND operator) for tsquery
+        var tsQueryTerm = string.Join(" & ", tsQueryTerms);
+        var prefixPattern = searchTerm + "%";
+        var sqlParameters = new List<object> { tsQueryTerm, prefixPattern };
+
+        var sql = @"
+            SELECT f.*
+            FROM funds f
+            WHERE
+                to_tsvector('simple', coalesce(f.code, '') || ' ' || coalesce(f.name, ''))
+                @@ to_tsquery('simple', {0})
+            ORDER BY
+                CASE WHEN f.code ILIKE {1} THEN 1 ELSE 2 END,
+                f.name ASC
+            LIMIT 10";
+
+        var funds = await _context.Set<Fund>()
+            .FromSqlRaw(sql, sqlParameters.ToArray())
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        return funds;
+    }
 }

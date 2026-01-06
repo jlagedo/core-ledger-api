@@ -17,4 +17,14 @@ public interface IFundQueryService
     Task<(IReadOnlyList<Fund> Funds, int TotalCount)> GetWithQueryAsync(
         QueryParameters parameters,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Searches funds for autocomplete using PostgreSQL full-text search.
+    /// </summary>
+    /// <param name="searchTerm">The search term to match against fund code or name.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>List of matching funds limited to 10 results.</returns>
+    Task<IReadOnlyList<Fund>> AutocompleteAsync(
+        string searchTerm,
+        CancellationToken cancellationToken = default);
 }
