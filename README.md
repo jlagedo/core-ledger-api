@@ -689,6 +689,10 @@ Cada requisição recebe um ID de correlação (via header `X-Correlation-ID` ou
 
 [Especifique sua licença aqui - MIT, Apache 2.0, Proprietária, etc.]
 
+## Autor
+
+- **Dev Solo** — Um desenvolvedor curioso explorando o mundo de Fund Accounting com ajuda de IAs
+
 ---
 
 ## Referências
@@ -702,4 +706,74 @@ Cada requisição recebe um ID de correlação (via header `X-Correlation-ID` ou
 
 **Para suporte ou dúvidas, por favor abra uma issue no GitHub.**
 
-*Documento atualizado em Janeiro/2026*
+---
+
+## ⚠️ Disclaimer (Leia antes de sair investindo!)
+
+**Calma aí, investidor!** 🛑
+
+Este projeto é **100% educacional** e está sendo desenvolvido como um laboratório de testes para explorar as capacidades de **Inteligência Artificial no desenvolvimento de software**. Ou seja: nenhum fundo foi administrado, nenhuma cota foi calculada, e nenhum cotista foi prejudicado na produção deste README.
+
+### 🤖 A Jornada dos AI Coding Assistants
+
+Durante o desenvolvimento, testei várias ferramentas de IA para coding:
+
+| Ferramenta | Veredicto |
+|------------|-----------|
+| **Windsurf** | Bom, mas limitado por estar disponível apenas como IDE separada ou plugin do JetBrains. Não oferece um pacote completo que dê pra usar fora disso. |
+| **GitHub Copilot** | É bom, mas cada dia que passa está ficando mais integrado no mundo Microsoft/GitHub. Mesmo usando .NET, eu queria algo diferente do ecossistema Microsoft *(sim, a ironia de fazer o projeto em .NET não me passou despercebida 😅)* |
+| **Claude Code** | 🏆 **O escolhido!** |
+
+### 💜 Por que Claude Code é diferente?
+
+Eu adorei o **Claude Code** principalmente porque ele **fica fora da IDE**. Uso mais pelo terminal e, de início, parece loucura, mas isso separa meu contexto mental do "modo prompt" do "modo código".
+
+**Confissão:** Eu *odeio* estar programando e ter uma IA tentando me ajudar o tempo todo. Perco o foco completamente. Aquelas sugestões inline que ficam piscando enquanto você tenta pensar? Tortura.
+
+Com o Claude Code no terminal, eu:
+1. **Codifico em paz** — Sem interrupções, sem sugestões não solicitadas
+2. **Mudo de contexto conscientemente** — Quando preciso de ajuda, abro o terminal e converso
+3. **Mantenho o foco** — Cada coisa no seu lugar
+
+Além disso:
+
+- **Entende contexto de verdade** — Você explica o domínio de Fund Accounting uma vez e ele *entende*. Não precisa repetir 47 vezes que "cota não é a mesma coisa que ação".
+
+- **Gera código que funciona** — E não aquele código que "quase funciona" e você passa 3 horas debugando um ponto-e-vírgula.
+
+- **Não inventa biblioteca que não existe** — Sabe aquele momento constrangedor quando a IA sugere um pacote NuGet que simplesmente... não existe? Pois é, aqui não.
+
+- **Claude AI Projects** — Essa funcionalidade é sensacional. Você joga os documentos de especificação, regulamentação da CVM, e o Claude mantém tudo como contexto persistente. Este README mesmo foi gerado no Projects, com todos os docs do projeto disponíveis pra consulta. Game changer.
+
+*(Inserir qualquer jabá adicional do Claude aqui — eles merecem depois de me aguentar perguntando sobre come-cotas às 2h da manhã)*
+
+### 🎯 O Objetivo Real
+
+Este projeto serve para:
+
+1. **Aprender** sobre o mercado brasileiro de fundos de investimento
+2. **Testar** até onde as IAs conseguem ajudar em projetos complexos de domínio específico
+3. **Documentar** as melhores práticas de desenvolvimento com assistentes de IA
+4. **Se divertir** (sim, programar pode ser divertido quando você tem um bom copiloto)
+
+### ⚖️ Aviso Legal (O Chato, mas Necessário)
+
+- Este código **NÃO** deve ser usado em produção para administrar fundos reais
+- **NÃO** nos responsabilizamos se você usar isso e a CVM bater na sua porta
+- As regras de negócio são baseadas na regulamentação vigente, mas podem conter erros (somos humanos... e IAs)
+- Se você é da CVM e está lendo isso: oi! 👋 É só um projeto de estudo, juro!
+
+### 🚀 Quer Testar Também?
+
+Se você está curioso sobre desenvolvimento assistido por IA, recomendo fortemente dar uma chance ao [Claude Code](https://claude.ai). Não, eles não estão me pagando (mas deveriam, depois dessa propaganda toda 😄).
+
+---
+
+*"O futuro do desenvolvimento de software é colaborativo: humanos definindo o 'o quê' e 'por quê', e IAs ajudando com o 'como'."*
+
+— Um dev solo que passou muitas horas conversando com uma IA sobre contabilidade de fundos
+
+---
+
+*Documento atualizado em Janeiro/2026*  
+*Feito com ☕, muita curiosidade, muita solidão (é só eu aqui, galera), e uma quantidade saudável de prompts bem elaborados*
