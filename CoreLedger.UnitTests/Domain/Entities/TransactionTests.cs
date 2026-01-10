@@ -4,11 +4,11 @@ using CoreLedger.Domain.Exceptions;
 namespace CoreLedger.UnitTests.Domain.Entities;
 
 /// <summary>
-///     Unit tests for Transaction domain entity business rules and invariants.
+///     Testes unitários para as regras de negócio da entidade de domínio Transação e invariantes.
 /// </summary>
 public class TransactionTests
 {
-    #region Create Tests - FundId Validation
+    #region Testes de Criação - Validação de FundId
 
     [Theory]
     [InlineData(0)]
@@ -27,12 +27,12 @@ public class TransactionTests
                 tradeDate, settleDate,
                 100m, 50m, 5000m,
                 "USD", 1, "test-user"));
-        Assert.Equal("FundId must be a positive number", exception.Message);
+        Assert.Equal("FundId deve ser um número positivo", exception.Message);
     }
 
     #endregion
 
-    #region Create Tests - TransactionSubTypeId Validation
+    #region Testes de Criação - Validação de TransactionSubTypeId
 
     [Theory]
     [InlineData(0)]
@@ -51,12 +51,12 @@ public class TransactionTests
                 tradeDate, settleDate,
                 100m, 50m, 5000m,
                 "USD", 1, "test-user"));
-        Assert.Equal("TransactionSubTypeId must be a positive number", exception.Message);
+        Assert.Equal("TransactionSubTypeId deve ser um número positivo", exception.Message);
     }
 
     #endregion
 
-    #region Create Tests - StatusId Validation
+    #region Testes de Criação - Validação de StatusId
 
     [Theory]
     [InlineData(0)]
@@ -75,12 +75,12 @@ public class TransactionTests
                 tradeDate, settleDate,
                 100m, 50m, 5000m,
                 "USD", statusId, "test-user"));
-        Assert.Equal("StatusId must be a positive number", exception.Message);
+        Assert.Equal("StatusId deve ser um número positivo", exception.Message);
     }
 
     #endregion
 
-    #region Create Tests - Price Validation
+    #region Testes de Criação - Validação de Preço
 
     [Fact]
     public void Create_WithNegativePrice_ShouldThrowDomainValidationException()
@@ -96,12 +96,12 @@ public class TransactionTests
                 tradeDate, settleDate,
                 100m, -0.01m, 5000m,
                 "USD", 1, "test-user"));
-        Assert.Equal("Price cannot be negative", exception.Message);
+        Assert.Equal("Preço não pode ser negativo", exception.Message);
     }
 
     #endregion
 
-    #region Create Tests - Happy Path
+    #region Testes de Criação - Caminho Feliz
 
     [Fact]
     public void Create_WithValidData_ShouldCreateTransaction()
@@ -199,7 +199,7 @@ public class TransactionTests
 
     #endregion
 
-    #region Create Tests - Date Validation
+    #region Testes de Criação - Validação de Data
 
     [Fact]
     public void Create_WithTradeDateAfterSettleDate_ShouldThrowDomainValidationException()
@@ -215,7 +215,7 @@ public class TransactionTests
                 tradeDate, settleDate,
                 100m, 50m, 5000m,
                 "USD", 1, "test-user"));
-        Assert.Equal("Trade date must be on or before settle date", exception.Message);
+        Assert.Equal("Data de negociação deve estar na ou antes da data de liquidação", exception.Message);
     }
 
     [Fact]
@@ -232,7 +232,7 @@ public class TransactionTests
                 tradeDate, settleDate,
                 100m, 50m, 5000m,
                 "USD", 1, "test-user"));
-        Assert.Equal("Settle date cannot be more than 1 year in the future", exception.Message);
+        Assert.Equal("Data de liquidação não pode estar mais de 1 ano no futuro", exception.Message);
     }
 
     [Fact]
@@ -256,7 +256,7 @@ public class TransactionTests
 
     #endregion
 
-    #region Create Tests - Currency Validation
+    #region Testes de Criação - Validação de Moeda
 
     [Theory]
     [InlineData(null)]
@@ -275,7 +275,7 @@ public class TransactionTests
                 tradeDate, settleDate,
                 100m, 50m, 5000m,
                 currency!, 1, "test-user"));
-        Assert.Equal("Currency cannot be empty", exception.Message);
+        Assert.Equal("Moeda não pode estar vazia", exception.Message);
     }
 
     [Theory]
@@ -296,7 +296,7 @@ public class TransactionTests
                 tradeDate, settleDate,
                 100m, 50m, 5000m,
                 currency, 1, "test-user"));
-        Assert.Equal("Currency must be a 3-letter ISO code", exception.Message);
+        Assert.Equal("Moeda deve ser um código ISO de 3 letras", exception.Message);
     }
 
     [Theory]
@@ -316,7 +316,7 @@ public class TransactionTests
                 tradeDate, settleDate,
                 100m, 50m, 5000m,
                 currency, 1, "test-user"));
-        Assert.Equal("Currency must contain only letters (A-Z)", exception.Message);
+        Assert.Equal("Moeda deve conter apenas letras (A-Z)", exception.Message);
     }
 
     [Theory]
@@ -345,7 +345,7 @@ public class TransactionTests
 
     #endregion
 
-    #region Update Tests
+    #region Testes de Atualização
 
     [Fact]
     public void Update_WithValidData_ShouldUpdateAndSetUpdatedAt()
@@ -408,7 +408,7 @@ public class TransactionTests
                 tradeDate, settleDate,
                 100m, 50m, 5000m,
                 "USD", 1));
-        Assert.Equal("FundId must be a positive number", exception.Message);
+        Assert.Equal("FundId deve ser um número positivo", exception.Message);
     }
 
     #endregion

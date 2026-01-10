@@ -3,12 +3,12 @@ using System.Text.Json;
 namespace CoreLedger.Domain.Entities;
 
 /// <summary>
-///     Represents an audit log entry for tracking entity changes.
+///     Representa um registro de auditoria para rastreamento de alterações de entidades.
 /// </summary>
 public class AuditLog
 {
     /// <summary>
-    ///     Private constructor for EF Core.
+    ///     Construtor privado para EF Core.
     /// </summary>
     private AuditLog()
     {
@@ -18,73 +18,73 @@ public class AuditLog
     }
 
     /// <summary>
-    ///     Unique identifier for the audit log entry.
+    ///     Identificador único para o registro de auditoria.
     /// </summary>
     public long Id { get; private set; }
 
     /// <summary>
-    ///     Name of the entity being audited (e.g., 'Transaction', 'Account').
+    ///     Nome da entidade sendo auditada (ex: 'Transação', 'Conta').
     /// </summary>
     public string EntityName { get; private set; }
 
     /// <summary>
-    ///     Identifier of the entity being audited (supports UUID, int, string keys).
+    ///     Identificador da entidade sendo auditada (suporta chaves UUID, int, string).
     /// </summary>
     public string EntityId { get; private set; }
 
     /// <summary>
-    ///     Type of event that occurred (e.g., 'Created', 'Updated', 'Deleted').
+    ///     Tipo de evento que ocorreu (ex: 'Criado', 'Atualizado', 'Deletado').
     /// </summary>
     public string EventType { get; private set; }
 
     /// <summary>
-    ///     Identifier of the user who triggered the event.
+    ///     Identificador do usuário que disparou o evento.
     /// </summary>
     public string? PerformedByUserId { get; private set; }
 
     /// <summary>
-    ///     Timestamp when the event occurred.
+    ///     Data e hora em que o evento ocorreu.
     /// </summary>
     public DateTime PerformedAt { get; private set; }
 
     /// <summary>
-    ///     JSON snapshot of the entity state before the change.
+    ///     Captura JSON do estado da entidade antes da alteração.
     /// </summary>
     public JsonDocument? DataBefore { get; private set; }
 
     /// <summary>
-    ///     JSON snapshot of the entity state after the change.
+    ///     Captura JSON do estado da entidade após a alteração.
     /// </summary>
     public JsonDocument? DataAfter { get; private set; }
 
     /// <summary>
-    ///     Correlation ID for distributed tracing.
+    ///     ID de correlação para rastreamento distribuído.
     /// </summary>
     public string? CorrelationId { get; private set; }
 
     /// <summary>
-    ///     ASP.NET Core request ID.
+    ///     ID de requisição ASP.NET Core.
     /// </summary>
     public string? RequestId { get; private set; }
 
     /// <summary>
-    ///     Source of the event (e.g., 'API', 'Job', 'System').
+    ///     Origem do evento (ex: 'API', 'Job', 'Sistema').
     /// </summary>
     public string? Source { get; private set; }
 
     /// <summary>
-    ///     Factory method to create a new audit log entry.
+    ///     Método factory para criar um novo registro de auditoria.
     /// </summary>
-    /// <param name="entityName">Name of the entity being audited.</param>
-    /// <param name="entityId">Identifier of the entity.</param>
-    /// <param name="eventType">Type of event (Created, Updated, Deleted).</param>
-    /// <param name="performedByUserId">User who triggered the event.</param>
-    /// <param name="dataBefore">JSON snapshot before the change.</param>
-    /// <param name="dataAfter">JSON snapshot after the change.</param>
-    /// <param name="correlationId">Correlation ID for tracing.</param>
-    /// <param name="requestId">ASP.NET Core request ID.</param>
-    /// <param name="source">Source of the event.</param>
-    /// <returns>A new AuditLog instance.</returns>
+    /// <param name="entityName">Nome da entidade sendo auditada.</param>
+    /// <param name="entityId">Identificador da entidade.</param>
+    /// <param name="eventType">Tipo de evento (Criado, Atualizado, Deletado).</param>
+    /// <param name="performedByUserId">Usuário que disparou o evento.</param>
+    /// <param name="dataBefore">Captura JSON antes da alteração.</param>
+    /// <param name="dataAfter">Captura JSON após a alteração.</param>
+    /// <param name="correlationId">ID de correlação para rastreamento.</param>
+    /// <param name="requestId">ID de requisição ASP.NET Core.</param>
+    /// <param name="source">Origem do evento.</param>
+    /// <returns>Uma nova instância de AuditLog.</returns>
     public static AuditLog Create(
         string entityName,
         string entityId,
@@ -97,13 +97,13 @@ public class AuditLog
         string? source = null)
     {
         if (string.IsNullOrWhiteSpace(entityName))
-            throw new ArgumentException("Entity name is required.", nameof(entityName));
+            throw new ArgumentException("Nome da entidade é obrigatório.", nameof(entityName));
 
         if (string.IsNullOrWhiteSpace(entityId))
-            throw new ArgumentException("Entity ID is required.", nameof(entityId));
+            throw new ArgumentException("ID da entidade é obrigatório.", nameof(entityId));
 
         if (string.IsNullOrWhiteSpace(eventType))
-            throw new ArgumentException("Event type is required.", nameof(eventType));
+            throw new ArgumentException("Tipo de evento é obrigatório.", nameof(eventType));
 
         return new AuditLog
         {

@@ -20,11 +20,11 @@ public class UpdateTransactionCommandHandler : IRequestHandler<UpdateTransaction
 
     public async Task Handle(UpdateTransactionCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Updating transaction with ID: {TransactionId}", request.Id);
+        _logger.LogInformation("Atualizando transação com ID: {TransactionId}", request.Id);
 
         var transaction = await _context.Transactions.FindAsync([request.Id], cancellationToken);
         if (transaction == null)
-            throw new EntityNotFoundException("Transaction", request.Id);
+            throw new EntityNotFoundException("Transação", request.Id);
 
         // Capture old values for audit trail
         var oldAmount = transaction.Amount;
@@ -37,8 +37,8 @@ public class UpdateTransactionCommandHandler : IRequestHandler<UpdateTransaction
         var fund = await _context.Funds.FindAsync([request.FundId], cancellationToken);
         if (fund == null)
         {
-            _logger.LogWarning("Transaction update failed: Fund {FundId} not found for transaction {TransactionId}", request.FundId, request.Id);
-            throw new EntityNotFoundException("Fund", request.FundId);
+            _logger.LogWarning("Falha na atualização de transação: Fundo {FundId} não encontrado para transação {TransactionId}", request.FundId, request.Id);
+            throw new EntityNotFoundException("Fundo", request.FundId);
         }
 
         if (request.SecurityId.HasValue)
@@ -46,23 +46,23 @@ public class UpdateTransactionCommandHandler : IRequestHandler<UpdateTransaction
             var security = await _context.Securities.FindAsync([request.SecurityId.Value], cancellationToken);
             if (security == null)
             {
-                _logger.LogWarning("Transaction update failed: Security {SecurityId} not found for transaction {TransactionId}", request.SecurityId.Value, request.Id);
-                throw new EntityNotFoundException("Security", request.SecurityId.Value);
+                _logger.LogWarning("Falha na atualização de transação: Segurança {SecurityId} não encontrada para transação {TransactionId}", request.SecurityId.Value, request.Id);
+                throw new EntityNotFoundException("Segurança", request.SecurityId.Value);
             }
         }
 
         var subType = await _context.TransactionSubTypes.FindAsync([request.TransactionSubTypeId], cancellationToken);
         if (subType == null)
         {
-            _logger.LogWarning("Transaction update failed: TransactionSubType {SubTypeId} not found for transaction {TransactionId}", request.TransactionSubTypeId, request.Id);
-            throw new EntityNotFoundException("TransactionSubType", request.TransactionSubTypeId);
+            _logger.LogWarning("Falha na atualização de transação: SubTipo de Transação {SubTypeId} não encontrado para transação {TransactionId}", request.TransactionSubTypeId, request.Id);
+            throw new EntityNotFoundException("SubTipo de Transação", request.TransactionSubTypeId);
         }
 
         var status = await _context.TransactionStatuses.FindAsync([request.StatusId], cancellationToken);
         if (status == null)
         {
-            _logger.LogWarning("Transaction update failed: TransactionStatus {StatusId} not found for transaction {TransactionId}", request.StatusId, request.Id);
-            throw new EntityNotFoundException("TransactionStatus", request.StatusId);
+            _logger.LogWarning("Falha na atualização de transação: Status de Transação {StatusId} não encontrado para transação {TransactionId}", request.StatusId, request.Id);
+            throw new EntityNotFoundException("Status de Transação", request.StatusId);
         }
 
         transaction.Update(

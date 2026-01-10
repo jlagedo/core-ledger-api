@@ -29,7 +29,7 @@ public class GetCalendarioByIdQueryHandler : IRequestHandler<GetCalendarioByIdQu
 
     public async Task<CalendarioDto> Handle(GetCalendarioByIdQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting Calendario with ID {Id}", request.Id);
+        _logger.LogInformation("Obtendo Calendário com ID {Id}", request.Id);
 
         var calendario = await _context.Calendarios
             .AsNoTracking()
@@ -37,7 +37,7 @@ public class GetCalendarioByIdQueryHandler : IRequestHandler<GetCalendarioByIdQu
 
         if (calendario == null)
         {
-            throw new EntityNotFoundException("Calendario", request.Id);
+            throw new EntityNotFoundException("Calendário", request.Id);
         }
 
         return _mapper.Map<CalendarioDto>(calendario);

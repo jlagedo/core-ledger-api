@@ -26,16 +26,16 @@ public class UpdateFundCommandHandler : IRequestHandler<UpdateFundCommand>
         UpdateFundCommand request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Updating Fund with ID: {FundId}", request.Id);
+        _logger.LogInformation("Atualizando Fundo com ID: {FundId}", request.Id);
 
         var fund = await _context.Funds.FindAsync([request.Id], cancellationToken);
-        if (fund == null) throw new EntityNotFoundException("Fund", request.Id);
+        if (fund == null) throw new EntityNotFoundException("Fundo", request.Id);
 
         var existingWithName = await _context.Funds
             .AsNoTracking()
             .FirstOrDefaultAsync(f => f.Name == request.Name, cancellationToken);
         if (existingWithName != null && existingWithName.Id != request.Id)
-            throw new DomainValidationException("Fund with this name already exists");
+            throw new DomainValidationException("Fundo com este nome já existe");
 
         fund.Update(
             request.Code,
@@ -46,6 +46,6 @@ public class UpdateFundCommandHandler : IRequestHandler<UpdateFundCommand>
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Updated Fund with ID: {FundId}", request.Id);
+        _logger.LogInformation("Fundo atualizado com ID: {FundId}", request.Id);
     }
 }

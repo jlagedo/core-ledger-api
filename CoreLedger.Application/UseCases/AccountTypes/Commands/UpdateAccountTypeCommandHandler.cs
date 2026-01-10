@@ -26,13 +26,13 @@ public class UpdateAccountTypeCommandHandler : IRequestHandler<UpdateAccountType
         UpdateAccountTypeCommand request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Updating AccountType with ID: {AccountTypeId}", request.Id);
+        _logger.LogInformation("Atualizando tipo de conta com ID: {AccountTypeId}", request.Id);
 
         var accountType = await _context.AccountTypes
             .FirstOrDefaultAsync(at => at.Id == request.Id, cancellationToken);
 
         if (accountType == null)
-            throw new EntityNotFoundException("AccountType", request.Id);
+            throw new EntityNotFoundException("Tipo de conta", request.Id);
 
         // Check if another account type with the same description already exists
         var existing = await _context.AccountTypes
@@ -40,11 +40,11 @@ public class UpdateAccountTypeCommandHandler : IRequestHandler<UpdateAccountType
             .FirstOrDefaultAsync(at => at.Description.ToLower() == request.Description.ToLower(), cancellationToken);
 
         if (existing != null && existing.Id != request.Id)
-            throw new DomainValidationException("Account type with this description already exists");
+            throw new DomainValidationException("Tipo de conta com esta descrição já existe");
 
         accountType.UpdateDescription(request.Description);
         await _context.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Updated AccountType with ID: {AccountTypeId}", request.Id);
+        _logger.LogInformation("Tipo de conta atualizado com ID: {AccountTypeId}", request.Id);
     }
 }

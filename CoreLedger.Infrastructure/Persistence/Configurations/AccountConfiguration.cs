@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace CoreLedger.Infrastructure.Persistence.Configurations;
 
 /// <summary>
-///     Entity Framework configuration for Account entity.
+///     Configuração Entity Framework para a entidade Account.
 /// </summary>
 public class AccountConfiguration : IEntityTypeConfiguration<Account>
 {

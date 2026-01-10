@@ -24,17 +24,17 @@ public class UpdateSecurityCommandHandler : IRequestHandler<UpdateSecurityComman
 
     public async Task Handle(UpdateSecurityCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Updating Security with ID: {SecurityId}", request.Id);
+        _logger.LogInformation("Atualizando Segurança com ID: {SecurityId}", request.Id);
 
         var security = await _context.Securities.FindAsync([request.Id], cancellationToken);
-        if (security == null) throw new EntityNotFoundException("Security", request.Id);
+        if (security == null) throw new EntityNotFoundException("Segurança", request.Id);
 
         // Check if another security with the same ticker already exists
         var existing = await _context.Securities
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.Ticker == request.Ticker, cancellationToken);
         if (existing != null && existing.Id != request.Id)
-            throw new DomainValidationException("Security with this ticker already exists");
+            throw new DomainValidationException("Segurança com este ticker já existe");
 
         security.Update(
             request.Name,
@@ -45,6 +45,6 @@ public class UpdateSecurityCommandHandler : IRequestHandler<UpdateSecurityComman
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Updated Security with ID: {SecurityId}", request.Id);
+        _logger.LogInformation("Segurança atualizada com ID: {SecurityId}", request.Id);
     }
 }

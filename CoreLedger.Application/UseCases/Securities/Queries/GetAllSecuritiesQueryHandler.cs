@@ -30,14 +30,14 @@ public class GetAllSecuritiesQueryHandler : IRequestHandler<GetAllSecuritiesQuer
         GetAllSecuritiesQuery request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Retrieving all Securities");
+        _logger.LogInformation("Recuperando todas as Segurança");
 
         var securities = await _context.Securities
             .AsNoTracking()
             .ToListAsync(cancellationToken);
         var result = _mapper.Map<IReadOnlyList<SecurityDto>>(securities);
 
-        _logger.LogInformation("Retrieved {Count} Securities", result.Count);
+        _logger.LogInformation("Recuperadas {Count} Segurança", result.Count);
 
         return result;
     }

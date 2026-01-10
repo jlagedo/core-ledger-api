@@ -31,18 +31,18 @@ public class GetAccountTypeByIdQueryHandler : IRequestHandler<GetAccountTypeById
         GetAccountTypeByIdQuery request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Retrieving AccountType with ID: {AccountTypeId}", request.Id);
+        _logger.LogInformation("Recuperando Tipo de Conta com ID: {AccountTypeId}", request.Id);
 
         var accountType = await _context.AccountTypes
             .AsNoTracking()
             .FirstOrDefaultAsync(at => at.Id == request.Id, cancellationToken);
 
         if (accountType == null)
-            throw new EntityNotFoundException("AccountType", request.Id);
+            throw new EntityNotFoundException("Tipo de conta", request.Id);
 
         var result = _mapper.Map<AccountTypeDto>(accountType);
 
-        _logger.LogInformation("Retrieved AccountType with ID: {AccountTypeId}", request.Id);
+        _logger.LogInformation("Tipo de Conta recuperado com ID: {AccountTypeId}", request.Id);
 
         return result;
     }

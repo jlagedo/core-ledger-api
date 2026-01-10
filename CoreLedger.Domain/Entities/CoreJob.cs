@@ -4,7 +4,7 @@ using CoreLedger.Domain.Exceptions;
 namespace CoreLedger.Domain.Entities;
 
 /// <summary>
-///     CoreJob domain entity representing a background job with status tracking.
+///     Entidade de domínio CoreJob representando uma tarefa de fundo com rastreamento de status.
 /// </summary>
 public class CoreJob : BaseEntity
 {
@@ -20,7 +20,7 @@ public class CoreJob : BaseEntity
     public DateTime? FinishedDate { get; private set; }
 
     /// <summary>
-    ///     Factory method to create a new CoreJob with validation.
+    ///     Método factory para criar um novo CoreJob com validação.
     /// </summary>
     public static CoreJob Create(
         string referenceId,
@@ -39,7 +39,7 @@ public class CoreJob : BaseEntity
     }
 
     /// <summary>
-    ///     Updates the job status with optional running and finished dates.
+    ///     Atualiza o status do job com datas opcionais de execução e conclusão.
     /// </summary>
     public void UpdateStatus(
         JobStatus status,
@@ -57,19 +57,19 @@ public class CoreJob : BaseEntity
     private static void ValidateReferenceId(string referenceId)
     {
         if (string.IsNullOrWhiteSpace(referenceId))
-            throw new DomainValidationException("Reference ID cannot be empty");
+            throw new DomainValidationException("ID de Referência não pode estar vazio");
 
         if (referenceId.Length > 50)
-            throw new DomainValidationException("Reference ID cannot exceed 50 characters");
+            throw new DomainValidationException("ID de Referência não pode exceder 50 caracteres");
     }
 
     private static void ValidateJobDescription(string jobDescription)
     {
         if (string.IsNullOrWhiteSpace(jobDescription))
-            throw new DomainValidationException("Job description cannot be empty");
+            throw new DomainValidationException("Descrição do job não pode estar vazia");
 
         if (jobDescription.Length > 255)
-            throw new DomainValidationException("Job description cannot exceed 255 characters");
+            throw new DomainValidationException("Descrição do job não pode exceder 255 caracteres");
     }
 
     private static void ValidateStatusTransition(
@@ -78,9 +78,9 @@ public class CoreJob : BaseEntity
         DateTime? finishedDate)
     {
         if (status == JobStatus.Running && !runningDate.HasValue)
-            throw new DomainValidationException("Running date must be set when status is Running");
+            throw new DomainValidationException("Data de execução deve ser definida quando o status é Executando");
 
         if ((status == JobStatus.Complete || status == JobStatus.Failed) && !finishedDate.HasValue)
-            throw new DomainValidationException("Finished date must be set when status is Complete or Failed");
+            throw new DomainValidationException("Data de conclusão deve ser definida quando o status é Concluído ou Falhou");
     }
 }

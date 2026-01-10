@@ -4,7 +4,7 @@ using CoreLedger.Domain.Enums;
 namespace CoreLedger.Application.DTOs;
 
 /// <summary>
-///     Data transfer object for Security entity.
+///     Objeto de transferência de dados para a entidade Título.
 /// </summary>
 public record SecurityDto(
     int Id,
@@ -22,7 +22,7 @@ public record SecurityDto(
 );
 
 /// <summary>
-///     DTO for creating a new Security.
+///     DTO para criar um novo Título.
 /// </summary>
 public record CreateSecurityDto
 {
@@ -40,7 +40,7 @@ public record CreateSecurityDto
 }
 
 /// <summary>
-///     DTO for updating an existing Security.
+///     DTO para atualizar um Título existente.
 /// </summary>
 public record UpdateSecurityDto
 {

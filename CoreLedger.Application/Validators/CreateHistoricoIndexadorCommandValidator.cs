@@ -12,28 +12,28 @@ public class CreateHistoricoIndexadorCommandValidator : AbstractValidator<Create
     {
         RuleFor(x => x.IndexadorId)
             .GreaterThan(0)
-            .WithMessage("IndexadorId must be a valid positive identifier");
+            .WithMessage("IndexadorId deve ser um identificador positivo válido");
 
         RuleFor(x => x.DataReferencia)
             .NotEmpty()
-            .WithMessage("DataReferencia is required");
+            .WithMessage("DataReferencia é obrigatória");
 
         RuleFor(x => x.Valor)
             .GreaterThanOrEqualTo(0)
-            .WithMessage("Valor must be greater than or equal to zero");
+            .WithMessage("Valor deve ser maior ou igual a zero");
 
         RuleFor(x => x.FatorDiario)
             .GreaterThan(0)
             .When(x => x.FatorDiario.HasValue)
-            .WithMessage("Fator diário must be greater than zero when provided");
+            .WithMessage("Fator diário deve ser maior que zero quando fornecido");
 
         RuleFor(x => x.VariacaoPercentual)
             .Must(v => !v.HasValue || v.Value >= -100)
-            .WithMessage("Variação percentual must be greater than or equal to -100% when provided");
+            .WithMessage("Variação percentual deve ser maior ou igual a -100% quando fornecida");
 
         RuleFor(x => x.Fonte)
             .MaximumLength(50)
             .When(x => !string.IsNullOrWhiteSpace(x.Fonte))
-            .WithMessage("Fonte cannot exceed 50 characters");
+            .WithMessage("Fonte não pode exceder 50 caracteres");
     }
 }

@@ -31,7 +31,7 @@ public class CreateCalendarioCommandHandler : IRequestHandler<CreateCalendarioCo
     public async Task<CalendarioDto> Handle(CreateCalendarioCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "Creating new Calendario entry for {Data} at praca {Praca}",
+            "Criando nova entrada de Calendário para {Data} na praça {Praca}",
             request.Data,
             request.Praca);
 
@@ -45,7 +45,7 @@ public class CreateCalendarioCommandHandler : IRequestHandler<CreateCalendarioCo
         if (existing != null)
         {
             throw new DomainValidationException(
-                $"Calendar entry for date {request.Data:yyyy-MM-dd} and praca {request.Praca} already exists");
+                $"Entrada de calendário para a data {request.Data:yyyy-MM-dd} e praça {request.Praca} já existe");
         }
 
         // Create new calendario entity using factory method
@@ -60,7 +60,7 @@ public class CreateCalendarioCommandHandler : IRequestHandler<CreateCalendarioCo
         await _context.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(
-            "Calendario entry created with ID {Id} for {Data}",
+            "Entrada de calendário criada com ID {Id} para {Data}",
             calendario.Id,
             calendario.Data);
 

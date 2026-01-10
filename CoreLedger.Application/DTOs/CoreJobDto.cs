@@ -3,7 +3,7 @@ using CoreLedger.Domain.Enums;
 namespace CoreLedger.Application.DTOs;
 
 /// <summary>
-///     Data transfer object for CoreJob entity.
+///     Objeto de transferência de dados para a entidade TrabalhoCore.
 /// </summary>
 public record CoreJobDto(
     int Id,

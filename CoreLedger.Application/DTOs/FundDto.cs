@@ -4,7 +4,7 @@ using CoreLedger.Domain.Enums;
 namespace CoreLedger.Application.DTOs;
 
 /// <summary>
-///     Data transfer object for Fund entity.
+///     Objeto de transferência de dados para a entidade Fundo.
 /// </summary>
 public record FundDto(
     int Id,
@@ -19,13 +19,13 @@ public record FundDto(
 );
 
 /// <summary>
-///     DTO for creating a new fund.
+///     DTO para criar um novo fundo.
 /// </summary>
 public record CreateFundDto
 {
     [Required]
     [MaxLength(10)]
-    [RegularExpression("^[A-Z0-9]+$", ErrorMessage = "Fund code must contain only alphanumeric characters (A-Z, 0-9)")]
+    [RegularExpression("^[A-Z0-9]+$", ErrorMessage = "O código do fundo deve conter apenas caracteres alfanuméricos (A-Z, 0-9)")]
     public string Code { get; init; } = string.Empty;
 
     [Required] [MaxLength(200)] public string Name { get; init; } = string.Empty;
@@ -40,13 +40,13 @@ public record CreateFundDto
 }
 
 /// <summary>
-///     DTO for updating an existing Fund.
+///     DTO para atualizar um Fundo existente.
 /// </summary>
 public record UpdateFundDto
 {
     [Required]
     [MaxLength(10)]
-    [RegularExpression("^[A-Z0-9]+$", ErrorMessage = "Fund code must contain only alphanumeric characters (A-Z, 0-9)")]
+    [RegularExpression("^[A-Z0-9]+$", ErrorMessage = "O código do fundo deve conter apenas caracteres alfanuméricos (A-Z, 0-9)")]
     public string Code { get; init; } = string.Empty;
 
     [Required] [MaxLength(200)] public string Name { get; init; } = string.Empty;

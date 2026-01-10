@@ -26,7 +26,7 @@ public class GetTransactionByIdQueryHandler : IRequestHandler<GetTransactionById
 
     public async Task<TransactionDto> Handle(GetTransactionByIdQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Retrieving transaction with ID: {TransactionId}", request.Id);
+        _logger.LogInformation("Recuperando transação com ID: {TransactionId}", request.Id);
 
         var transaction = await _context.Transactions
             .AsNoTracking()
@@ -38,7 +38,7 @@ public class GetTransactionByIdQueryHandler : IRequestHandler<GetTransactionById
             .FirstOrDefaultAsync(t => t.Id == request.Id, cancellationToken);
 
         if (transaction == null)
-            throw new EntityNotFoundException("Transaction", request.Id);
+            throw new EntityNotFoundException("Transação", request.Id);
 
         return _mapper.Map<TransactionDto>(transaction);
     }

@@ -1,7 +1,7 @@
 namespace CoreLedger.Domain.Enums;
 
 /// <summary>
-///     Represents the normal balance side of an account (Debit or Credit).
+///     Representa o lado do saldo normal de uma conta (Débito ou Crédito).
 /// </summary>
 public enum NormalBalance
 {

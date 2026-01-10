@@ -1,7 +1,7 @@
 namespace CoreLedger.Domain.Exceptions;
 
 /// <summary>
-///     Base exception for all domain-related exceptions.
+///     Exceção base para todas as exceções relacionadas ao domínio.
 /// </summary>
 public abstract class DomainException : Exception
 {
@@ -14,7 +14,7 @@ public abstract class DomainException : Exception
 }
 
 /// <summary>
-///     Exception thrown when domain validation fails.
+///     Exceção lançada quando a validação de domínio falha.
 /// </summary>
 public class DomainValidationException : DomainException
 {
@@ -25,29 +25,29 @@ public class DomainValidationException : DomainException
 }
 
 /// <summary>
-///     Exception thrown when an entity is not found.
+///     Exceção lançada quando uma entidade não é encontrada.
 /// </summary>
 public class EntityNotFoundException : DomainException
 {
     public EntityNotFoundException(string entityName, object id)
-        : base($"{entityName} with id {id} not found", "ERR-NOTFOUND-001")
+        : base($"{entityName} com id {id} não encontrado", "ERR-NOTFOUND-001")
     {
     }
 }
 
 /// <summary>
-///     Exception thrown when an external service (like Auth0) fails.
+///     Exceção lançada quando um serviço externo (como Auth0) falha.
 /// </summary>
 public class ExternalServiceException : DomainException
 {
     public ExternalServiceException(string serviceName, string message)
-        : base($"{serviceName} service error: {message}", "ERR-EXTERNAL-001")
+        : base($"Erro no serviço {serviceName}: {message}", "ERR-EXTERNAL-001")
     {
         ServiceName = serviceName;
     }
 
     public ExternalServiceException(string serviceName, string message, Exception innerException)
-        : base($"{serviceName} service error: {message}", "ERR-EXTERNAL-001")
+        : base($"Erro no serviço {serviceName}: {message}", "ERR-EXTERNAL-001")
     {
         ServiceName = serviceName;
     }

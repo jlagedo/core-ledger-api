@@ -1,32 +1,32 @@
 namespace CoreLedger.Domain.Enums;
 
 /// <summary>
-///     Represents the market location (praça) for calendar reference.
+///     Representa a localização do mercado (praça) para referência de calendário.
 /// </summary>
 public enum Praca
 {
     /// <summary>
-    ///     National calendar (B3/ANBIMA).
+    ///     Calendário nacional (B3/ANBIMA).
     /// </summary>
     Nacional = 1,
 
     /// <summary>
-    ///     São Paulo market location.
+    ///     Localização do mercado de São Paulo.
     /// </summary>
     SaoPaulo = 2,
 
     /// <summary>
-    ///     Rio de Janeiro market location.
+    ///     Localização do mercado do Rio de Janeiro.
     /// </summary>
     RioDeJaneiro = 3,
 
     /// <summary>
-    ///     US market calendar (for offshore assets).
+    ///     Calendário do mercado americano (para ativos no exterior).
     /// </summary>
     ExteriorEua = 4,
 
     /// <summary>
-    ///     European market calendar.
+    ///     Calendário do mercado europeu.
     /// </summary>
     ExteriorEur = 5
 }

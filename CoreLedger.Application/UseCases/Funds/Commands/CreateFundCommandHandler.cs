@@ -33,8 +33,8 @@ public class CreateFundCommandHandler : IRequestHandler<CreateFundCommand, FundD
         CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "Creating fund {Code} - Name: {Name}, Currency: {BaseCurrency}, " +
-            "InceptionDate: {InceptionDate}, ValuationFrequency: {ValuationFrequency}, CreatedBy: {UserId}",
+            "Criando fundo {Code} - Nome: {Name}, Moeda: {BaseCurrency}, " +
+            "DataInício: {InceptionDate}, FrequênciaAvaliação: {ValuationFrequency}, CriadoPor: {UserId}",
             request.Code, request.Name, request.BaseCurrency, request.InceptionDate, request.ValuationFrequency, request.CreatedByUserId);
 
         var existing = await _context.Funds
@@ -42,8 +42,8 @@ public class CreateFundCommandHandler : IRequestHandler<CreateFundCommand, FundD
             .FirstOrDefaultAsync(f => f.Name == request.Name, cancellationToken);
         if (existing != null)
         {
-            _logger.LogWarning("Fund creation failed: Duplicate name {FundName} already exists as fund {ExistingId}", request.Name, existing.Id);
-            throw new DomainValidationException("Fund with this name already exists");
+            _logger.LogWarning("Falha na criação de fundo: Nome duplicado {FundName} já existe como fundo {ExistingId}", request.Name, existing.Id);
+            throw new DomainValidationException("Fundo com este nome já existe");
         }
 
         var fund = Fund.Create(
@@ -57,7 +57,7 @@ public class CreateFundCommandHandler : IRequestHandler<CreateFundCommand, FundD
         _context.Funds.Add(fund);
         await _context.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Created Fund with ID: {FundId}", fund.Id);
+        _logger.LogInformation("Fundo criado com ID: {FundId}", fund.Id);
 
         return _mapper.Map<FundDto>(fund);
     }

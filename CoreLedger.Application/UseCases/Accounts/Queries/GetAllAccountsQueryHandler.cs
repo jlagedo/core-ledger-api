@@ -30,7 +30,7 @@ public class GetAllAccountsQueryHandler : IRequestHandler<GetAllAccountsQuery, I
         GetAllAccountsQuery request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Retrieving all Accounts");
+        _logger.LogInformation("Recuperando todas as Contas");
 
         var accounts = await _context.Accounts
             .AsNoTracking()
@@ -38,7 +38,7 @@ public class GetAllAccountsQueryHandler : IRequestHandler<GetAllAccountsQuery, I
             .ToListAsync(cancellationToken);
         var result = _mapper.Map<IReadOnlyList<AccountDto>>(accounts);
 
-        _logger.LogInformation("Retrieved {Count} Accounts", result.Count);
+        _logger.LogInformation("Recuperadas {Count} Contas", result.Count);
 
         return result;
     }

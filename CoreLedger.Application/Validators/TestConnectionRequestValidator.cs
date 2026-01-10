@@ -12,13 +12,13 @@ public class TestConnectionRequestValidator : AbstractValidator<TestConnectionRe
     {
         RuleFor(x => x.ReferenceId)
             .NotEmpty()
-            .WithMessage("ReferenceId is required")
+            .WithMessage("ReferenceId é obrigatório")
             .MaximumLength(50)
-            .WithMessage("ReferenceId cannot exceed 50 characters");
+            .WithMessage("ReferenceId não pode exceder 50 caracteres");
 
         RuleFor(x => x.JobDescription)
             .MaximumLength(255)
             .When(x => !string.IsNullOrEmpty(x.JobDescription))
-            .WithMessage("JobDescription cannot exceed 255 characters");
+            .WithMessage("JobDescription não pode exceder 255 caracteres");
     }
 }

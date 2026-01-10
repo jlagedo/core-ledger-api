@@ -31,7 +31,7 @@ public class CreateSecurityCommandHandler : IRequestHandler<CreateSecurityComman
     public async Task<SecurityDto> Handle(CreateSecurityCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "Creating security {Ticker} - Name: {Name}, Isin: {Isin}, Type: {Type}, Currency: {Currency}, CreatedBy: {UserId}",
+            "Criando segurança {Ticker} - Nome: {Name}, Isin: {Isin}, Tipo: {Type}, Moeda: {Currency}, CriadoPor: {UserId}",
             request.Ticker, request.Name, request.Isin, request.Type, request.Currency, request.CreatedByUserId);
 
         // Check if security with same ticker already exists
@@ -40,8 +40,8 @@ public class CreateSecurityCommandHandler : IRequestHandler<CreateSecurityComman
             .FirstOrDefaultAsync(s => s.Ticker == request.Ticker, cancellationToken);
         if (existing != null)
         {
-            _logger.LogWarning("Security creation failed: Duplicate ticker {Ticker} already exists as security {ExistingId}", request.Ticker, existing.Id);
-            throw new DomainValidationException("Security with this ticker already exists");
+            _logger.LogWarning("Falha na criação de segurança: Ticker duplicado {Ticker} já existe como segurança {ExistingId}", request.Ticker, existing.Id);
+            throw new DomainValidationException("Segurança com este ticker já existe");
         }
 
         var security = Security.Create(
@@ -55,7 +55,7 @@ public class CreateSecurityCommandHandler : IRequestHandler<CreateSecurityComman
         _context.Securities.Add(security);
         await _context.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Created Security with ID: {SecurityId}", security.Id);
+        _logger.LogInformation("Segurança criada com ID: {SecurityId}", security.Id);
 
         return _mapper.Map<SecurityDto>(security);
     }

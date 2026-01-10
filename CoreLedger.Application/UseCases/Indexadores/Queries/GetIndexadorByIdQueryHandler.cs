@@ -32,7 +32,7 @@ public class GetIndexadorByIdQueryHandler : IRequestHandler<GetIndexadorByIdQuer
         GetIndexadorByIdQuery request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting indexador {Id}", request.Id);
+        _logger.LogInformation("Obtendo indexador {Id}", request.Id);
 
         var indexador = await _context.Indexadores
             .AsNoTracking()
@@ -40,7 +40,7 @@ public class GetIndexadorByIdQueryHandler : IRequestHandler<GetIndexadorByIdQuer
 
         if (indexador == null)
         {
-            _logger.LogWarning("Indexador {Id} not found", request.Id);
+            _logger.LogWarning("Indexador {Id} não encontrado", request.Id);
             throw new EntityNotFoundException(nameof(Indexador), request.Id);
         }
 

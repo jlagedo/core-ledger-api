@@ -1,42 +1,42 @@
 namespace CoreLedger.Domain.Enums;
 
 /// <summary>
-///     Represents the type of day in the calendar for business day calculations.
+///     Representa o tipo de dia no calendário para cálculos de dias úteis.
 /// </summary>
 public enum TipoDia
 {
     /// <summary>
-    ///     Business day (dia útil normal).
+    ///     Dia útil (dia útil normal).
     /// </summary>
     Util = 1,
 
     /// <summary>
-    ///     National holiday (feriado nacional).
+    ///     Feriado nacional.
     /// </summary>
     FeriadoNacional = 2,
 
     /// <summary>
-    ///     State holiday (feriado estadual).
+    ///     Feriado estadual.
     /// </summary>
     FeriadoEstadual = 3,
 
     /// <summary>
-    ///     Municipal holiday (feriado municipal).
+    ///     Feriado municipal.
     /// </summary>
     FeriadoMunicipal = 4,
 
     /// <summary>
-    ///     Bank holiday (feriado bancário, e.g., New Year's Eve).
+    ///     Feriado bancário (p. ex., Véspera de Ano Novo).
     /// </summary>
     FeriadoBancario = 5,
 
     /// <summary>
-    ///     Weekend (sábado ou domingo).
+    ///     Fim de semana (sábado ou domingo).
     /// </summary>
     FimDeSemana = 6,
 
     /// <summary>
-    ///     Optional holiday (ponto facultativo).
+    ///     Ponto facultativo.
     /// </summary>
     PontoFacultativo = 7
 }

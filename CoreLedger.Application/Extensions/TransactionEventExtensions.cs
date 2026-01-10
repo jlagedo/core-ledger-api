@@ -4,18 +4,18 @@ using CoreLedger.Domain.Entities;
 namespace CoreLedger.Application.Extensions;
 
 /// <summary>
-///     Extension methods for Transaction entity to support domain event creation.
+///     Métodos de extensão para a entidade Transação para suportar criação de eventos de domínio.
 /// </summary>
 public static class TransactionEventExtensions
 {
     /// <summary>
-    ///     Maps a Transaction entity to TransactionCreatedEvent with denormalized data.
-    ///     Requires navigation properties (Fund, Security, TransactionSubType, Status) to be loaded.
+    ///     Mapeia uma entidade Transação para TransactionCreatedEvent com dados desnormalizados.
+    ///     Requer que propriedades de navegação (Fund, Security, TransactionSubType, Status) estejam carregadas.
     /// </summary>
-    /// <param name="transaction">The transaction entity to map.</param>
-    /// <param name="correlationId">Optional correlation ID for distributed tracing.</param>
-    /// <param name="requestId">Optional request ID for request tracking.</param>
-    /// <returns>A TransactionCreatedEvent with denormalized data from the transaction and its relationships.</returns>
+    /// <param name="transaction">A entidade de transação a mapear.</param>
+    /// <param name="correlationId">ID de correlação opcional para rastreamento distribuído.</param>
+    /// <param name="requestId">ID de solicitação opcional para rastreamento de solicitação.</param>
+    /// <returns>Um TransactionCreatedEvent com dados desnormalizados da transação e suas relações.</returns>
     public static TransactionCreatedEvent ToTransactionCreatedEvent(
         this Transaction transaction,
         string? correlationId = null,

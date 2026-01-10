@@ -4,7 +4,7 @@ using CoreLedger.Domain.Exceptions;
 namespace CoreLedger.Domain.Entities;
 
 /// <summary>
-///     Transaction domain entity representing trade transactions with business rules and invariants.
+///     Entidade de domínio Transação representando transações de negociação com regras de negócio e invariantes.
 /// </summary>
 public class Transaction : BaseEntity
 {
@@ -28,12 +28,12 @@ public class Transaction : BaseEntity
     public TransactionStatus? Status { get; private set; }
 
     /// <summary>
-    ///     Identifier of the user who created this transaction.
+    ///     Identificador do usuário que criou esta transação.
     /// </summary>
     public string CreatedByUserId { get; private set; } = string.Empty;
 
     /// <summary>
-    ///     Factory method to create a new Transaction with validation.
+    ///     Método factory para criar uma nova Transação com validação.
     /// </summary>
     public static Transaction Create(
         int fundId,
@@ -75,7 +75,7 @@ public class Transaction : BaseEntity
     }
 
     /// <summary>
-    ///     Updates the transaction with validation.
+    ///     Atualiza a transação com validação.
     /// </summary>
     public void Update(
         int fundId,
@@ -114,66 +114,66 @@ public class Transaction : BaseEntity
     private static void ValidateFundId(int fundId)
     {
         if (fundId <= 0)
-            throw new DomainValidationException("FundId must be a positive number");
+            throw new DomainValidationException("FundId deve ser um número positivo");
     }
 
     private static void ValidateTransactionSubTypeId(int transactionSubTypeId)
     {
         if (transactionSubTypeId <= 0)
-            throw new DomainValidationException("TransactionSubTypeId must be a positive number");
+            throw new DomainValidationException("TransactionSubTypeId deve ser um número positivo");
     }
 
     private static void ValidateStatusId(int statusId)
     {
         if (statusId <= 0)
-            throw new DomainValidationException("StatusId must be a positive number");
+            throw new DomainValidationException("StatusId deve ser um número positivo");
     }
 
     private static void ValidateDates(DateTime tradeDate, DateTime settleDate)
     {
         if (tradeDate > settleDate)
-            throw new DomainValidationException("Trade date must be on or before settle date");
+            throw new DomainValidationException("Data de negociação deve estar na ou antes da data de liquidação");
 
         if (settleDate > DateTime.UtcNow.AddYears(1))
-            throw new DomainValidationException("Settle date cannot be more than 1 year in the future");
+            throw new DomainValidationException("Data de liquidação não pode estar mais de 1 ano no futuro");
     }
 
     private static void ValidatePrice(decimal price)
     {
         if (price < 0)
-            throw new DomainValidationException("Price cannot be negative");
+            throw new DomainValidationException("Preço não pode ser negativo");
 
         if (Math.Abs(price) > 9999999999.99999999m)
-            throw new DomainValidationException("Price exceeds maximum allowed value of 9,999,999,999.99999999");
+            throw new DomainValidationException("Preço excede o valor máximo permitido de 9.999.999.999,99999999");
     }
 
     private static void ValidateQuantity(decimal quantity)
     {
         if (Math.Abs(quantity) > 9999999999.99999999m)
-            throw new DomainValidationException("Quantity exceeds maximum allowed value of 9,999,999,999.99999999");
+            throw new DomainValidationException("Quantidade excede o valor máximo permitido de 9.999.999.999,99999999");
     }
 
     private static void ValidateAmount(decimal amount)
     {
         if (Math.Abs(amount) > 9999999999999999.99m)
-            throw new DomainValidationException("Amount exceeds maximum allowed value of 9,999,999,999,999,999.99");
+            throw new DomainValidationException("Valor excede o valor máximo permitido de 9.999.999.999.999.999,99");
     }
 
     private static void ValidateCurrency(string currency)
     {
         if (string.IsNullOrWhiteSpace(currency))
-            throw new DomainValidationException("Currency cannot be empty");
+            throw new DomainValidationException("Moeda não pode estar vazia");
 
         if (currency.Length != 3)
-            throw new DomainValidationException("Currency must be a 3-letter ISO code");
+            throw new DomainValidationException("Moeda deve ser um código ISO de 3 letras");
 
         if (!Regex.IsMatch(currency, "^[A-Z]{3}$", RegexOptions.IgnoreCase))
-            throw new DomainValidationException("Currency must contain only letters (A-Z)");
+            throw new DomainValidationException("Moeda deve conter apenas letras (A-Z)");
     }
 
     private static void ValidateCreatedByUserId(string createdByUserId)
     {
         if (string.IsNullOrWhiteSpace(createdByUserId))
-            throw new DomainValidationException("CreatedByUserId cannot be empty");
+            throw new DomainValidationException("CreatedByUserId não pode estar vazio");
     }
 }

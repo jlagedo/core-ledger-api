@@ -3,8 +3,8 @@ using CoreLedger.Domain.Exceptions;
 namespace CoreLedger.Domain.Entities;
 
 /// <summary>
-///     HistoricoIndexador domain entity representing time series data for indexers.
-///     Historical data is immutable after creation.
+///     Entidade de domínio HistóricoIndexador representando dados de série temporal para indexadores.
+///     Dados históricos são imutáveis após a criação.
 /// </summary>
 public class HistoricoIndexador : BaseEntity
 {
@@ -13,7 +13,7 @@ public class HistoricoIndexador : BaseEntity
     }
 
     /// <summary>
-    ///     Override base Id to use BIGINT for large time series datasets.
+    ///     Sobrescreve o Id base para usar BIGINT para grandes conjuntos de dados de série temporal.
     /// </summary>
     public new long Id { get; private set; }
 
@@ -27,7 +27,7 @@ public class HistoricoIndexador : BaseEntity
     public Guid? ImportacaoId { get; private set; }
 
     /// <summary>
-    ///     Factory method to create a new HistoricoIndexador with validation.
+    ///     Método factory para criar um novo HistóricoIndexador com validação.
     /// </summary>
     public static HistoricoIndexador Create(
         int indexadorId,
@@ -54,23 +54,23 @@ public class HistoricoIndexador : BaseEntity
         };
     }
 
-    // NO Update method - historical data is immutable
+    // NÃO há método Update - dados históricos são imutáveis
 
     private static void ValidateIndexadorId(int indexadorId)
     {
         if (indexadorId <= 0)
-            throw new DomainValidationException("IndexadorId must be a positive number");
+            throw new DomainValidationException("IndexadorId deve ser um número positivo");
     }
 
     private static void ValidateValor(decimal valor)
     {
         if (valor < 0)
-            throw new DomainValidationException("Valor must be greater than or equal to zero");
+            throw new DomainValidationException("Valor deve ser maior ou igual a zero");
     }
 
     private static void ValidateFatorDiario(decimal? fatorDiario)
     {
         if (fatorDiario.HasValue && fatorDiario.Value <= 0)
-            throw new DomainValidationException("Fator diário must be greater than zero");
+            throw new DomainValidationException("Fator diário deve ser maior que zero");
     }
 }

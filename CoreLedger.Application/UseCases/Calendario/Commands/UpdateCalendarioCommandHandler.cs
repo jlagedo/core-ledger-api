@@ -24,14 +24,14 @@ public class UpdateCalendarioCommandHandler : IRequestHandler<UpdateCalendarioCo
 
     public async Task Handle(UpdateCalendarioCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Updating Calendario with ID {Id}", request.Id);
+        _logger.LogInformation("Atualizando Calendário com ID {Id}", request.Id);
 
         var calendario = await _context.Calendarios
             .FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken);
 
         if (calendario == null)
         {
-            throw new EntityNotFoundException("Calendario", request.Id);
+            throw new EntityNotFoundException("Calendário", request.Id);
         }
 
         // Update using entity method (auto-computes dia_util from tipo_dia per CAL-004)
@@ -39,6 +39,6 @@ public class UpdateCalendarioCommandHandler : IRequestHandler<UpdateCalendarioCo
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Calendario with ID {Id} updated successfully", request.Id);
+        _logger.LogInformation("Calendário com ID {Id} atualizado com sucesso", request.Id);
     }
 }

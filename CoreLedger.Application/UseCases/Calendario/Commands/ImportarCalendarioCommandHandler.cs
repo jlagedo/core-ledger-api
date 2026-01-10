@@ -22,7 +22,7 @@ public class ImportarCalendarioCommandHandler : IRequestHandler<ImportarCalendar
         CancellationToken cancellationToken)
     {
         _logger.LogWarning(
-            "ImportarCalendarioCommand is not yet implemented - requested for year {Ano}, praca {Praca}",
+            "ImportarCalendarioCommand ainda não está implementado - solicitado para ano {Ano}, praça {Praca}",
             request.Ano,
             request.Praca);
 

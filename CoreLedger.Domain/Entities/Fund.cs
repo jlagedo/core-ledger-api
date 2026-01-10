@@ -5,7 +5,7 @@ using CoreLedger.Domain.Exceptions;
 namespace CoreLedger.Domain.Entities;
 
 /// <summary>
-///     Fund domain entity with business rules and invariants.
+///     Entidade de domínio Fundo com regras de negócio e invariantes.
 /// </summary>
 public class Fund : BaseEntity
 {
@@ -20,12 +20,12 @@ public class Fund : BaseEntity
     public ValuationFrequency ValuationFrequency { get; private set; }
 
     /// <summary>
-    ///     Identifier of the user who created this fund.
+    ///     Identificador do usuário que criou este fundo.
     /// </summary>
     public string CreatedByUserId { get; private set; } = string.Empty;
 
     /// <summary>
-    ///     Factory method to create a new Fund with validation.
+    ///     Método factory para criar um novo Fundo com validação.
     /// </summary>
     public static Fund Create(
         string code,
@@ -53,7 +53,7 @@ public class Fund : BaseEntity
     }
 
     /// <summary>
-    ///     Updates the fund with validation.
+    ///     Atualiza o fundo com validação.
     /// </summary>
     public void Update(
         string code,
@@ -78,42 +78,42 @@ public class Fund : BaseEntity
     private static void ValidateCode(string code)
     {
         if (string.IsNullOrWhiteSpace(code))
-            throw new DomainValidationException("Fund code cannot be empty");
+            throw new DomainValidationException("Código do fundo não pode estar vazio");
 
         if (code.Length > 10)
-            throw new DomainValidationException("Fund code cannot exceed 10 characters");
+            throw new DomainValidationException("Código do fundo não pode exceder 10 caracteres");
 
         if (!Regex.IsMatch(code, "^[A-Z0-9]+$", RegexOptions.IgnoreCase))
-            throw new DomainValidationException("Fund code must contain only alphanumeric characters (A-Z, 0-9)");
+            throw new DomainValidationException("Código do fundo deve conter apenas caracteres alfanuméricos (A-Z, 0-9)");
     }
 
     private static void ValidateName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new DomainValidationException("Fund name cannot be empty");
+            throw new DomainValidationException("Nome do fundo não pode estar vazio");
 
         if (name.Length > 200)
-            throw new DomainValidationException("Fund name cannot exceed 200 characters");
+            throw new DomainValidationException("Nome do fundo não pode exceder 200 caracteres");
     }
 
     private static void ValidateBaseCurrency(string baseCurrency)
     {
         if (string.IsNullOrWhiteSpace(baseCurrency))
-            throw new DomainValidationException("Base currency cannot be empty");
+            throw new DomainValidationException("Moeda base não pode estar vazia");
 
         if (baseCurrency.Length != 3)
-            throw new DomainValidationException("Base currency must be a 3-letter ISO code");
+            throw new DomainValidationException("Moeda base deve ser um código ISO de 3 letras");
     }
 
     private static void ValidateInceptionDate(DateTime inceptionDate)
     {
         if (inceptionDate > DateTime.UtcNow.Date)
-            throw new DomainValidationException("Inception date cannot be in the future");
+            throw new DomainValidationException("Data de início não pode ser no futuro");
     }
 
     private static void ValidateCreatedByUserId(string createdByUserId)
     {
         if (string.IsNullOrWhiteSpace(createdByUserId))
-            throw new DomainValidationException("CreatedByUserId cannot be empty");
+            throw new DomainValidationException("CreatedByUserId não pode estar vazio");
     }
 }

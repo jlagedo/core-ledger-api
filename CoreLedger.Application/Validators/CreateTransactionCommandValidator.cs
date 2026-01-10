@@ -12,44 +12,44 @@ public class CreateTransactionCommandValidator : AbstractValidator<CreateTransac
     {
         RuleFor(x => x.FundId)
             .GreaterThan(0)
-            .WithMessage("FundId must be a valid positive identifier");
+            .WithMessage("FundId deve ser um identificador positivo válido");
 
         RuleFor(x => x.TransactionSubTypeId)
             .GreaterThan(0)
-            .WithMessage("TransactionSubTypeId must be a valid positive identifier");
+            .WithMessage("TransactionSubTypeId deve ser um identificador positivo válido");
 
         RuleFor(x => x.TradeDate)
             .LessThanOrEqualTo(x => x.SettleDate)
-            .WithMessage("Trade date must be on or before settle date");
+            .WithMessage("Data de negociação deve ser no máximo até a data de liquidação");
 
         RuleFor(x => x.SettleDate)
             .LessThanOrEqualTo(DateTime.UtcNow.AddYears(1))
-            .WithMessage("Settle date cannot be more than 1 year in the future");
+            .WithMessage("Data de liquidação não pode ser mais de 1 ano no futuro");
 
         RuleFor(x => x.Price)
             .GreaterThanOrEqualTo(0)
-            .WithMessage("Price cannot be negative")
+            .WithMessage("Preço não pode ser negativo")
             .Must(price => Math.Abs(price) <= 9999999999.99999999m)
-            .WithMessage("Price exceeds maximum precision of decimal(18,8)");
+            .WithMessage("Preço excede a precisão máxima de decimal(18,8)");
 
         RuleFor(x => x.Quantity)
             .Must(quantity => Math.Abs(quantity) <= 9999999999.99999999m)
-            .WithMessage("Quantity exceeds maximum precision of decimal(18,8)");
+            .WithMessage("Quantidade excede a precisão máxima de decimal(18,8)");
 
         RuleFor(x => x.Amount)
             .Must(amount => Math.Abs(amount) <= 9999999999999999.99m)
-            .WithMessage("Amount exceeds maximum precision of decimal(18,2)");
+            .WithMessage("Valor excede a precisão máxima de decimal(18,2)");
 
         RuleFor(x => x.Currency)
             .NotEmpty()
-            .WithMessage("Currency is required")
+            .WithMessage("Moeda é obrigatória")
             .Length(3)
-            .WithMessage("Currency must be exactly 3 characters")
+            .WithMessage("Moeda deve ter exatamente 3 caracteres")
             .Matches("^[A-Z]{3}$")
-            .WithMessage("Currency must be 3 uppercase letters (ISO code)");
+            .WithMessage("Moeda deve ser 3 letras maiúsculas (código ISO)");
 
         RuleFor(x => x.IdempotencyKey)
             .NotEmpty()
-            .WithMessage("IdempotencyKey is required");
+            .WithMessage("IdempotencyKey é obrigatório");
     }
 }

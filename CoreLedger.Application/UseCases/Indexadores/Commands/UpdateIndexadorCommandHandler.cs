@@ -32,14 +32,14 @@ public class UpdateIndexadorCommandHandler : IRequestHandler<UpdateIndexadorComm
         UpdateIndexadorCommand request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Updating indexador {Id}", request.Id);
+        _logger.LogInformation("Atualizando indexador {Id}", request.Id);
 
         var indexador = await _context.Indexadores
             .FirstOrDefaultAsync(i => i.Id == request.Id, cancellationToken);
 
         if (indexador == null)
         {
-            _logger.LogWarning("Indexador update failed: Indexador {Id} not found", request.Id);
+            _logger.LogWarning("Falha na atualização do indexador: Indexador {Id} não encontrado", request.Id);
             throw new EntityNotFoundException(nameof(Indexador), request.Id);
         }
 
@@ -56,7 +56,7 @@ public class UpdateIndexadorCommandHandler : IRequestHandler<UpdateIndexadorComm
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Updated Indexador {Id}", indexador.Id);
+        _logger.LogInformation("Indexador {Id} atualizado", indexador.Id);
 
         return _mapper.Map<IndexadorDto>(indexador);
     }

@@ -4,52 +4,52 @@ using CoreLedger.Domain.Exceptions;
 namespace CoreLedger.Domain.Entities;
 
 /// <summary>
-///     Calendario domain entity representing business days and holidays for D+X calculations.
+///     Entidade de domínio Calendário representando dias úteis e feriados para cálculos D+X.
 /// </summary>
 public class Calendario : BaseEntity
 {
     private Calendario() { }
 
     /// <summary>
-    ///     The calendar date.
+    ///     A data do calendário.
     /// </summary>
     public DateOnly Data { get; private set; }
 
     /// <summary>
-    ///     Indicates whether the date is a business day.
-    ///     Computed automatically from TipoDia (CAL-004).
+    ///     Indica se a data é um dia útil.
+    ///     Calculado automaticamente a partir de TipoDia (CAL-004).
     /// </summary>
     public bool DiaUtil { get; private set; }
 
     /// <summary>
-    ///     The type of day classification.
+    ///     O tipo de classificação do dia.
     /// </summary>
     public TipoDia TipoDia { get; private set; }
 
     /// <summary>
-    ///     The market location (praça) for this calendar entry.
+    ///     A localização de mercado (praça) para este registro de calendário.
     /// </summary>
     public Praca Praca { get; private set; }
 
     /// <summary>
-    ///     Optional description (e.g., holiday name).
+    ///     Descrição opcional (ex: nome do feriado).
     /// </summary>
     public string? Descricao { get; private set; }
 
     /// <summary>
-    ///     User ID who created this calendar entry.
+    ///     ID do usuário que criou este registro de calendário.
     /// </summary>
     public string CreatedByUserId { get; private set; } = string.Empty;
 
     /// <summary>
-    ///     Factory method to create a new Calendario with validation.
+    ///     Método factory para criar um novo Calendário com validação.
     /// </summary>
-    /// <param name="data">The calendar date.</param>
-    /// <param name="tipoDia">The type of day.</param>
-    /// <param name="praca">The market location.</param>
-    /// <param name="descricao">Optional description (holiday name).</param>
-    /// <param name="createdByUserId">User ID who is creating this entry.</param>
-    /// <returns>A new Calendario instance.</returns>
+    /// <param name="data">A data do calendário.</param>
+    /// <param name="tipoDia">O tipo de dia.</param>
+    /// <param name="praca">A localização de mercado.</param>
+    /// <param name="descricao">Descrição opcional (nome do feriado).</param>
+    /// <param name="createdByUserId">ID do usuário que está criando este registro.</param>
+    /// <returns>Uma nova instância de Calendário.</returns>
     public static Calendario Create(
         DateOnly data,
         TipoDia tipoDia,
@@ -67,7 +67,7 @@ public class Calendario : BaseEntity
         {
             Data = data,
             TipoDia = tipoDia,
-            DiaUtil = ComputeDiaUtil(tipoDia), // CAL-004: Auto-compute from TipoDia
+            DiaUtil = ComputeDiaUtil(tipoDia), // CAL-004: Auto-calcular a partir de TipoDia
             Praca = praca,
             Descricao = descricao?.Trim(),
             CreatedByUserId = createdByUserId.Trim()
@@ -75,23 +75,23 @@ public class Calendario : BaseEntity
     }
 
     /// <summary>
-    ///     Updates the calendar entry.
+    ///     Atualiza o registro do calendário.
     /// </summary>
-    /// <param name="tipoDia">The type of day.</param>
-    /// <param name="descricao">Optional description.</param>
+    /// <param name="tipoDia">O tipo de dia.</param>
+    /// <param name="descricao">Descrição opcional.</param>
     public void Update(TipoDia tipoDia, string? descricao)
     {
         ValidateTipoDia(tipoDia);
         ValidateDescricao(descricao);
 
         TipoDia = tipoDia;
-        DiaUtil = ComputeDiaUtil(tipoDia); // CAL-004: Auto-compute from TipoDia
+        DiaUtil = ComputeDiaUtil(tipoDia); // CAL-004: Auto-calcular a partir de TipoDia
         Descricao = descricao?.Trim();
         SetUpdated();
     }
 
     /// <summary>
-    ///     Computes whether the day is a business day based on TipoDia (CAL-004).
+    ///     Calcula se o dia é um dia útil com base em TipoDia (CAL-004).
     /// </summary>
     private static bool ComputeDiaUtil(TipoDia tipoDia)
     {
@@ -102,12 +102,12 @@ public class Calendario : BaseEntity
     {
         if (data == default)
         {
-            throw new DomainValidationException("Data cannot be default value");
+            throw new DomainValidationException("Data não pode ser valor padrão");
         }
 
         if (data.Year < 1900 || data.Year > 2100)
         {
-            throw new DomainValidationException("Data year must be between 1900 and 2100");
+            throw new DomainValidationException("Ano da data deve estar entre 1900 e 2100");
         }
     }
 
@@ -115,7 +115,7 @@ public class Calendario : BaseEntity
     {
         if (!Enum.IsDefined(typeof(TipoDia), tipoDia))
         {
-            throw new DomainValidationException("TipoDia must be a valid enum value");
+            throw new DomainValidationException("TipoDia deve ser um valor de enum válido");
         }
     }
 
@@ -123,7 +123,7 @@ public class Calendario : BaseEntity
     {
         if (!Enum.IsDefined(typeof(Praca), praca))
         {
-            throw new DomainValidationException("Praca must be a valid enum value");
+            throw new DomainValidationException("Praca deve ser um valor de enum válido");
         }
     }
 
@@ -131,7 +131,7 @@ public class Calendario : BaseEntity
     {
         if (descricao != null && descricao.Length > 100)
         {
-            throw new DomainValidationException("Descricao cannot exceed 100 characters");
+            throw new DomainValidationException("Descricao não pode exceder 100 caracteres");
         }
     }
 
@@ -139,12 +139,12 @@ public class Calendario : BaseEntity
     {
         if (string.IsNullOrWhiteSpace(createdByUserId))
         {
-            throw new DomainValidationException("CreatedByUserId is required");
+            throw new DomainValidationException("CreatedByUserId é obrigatório");
         }
 
         if (createdByUserId.Length > 200)
         {
-            throw new DomainValidationException("CreatedByUserId cannot exceed 200 characters");
+            throw new DomainValidationException("CreatedByUserId não pode exceder 200 caracteres");
         }
     }
 }

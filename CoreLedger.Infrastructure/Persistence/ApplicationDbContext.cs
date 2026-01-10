@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace CoreLedger.Infrastructure.Persistence;
 
 /// <summary>
-///     Application database context with proper configuration for PostgreSQL.
+///     Contexto de banco de dados da aplicação com configuração apropriada para PostgreSQL.
 /// </summary>
 public class ApplicationDbContext : DbContext, IApplicationDbContext
 {

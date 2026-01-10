@@ -33,7 +33,7 @@ public class CreateIndexadorCommandHandler : IRequestHandler<CreateIndexadorComm
         CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "Creating indexador {Codigo} - Nome: {Nome}, Tipo: {Tipo}, Periodicidade: {Periodicidade}",
+            "Criando indexador {Codigo} - Nome: {Nome}, Tipo: {Tipo}, Periodicidade: {Periodicidade}",
             request.Codigo, request.Nome, request.Tipo, request.Periodicidade);
 
         // IDX-001: Check for duplicate codigo
@@ -42,9 +42,9 @@ public class CreateIndexadorCommandHandler : IRequestHandler<CreateIndexadorComm
             .FirstOrDefaultAsync(i => i.Codigo == request.Codigo.ToUpperInvariant(), cancellationToken);
         if (existing != null)
         {
-            _logger.LogWarning("Indexador creation failed: Duplicate codigo {Codigo} already exists as indexador {ExistingId}",
+            _logger.LogWarning("Falha na criação de indexador: Código duplicado {Codigo} já existe como indexador {ExistingId}",
                 request.Codigo, existing.Id);
-            throw new DomainValidationException($"Indexador with codigo '{request.Codigo}' already exists");
+            throw new DomainValidationException($"Indexador com código '{request.Codigo}' já existe");
         }
 
         var indexador = Indexador.Create(
@@ -62,7 +62,7 @@ public class CreateIndexadorCommandHandler : IRequestHandler<CreateIndexadorComm
         _context.Indexadores.Add(indexador);
         await _context.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Created Indexador with ID: {IndexadorId}", indexador.Id);
+        _logger.LogInformation("Indexador criado com ID: {IndexadorId}", indexador.Id);
 
         return _mapper.Map<IndexadorDto>(indexador);
     }

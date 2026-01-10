@@ -3,7 +3,7 @@ using CoreLedger.Domain.Enums;
 namespace CoreLedger.Application.DTOs;
 
 /// <summary>
-///     Data transfer object for Account entity.
+///     Objeto de transferência de dados para a entidade Conta.
 /// </summary>
 public record AccountDto(
     int Id,
@@ -21,7 +21,7 @@ public record AccountDto(
 );
 
 /// <summary>
-///     DTO for creating a new Account.
+///     DTO para criar uma nova Conta.
 /// </summary>
 public record CreateAccountDto(
     long Code,
@@ -32,7 +32,7 @@ public record CreateAccountDto(
 );
 
 /// <summary>
-///     DTO for updating an existing Account.
+///     DTO para atualizar uma Conta existente.
 /// </summary>
 public record UpdateAccountDto(
     long Code,

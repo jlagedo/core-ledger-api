@@ -19,13 +19,13 @@ public class CheckCalendarioHealthQueryHandler : IRequestHandler<CheckCalendario
 
     public Task<CalendarioHealthDto> Handle(CheckCalendarioHealthQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogWarning("CheckCalendarioHealthQuery is not yet implemented");
+        _logger.LogWarning("CheckCalendarioHealthQuery ainda não está implementada");
 
         // STUB: Return placeholder result
         var result = new CalendarioHealthDto(
             NacionalPreenchido: false,
             Proximo30DiasOk: false,
-            Alertas: new List<string> { "Health check not yet implemented (CAL-002/CAL-003)" });
+            Alertas: new List<string> { "Verificação de saúde ainda não implementada (CAL-002/CAL-003)" });
 
         return Task.FromResult(result);
     }

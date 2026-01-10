@@ -27,14 +27,14 @@ public class DeleteIndexadorCommandHandler : IRequestHandler<DeleteIndexadorComm
         DeleteIndexadorCommand request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Deleting indexador {Id}", request.Id);
+        _logger.LogInformation("Excluindo indexador {Id}", request.Id);
 
         var indexador = await _context.Indexadores
             .FirstOrDefaultAsync(i => i.Id == request.Id, cancellationToken);
 
         if (indexador == null)
         {
-            _logger.LogWarning("Indexador delete failed: Indexador {Id} not found", request.Id);
+            _logger.LogWarning("Falha na exclusão do indexador: Indexador {Id} não encontrado", request.Id);
             throw new EntityNotFoundException(nameof(Indexador), request.Id);
         }
 
@@ -45,14 +45,14 @@ public class DeleteIndexadorCommandHandler : IRequestHandler<DeleteIndexadorComm
 
         if (hasHistorico)
         {
-            _logger.LogWarning("Indexador delete failed: Indexador {Id} has historical data", request.Id);
+            _logger.LogWarning("Falha na exclusão do indexador: Indexador {Id} possui dados históricos", request.Id);
             throw new DomainValidationException("Indexador com histórico não pode ser excluído. Use inativação.");
         }
 
         _context.Indexadores.Remove(indexador);
         await _context.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Deleted Indexador {Id}", request.Id);
+        _logger.LogInformation("Indexador {Id} excluído", request.Id);
 
         return Unit.Value;
     }

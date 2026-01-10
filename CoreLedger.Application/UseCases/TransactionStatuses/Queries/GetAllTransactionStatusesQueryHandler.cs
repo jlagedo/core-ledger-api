@@ -28,7 +28,7 @@ public class
     public async Task<IReadOnlyList<TransactionStatusDto>> Handle(GetAllTransactionStatusesQuery request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Retrieving all transaction statuses");
+        _logger.LogInformation("Recuperando todos os status de transação");
         var statuses = await _context.TransactionStatuses
             .AsNoTracking()
             .ToListAsync(cancellationToken);

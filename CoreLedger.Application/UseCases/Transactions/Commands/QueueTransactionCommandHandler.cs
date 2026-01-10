@@ -29,8 +29,8 @@ public class QueueTransactionCommandHandler : IRequestHandler<QueueTransactionCo
     public async Task Handle(QueueTransactionCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "Publishing transaction event to RabbitMQ - OutboxMessageId: {OutboxMessageId}, " +
-            "PayloadSize: {PayloadSize} bytes",
+            "Publicando evento de transação para RabbitMQ - IdMensagemOutbox: {OutboxMessageId}, " +
+            "TamanhoCarga: {PayloadSize} bytes",
             request.OutboxMessageId,
             request.Payload.Length);
 
@@ -44,7 +44,7 @@ public class QueueTransactionCommandHandler : IRequestHandler<QueueTransactionCo
             cancellationToken: cancellationToken);
 
         _logger.LogInformation(
-            "Successfully published transaction event to {QueueName} - OutboxMessageId: {OutboxMessageId}",
+            "Evento de transação publicado com sucesso em {QueueName} - IdMensagemOutbox: {OutboxMessageId}",
             request.QueueName,
             request.OutboxMessageId);
     }

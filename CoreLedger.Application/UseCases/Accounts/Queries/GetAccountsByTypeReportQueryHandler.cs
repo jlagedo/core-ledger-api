@@ -24,7 +24,7 @@ public class
         GetAccountsByTypeReportQuery request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Retrieving accounts by type report");
+        _logger.LogInformation("Recuperando relatório de contas por tipo");
 
         var data = await _accountQueryService.GetActiveAccountsByTypeAsync(cancellationToken);
 
@@ -34,7 +34,7 @@ public class
             d.ActiveAccountCount
         )).ToList();
 
-        _logger.LogInformation("Retrieved report with {Count} account types", result.Count);
+        _logger.LogInformation("Relatório recuperado com {Count} tipos de conta", result.Count);
 
         return result;
     }

@@ -27,7 +27,7 @@ public class
     public async Task<IReadOnlyList<TransactionTypeDto>> Handle(GetAllTransactionTypesQuery request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Retrieving all transaction types");
+        _logger.LogInformation("Recuperando todos os tipos de transação");
         var types = await _context.TransactionTypes
             .AsNoTracking()
             .ToListAsync(cancellationToken);

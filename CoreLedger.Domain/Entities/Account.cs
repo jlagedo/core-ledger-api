@@ -4,7 +4,7 @@ using CoreLedger.Domain.Exceptions;
 namespace CoreLedger.Domain.Entities;
 
 /// <summary>
-///     Account domain entity with business rules and invariants.
+///     Entidade de domínio Conta com regras de negócio e invariantes.
 /// </summary>
 public class Account : BaseEntity
 {
@@ -21,12 +21,12 @@ public class Account : BaseEntity
     public DateTime? DeactivatedAt { get; private set; }
 
     /// <summary>
-    ///     Identifier of the user who created this account.
+    ///     Identificador do usuário que criou esta conta.
     /// </summary>
     public string CreatedByUserId { get; private set; } = string.Empty;
 
     /// <summary>
-    ///     Factory method to create a new Account with validation.
+    ///     Método factory para criar uma nova Conta com validação.
     /// </summary>
     public static Account Create(
         long code,
@@ -52,7 +52,7 @@ public class Account : BaseEntity
     }
 
     /// <summary>
-    ///     Updates the account with validation.
+    ///     Atualiza a conta com validação.
     /// </summary>
     public void Update(
         long code,
@@ -73,24 +73,24 @@ public class Account : BaseEntity
     }
 
     /// <summary>
-    ///     Activates the account.
+    ///     Ativa a conta.
     /// </summary>
     public void Activate()
     {
         if (Status == AccountStatus.Active)
-            throw new DomainValidationException("Account is already active");
+            throw new DomainValidationException("Conta já está ativa");
 
         Status = AccountStatus.Active;
         SetUpdated();
     }
 
     /// <summary>
-    ///     Deactivates the account.
+    ///     Desativa a conta.
     /// </summary>
     public void Deactivate()
     {
         if (Status == AccountStatus.Inactive)
-            throw new DomainValidationException("Account is already inactive");
+            throw new DomainValidationException("Conta já está inativa");
 
         Status = AccountStatus.Inactive;
         DeactivatedAt = DateTime.UtcNow;
@@ -100,24 +100,24 @@ public class Account : BaseEntity
     private static void ValidateCode(long code)
     {
         if (code <= 0)
-            throw new DomainValidationException("Code must be a positive number");
+            throw new DomainValidationException("Código deve ser um número positivo");
 
         if (code > 9999999999)
-            throw new DomainValidationException("Code cannot exceed 10 digits");
+            throw new DomainValidationException("Código não pode exceder 10 dígitos");
     }
 
     private static void ValidateName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new DomainValidationException("Name cannot be empty");
+            throw new DomainValidationException("Nome não pode estar vazio");
 
         if (name.Length > 200)
-            throw new DomainValidationException("Name cannot exceed 200 characters");
+            throw new DomainValidationException("Nome não pode exceder 200 caracteres");
     }
 
     private static void ValidateCreatedByUserId(string createdByUserId)
     {
         if (string.IsNullOrWhiteSpace(createdByUserId))
-            throw new DomainValidationException("CreatedByUserId cannot be empty");
+            throw new DomainValidationException("CreatedByUserId não pode estar vazio");
     }
 }

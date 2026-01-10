@@ -31,17 +31,17 @@ public class GetAccountByIdQueryHandler : IRequestHandler<GetAccountByIdQuery, A
         GetAccountByIdQuery request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Retrieving Account with ID: {AccountId}", request.Id);
+        _logger.LogInformation("Recuperando Conta com ID: {AccountId}", request.Id);
 
         var account = await _context.Accounts
             .AsNoTracking()
             .Include(a => a.Type)
             .FirstOrDefaultAsync(a => a.Id == request.Id, cancellationToken);
-        if (account == null) throw new EntityNotFoundException("Account", request.Id);
+        if (account == null) throw new EntityNotFoundException("Conta", request.Id);
 
         var result = _mapper.Map<AccountDto>(account);
 
-        _logger.LogInformation("Retrieved Account with ID: {AccountId}", request.Id);
+        _logger.LogInformation("Conta recuperada com ID: {AccountId}", request.Id);
 
         return result;
     }

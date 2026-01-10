@@ -32,7 +32,7 @@ public class CreateAccountTypeCommandHandler : IRequestHandler<CreateAccountType
         CreateAccountTypeCommand request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Creating new AccountType with description: {Description}",
+        _logger.LogInformation("Criando novo tipo de conta com descrição: {Description}",
             request.Description);
 
         // Check if account type with same description already exists
@@ -41,14 +41,14 @@ public class CreateAccountTypeCommandHandler : IRequestHandler<CreateAccountType
             .FirstOrDefaultAsync(at => at.Description.ToLower() == request.Description.ToLower(), cancellationToken);
 
         if (existing != null)
-            throw new DomainValidationException("Account type with this description already exists");
+            throw new DomainValidationException("Tipo de conta com esta descrição já existe");
 
         var accountType = AccountType.Create(request.Description);
 
         _context.AccountTypes.Add(accountType);
         await _context.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Created AccountType with ID: {AccountTypeId}", accountType.Id);
+        _logger.LogInformation("Tipo de conta criado com ID: {AccountTypeId}", accountType.Id);
 
         return _mapper.Map<AccountTypeDto>(accountType);
     }

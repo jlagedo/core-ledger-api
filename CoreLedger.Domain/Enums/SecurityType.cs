@@ -1,17 +1,17 @@
 namespace CoreLedger.Domain.Enums;
 
 /// <summary>
-///     Represents the type of a security based on fund accounting standards.
+///     Representa o tipo de um valor mobiliário com base em padrões de contabilidade de fundos.
 /// </summary>
 public enum SecurityType
 {
-    Equity = 1, // Stock
-    Bond = 2, // Fixed Income
+    Equity = 1, // Ação
+    Bond = 2, // Renda Fixa
     Cash = 3,
     MoneyMarket = 4,
     MutualFund = 5,
-    ETF = 6, // Exchange Traded Fund
-    REIT = 7, // Real Estate Investment Trust
+    ETF = 6, // Fundo de Índice
+    REIT = 7, // Fundo de Investimento Imobiliário
     Derivative = 8,
     Hybrid = 9,
     Future = 10,
@@ -20,7 +20,7 @@ public enum SecurityType
     Forward = 13,
     Fund = 14,
     Receipt = 15,
-    FX = 16, // Foreign Exchange
+    FX = 16, // Câmbio
     Commodity = 17,
     Index = 18
 }

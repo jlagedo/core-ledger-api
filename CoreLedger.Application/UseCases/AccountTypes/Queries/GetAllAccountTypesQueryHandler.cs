@@ -30,7 +30,7 @@ public class GetAllAccountTypesQueryHandler : IRequestHandler<GetAllAccountTypes
         GetAllAccountTypesQuery request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Retrieving all AccountTypes");
+        _logger.LogInformation("Recuperando todos os Tipos de Conta");
 
         var accountTypes = await _context.AccountTypes
             .AsNoTracking()
@@ -38,7 +38,7 @@ public class GetAllAccountTypesQueryHandler : IRequestHandler<GetAllAccountTypes
 
         var result = _mapper.Map<IReadOnlyList<AccountTypeDto>>(accountTypes);
 
-        _logger.LogInformation("Retrieved {Count} AccountTypes", result.Count);
+        _logger.LogInformation("Recuperados {Count} Tipos de Conta", result.Count);
 
         return result;
     }

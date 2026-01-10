@@ -45,7 +45,7 @@ public class CreateHistoricoIndexadorCommandHandler : IRequestHandler<CreateHist
         if (duplicate != null)
         {
             throw new DomainValidationException(
-                $"Historical record for indexador {request.IndexadorId} on date {request.DataReferencia:yyyy-MM-dd} already exists");
+                $"Registro histórico para indexador {request.IndexadorId} em data {request.DataReferencia:yyyy-MM-dd} já existe");
         }
 
         // Create entity via factory method

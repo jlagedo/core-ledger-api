@@ -31,7 +31,7 @@ public class ImportarIndexadorCommandHandler : IRequestHandler<ImportarIndexador
         ImportarIndexadorCommand request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Triggering import for indexador {Id}", request.Id);
+        _logger.LogInformation("Disparando importação para indexador {Id}", request.Id);
 
         var indexador = await _context.Indexadores
             .AsNoTracking()
@@ -39,14 +39,14 @@ public class ImportarIndexadorCommandHandler : IRequestHandler<ImportarIndexador
 
         if (indexador == null)
         {
-            _logger.LogWarning("Import failed: Indexador {Id} not found", request.Id);
+            _logger.LogWarning("Falha na importação: Indexador {Id} não encontrado", request.Id);
             throw new EntityNotFoundException(nameof(Indexador), request.Id);
         }
 
         // Validate importacao automatica is enabled
         if (!indexador.ImportacaoAutomatica)
         {
-            _logger.LogWarning("Import failed: Indexador {Id} does not have automatic import enabled", request.Id);
+            _logger.LogWarning("Falha na importação: Indexador {Id} não tem importação automática habilitada", request.Id);
             throw new DomainValidationException(
                 $"Indexador '{indexador.Codigo}' não tem importação automática habilitada");
         }
@@ -54,7 +54,7 @@ public class ImportarIndexadorCommandHandler : IRequestHandler<ImportarIndexador
         // Validate URL fonte exists
         if (string.IsNullOrWhiteSpace(indexador.UrlFonte))
         {
-            _logger.LogWarning("Import failed: Indexador {Id} does not have URL fonte configured", request.Id);
+            _logger.LogWarning("Falha na importação: Indexador {Id} não tem URL fonte configurada", request.Id);
             throw new DomainValidationException(
                 $"Indexador '{indexador.Codigo}' não tem URL fonte configurada");
         }
@@ -72,7 +72,7 @@ public class ImportarIndexadorCommandHandler : IRequestHandler<ImportarIndexador
             cancellationToken);
 
         _logger.LogInformation(
-            "Published import message for indexador {Id} to queue 'indexador.import' with correlation ID {CorrelationId}",
+            "Mensagem de importação publicada para indexador {Id} na fila 'indexador.import' com ID de correlação {CorrelationId}",
             indexador.Id, request.CorrelationId);
 
         return Unit.Value;

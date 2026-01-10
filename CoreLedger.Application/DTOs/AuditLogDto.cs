@@ -3,7 +3,7 @@ using System.Text.Json;
 namespace CoreLedger.Application.DTOs;
 
 /// <summary>
-///     Data transfer object for AuditLog entity.
+///     Objeto de transferência de dados para a entidade RegistroAuditoria.
 /// </summary>
 public record AuditLogDto(
     long Id,

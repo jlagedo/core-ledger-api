@@ -12,30 +12,30 @@ public class UpdateAccountCommandValidator : AbstractValidator<UpdateAccountComm
     {
         RuleFor(x => x.Id)
             .GreaterThan(0)
-            .WithMessage("Id must be a valid positive identifier");
+            .WithMessage("Id deve ser um identificador positivo válido");
 
         RuleFor(x => x.Code)
             .GreaterThan(0)
-            .WithMessage("Code must be a positive number")
+            .WithMessage("Código deve ser um número positivo")
             .LessThanOrEqualTo(9999999999)
-            .WithMessage("Code cannot exceed 10 digits");
+            .WithMessage("Código não pode exceder 10 dígitos");
 
         RuleFor(x => x.Name)
             .NotEmpty()
-            .WithMessage("Name is required")
+            .WithMessage("Nome é obrigatório")
             .MaximumLength(200)
-            .WithMessage("Name cannot exceed 200 characters");
+            .WithMessage("Nome não pode exceder 200 caracteres");
 
         RuleFor(x => x.TypeId)
             .GreaterThan(0)
-            .WithMessage("TypeId must be a valid positive identifier");
+            .WithMessage("TypeId deve ser um identificador positivo válido");
 
         RuleFor(x => x.Status)
             .IsInEnum()
-            .WithMessage("Status must be a valid AccountStatus value");
+            .WithMessage("Status deve ser um valor válido de AccountStatus");
 
         RuleFor(x => x.NormalBalance)
             .IsInEnum()
-            .WithMessage("NormalBalance must be a valid NormalBalance value");
+            .WithMessage("NormalBalance deve ser um valor válido de NormalBalance");
     }
 }

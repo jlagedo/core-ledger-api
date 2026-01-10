@@ -26,21 +26,21 @@ public class UpdateAccountCommandHandler : IRequestHandler<UpdateAccountCommand>
         UpdateAccountCommand request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Updating Account with ID: {AccountId}", request.Id);
+        _logger.LogInformation("Atualizando Conta com ID: {AccountId}", request.Id);
 
         var account = await _context.Accounts.FindAsync([request.Id], cancellationToken);
-        if (account == null) throw new EntityNotFoundException("Account", request.Id);
+        if (account == null) throw new EntityNotFoundException("Conta", request.Id);
 
         // Validate that the account type exists
         var accountType = await _context.AccountTypes.FindAsync([request.TypeId], cancellationToken);
-        if (accountType == null) throw new EntityNotFoundException("AccountType", request.TypeId);
+        if (accountType == null) throw new EntityNotFoundException("Tipo de conta", request.TypeId);
 
         // Check if another account with the same code already exists
         var existing = await _context.Accounts
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Code == request.Code, cancellationToken);
         if (existing != null && existing.Id != request.Id)
-            throw new DomainValidationException("Account with this code already exists");
+            throw new DomainValidationException("Conta com este código já existe");
 
         account.Update(
             request.Code,
@@ -51,6 +51,6 @@ public class UpdateAccountCommandHandler : IRequestHandler<UpdateAccountCommand>
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Updated Account with ID: {AccountId}", request.Id);
+        _logger.LogInformation("Conta atualizada com ID: {AccountId}", request.Id);
     }
 }

@@ -4,13 +4,13 @@ using CoreLedger.Domain.Exceptions;
 namespace CoreLedger.Domain.Entities;
 
 /// <summary>
-///     Represents an outbox message for transaction creation events.
-///     Implements the Transactional Outbox pattern to ensure reliable message publication.
+///     Representa uma mensagem de caixa de saída para eventos de criação de transações.
+///     Implementa o padrão Transactional Outbox para garantir publicação confiável de mensagens.
 /// </summary>
 public class TransactionCreatedOutboxMessage
 {
     /// <summary>
-    ///     Private constructor for EF Core.
+    ///     Construtor privado para EF Core.
     /// </summary>
     private TransactionCreatedOutboxMessage()
     {
@@ -19,60 +19,60 @@ public class TransactionCreatedOutboxMessage
     }
 
     /// <summary>
-    ///     Unique identifier for the outbox message entry.
+    ///     Identificador único para o registro de mensagem de caixa de saída.
     /// </summary>
     public long Id { get; private set; }
 
     /// <summary>
-    ///     Timestamp when the event occurred (UTC).
+    ///     Data e hora em que o evento ocorreu (UTC).
     /// </summary>
     public DateTime OccurredOn { get; private set; }
 
     /// <summary>
-    ///     Type of the event (fully qualified class name).
+    ///     Tipo do evento (nome de classe totalmente qualificado).
     /// </summary>
     public string Type { get; private set; }
 
     /// <summary>
-    ///     Serialized message payload (Protobuf binary format).
+    ///     Carga de mensagem serializada (formato binário Protobuf).
     /// </summary>
     public byte[] Payload { get; private set; }
 
     /// <summary>
-    ///     Current processing status of the outbox message.
+    ///     Status de processamento atual da mensagem de caixa de saída.
     /// </summary>
     public OutboxMessageStatus Status { get; private set; } = OutboxMessageStatus.Pending;
 
     /// <summary>
-    ///     Number of times publication has been attempted.
+    ///     Número de vezes que a publicação foi tentada.
     /// </summary>
     public int RetryCount { get; private set; }
 
     /// <summary>
-    ///     Error message from the last failed publication attempt.
+    ///     Mensagem de erro da última tentativa de publicação que falhou.
     /// </summary>
     public string? LastError { get; private set; }
 
     /// <summary>
-    ///     Timestamp when the message was successfully published (UTC).
+    ///     Data e hora em que a mensagem foi publicada com sucesso (UTC).
     /// </summary>
     public DateTime? PublishedOn { get; private set; }
 
     /// <summary>
-    ///     Factory method to create a new transaction created outbox message.
+    ///     Método factory para criar uma nova mensagem de caixa de saída de transação criada.
     /// </summary>
-    /// <param name="type">Fully qualified type name of the event.</param>
-    /// <param name="payload">Protobuf-serialized event payload.</param>
-    /// <param name="occurredOn">Optional timestamp of when the event occurred (defaults to UTC now).</param>
-    /// <returns>A new TransactionCreatedOutboxMessage instance.</returns>
-    /// <exception cref="ArgumentException">Thrown when type or payload is invalid.</exception>
+    /// <param name="type">Nome de tipo totalmente qualificado do evento.</param>
+    /// <param name="payload">Carga de evento serializada em Protobuf.</param>
+    /// <param name="occurredOn">Data e hora opcional de quando o evento ocorreu (padrão: agora em UTC).</param>
+    /// <returns>Uma nova instância de TransactionCreatedOutboxMessage.</returns>
+    /// <exception cref="ArgumentException">Lançada quando tipo ou carga é inválida.</exception>
     public static TransactionCreatedOutboxMessage Create(string type, byte[] payload, DateTime? occurredOn = null)
     {
         if (string.IsNullOrWhiteSpace(type))
-            throw new ArgumentException("Event type cannot be empty.", nameof(type));
+            throw new ArgumentException("Tipo de evento não pode estar vazio.", nameof(type));
 
         if (payload == null || payload.Length == 0)
-            throw new ArgumentException("Payload cannot be null or empty.", nameof(payload));
+            throw new ArgumentException("Carga não pode ser nula ou vazia.", nameof(payload));
 
         return new TransactionCreatedOutboxMessage
         {
@@ -85,27 +85,27 @@ public class TransactionCreatedOutboxMessage
     }
 
     /// <summary>
-    ///     Marks the message as successfully published.
+    ///     Marca a mensagem como publicada com sucesso.
     /// </summary>
-    /// <exception cref="DomainValidationException">Thrown when the message is already published.</exception>
+    /// <exception cref="DomainValidationException">Lançada quando a mensagem já foi publicada.</exception>
     public void MarkAsPublished()
     {
         if (Status == OutboxMessageStatus.Published)
-            throw new DomainValidationException("Message is already published.");
+            throw new DomainValidationException("Mensagem já foi publicada.");
 
         Status = OutboxMessageStatus.Published;
         PublishedOn = DateTime.UtcNow;
     }
 
     /// <summary>
-    ///     Records a failed publication attempt with the error details.
+    ///     Registra uma tentativa de publicação que falhou com detalhes do erro.
     /// </summary>
-    /// <param name="errorMessage">Description of the error that occurred.</param>
-    /// <exception cref="ArgumentException">Thrown when error message is empty.</exception>
+    /// <param name="errorMessage">Descrição do erro que ocorreu.</param>
+    /// <exception cref="ArgumentException">Lançada quando a mensagem de erro está vazia.</exception>
     public void RecordFailure(string errorMessage)
     {
         if (string.IsNullOrWhiteSpace(errorMessage))
-            throw new ArgumentException("Error message cannot be empty.", nameof(errorMessage));
+            throw new ArgumentException("Mensagem de erro não pode estar vazia.", nameof(errorMessage));
 
         RetryCount++;
         LastError = errorMessage.Trim();
@@ -113,13 +113,13 @@ public class TransactionCreatedOutboxMessage
     }
 
     /// <summary>
-    ///     Resets the message for retry after a failed publication attempt.
+    ///     Reseta a mensagem para retry após uma tentativa de publicação que falhou.
     /// </summary>
-    /// <exception cref="DomainValidationException">Thrown when the message is already published.</exception>
+    /// <exception cref="DomainValidationException">Lançada quando a mensagem já foi publicada.</exception>
     public void ResetForRetry()
     {
         if (Status == OutboxMessageStatus.Published)
-            throw new DomainValidationException("Cannot retry a published message.");
+            throw new DomainValidationException("Não é possível tentar novamente uma mensagem publicada.");
 
         Status = OutboxMessageStatus.Pending;
         LastError = null;

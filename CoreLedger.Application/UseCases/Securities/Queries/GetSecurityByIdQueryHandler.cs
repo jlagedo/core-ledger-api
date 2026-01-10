@@ -31,16 +31,16 @@ public class GetSecurityByIdQueryHandler : IRequestHandler<GetSecurityByIdQuery,
         GetSecurityByIdQuery request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Retrieving Security with ID: {SecurityId}", request.Id);
+        _logger.LogInformation("Recuperando Segurança com ID: {SecurityId}", request.Id);
 
         var security = await _context.Securities
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.Id == request.Id, cancellationToken);
-        if (security == null) throw new EntityNotFoundException("Security", request.Id);
+        if (security == null) throw new EntityNotFoundException("Segurança", request.Id);
 
         var result = _mapper.Map<SecurityDto>(security);
 
-        _logger.LogInformation("Retrieved Security with ID: {SecurityId}", request.Id);
+        _logger.LogInformation("Segurança recuperada com ID: {SecurityId}", request.Id);
 
         return result;
     }

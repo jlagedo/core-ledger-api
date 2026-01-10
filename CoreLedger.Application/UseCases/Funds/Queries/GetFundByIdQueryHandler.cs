@@ -31,16 +31,16 @@ public class GetFundByIdQueryHandler : IRequestHandler<GetFundByIdQuery, FundDto
         GetFundByIdQuery request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Retrieving Fund with ID: {FundId}", request.Id);
+        _logger.LogInformation("Recuperando Fundo com ID: {FundId}", request.Id);
 
         var fund = await _context.Funds
             .AsNoTracking()
             .FirstOrDefaultAsync(f => f.Id == request.Id, cancellationToken);
-        if (fund == null) throw new EntityNotFoundException("Fund", request.Id);
+        if (fund == null) throw new EntityNotFoundException("Fundo", request.Id);
 
         var result = _mapper.Map<FundDto>(fund);
 
-        _logger.LogInformation("Retrieved Fund with ID: {FundId}", request.Id);
+        _logger.LogInformation("Fundo recuperado com ID: {FundId}", request.Id);
 
         return result;
     }

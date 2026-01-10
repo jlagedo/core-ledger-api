@@ -23,15 +23,15 @@ public class DeactivateSecurityCommandHandler : IRequestHandler<DeactivateSecuri
 
     public async Task Handle(DeactivateSecurityCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Deactivating Security with ID: {SecurityId}", request.Id);
+        _logger.LogInformation("Desativando Segurança com ID: {SecurityId}", request.Id);
 
         var security = await _context.Securities.FindAsync([request.Id], cancellationToken);
-        if (security == null) throw new EntityNotFoundException("Security", request.Id);
+        if (security == null) throw new EntityNotFoundException("Segurança", request.Id);
 
         security.Deactivate();
         await _context.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Deactivated Security with ID: {SecurityId} at {DeactivatedAt}",
+        _logger.LogInformation("Segurança desativada com ID: {SecurityId} em {DeactivatedAt}",
             request.Id, security.DeactivatedAt);
     }
 }

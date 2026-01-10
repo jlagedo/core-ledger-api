@@ -5,8 +5,8 @@ using Microsoft.Extensions.Configuration;
 namespace CoreLedger.Infrastructure.Persistence;
 
 /// <summary>
-///     Design-time factory for ApplicationDbContext to enable EF Core migrations tooling.
-///     This factory is only used by dotnet ef commands at design time.
+///     Fábrica de tempo de design para ApplicationDbContext para habilitar ferramentas de migração EF Core.
+///     Esta fábrica é usada apenas por comandos dotnet ef em tempo de design.
 /// </summary>
 public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
 {
@@ -24,8 +24,8 @@ public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<Applicati
 
         if (string.IsNullOrEmpty(connectionString))
             throw new InvalidOperationException(
-                "Connection string 'DefaultConnection' not found in configuration. " +
-                "Ensure appsettings.json exists in CoreLedger.API project.");
+                "Cadeia de conexão 'DefaultConnection' não encontrada na configuração. " +
+                "Certifique-se de que appsettings.json existe no projeto CoreLedger.API.");
 
         optionsBuilder.UseNpgsql(connectionString);
 

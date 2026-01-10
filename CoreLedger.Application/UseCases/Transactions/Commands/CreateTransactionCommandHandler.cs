@@ -21,8 +21,8 @@ public class CreateTransactionCommandHandler(
     public async Task<TransactionDto> Handle(CreateTransactionCommand request, CancellationToken cancellationToken)
     {
         logger.LogInformation(
-            "Processing transaction creation request - IdempotencyKey: {IdempotencyKey}, FundId: {FundId}, " +
-            "SubType: {SubTypeId}, Amount: {Amount}, CorrelationId: {CorrelationId}",
+            "Processando solicitação de criação de transação - ChaveIdempotência: {IdempotencyKey}, FundoId: {FundId}, " +
+            "SubTipo: {SubTypeId}, Valor: {Amount}, IdCorrelação: {CorrelationId}",
             request.IdempotencyKey, request.FundId, request.TransactionSubTypeId,
             request.Amount, request.CorrelationId);
 
@@ -34,7 +34,7 @@ public class CreateTransactionCommandHandler(
         catch (Exception ex)
         {
             logger.LogError(ex,
-                "Execution strategy failed for transaction creation - IdempotencyKey: {IdempotencyKey}, FundId: {FundId}",
+                "Falha na estratégia de execução para criação de transação - ChaveIdempotência: {IdempotencyKey}, FundoId: {FundId}",
                 request.IdempotencyKey, request.FundId);
             throw;
         }
@@ -88,7 +88,7 @@ public class CreateTransactionCommandHandler(
                 await context.SaveChangesAsync(cancellationToken);
 
                 logger.LogInformation(
-                    "Transaction entity persisted - TransactionId: {TransactionId}, IdempotencyKey: {IdempotencyKey}",
+                    "Entidade de transação persistida - IdTransação: {TransactionId}, ChaveIdempotência: {IdempotencyKey}",
                     transaction.Id, request.IdempotencyKey);
 
                 // STEP 5: Reload transaction with navigation properties using extension
@@ -96,7 +96,7 @@ public class CreateTransactionCommandHandler(
                     .WithNavigationProperties()
                     .FirstOrDefaultAsync(t => t.Id == transaction.Id, cancellationToken)
                     ?? throw new InvalidOperationException(
-                        $"Failed to reload transaction {transaction.Id} after persistence");
+                        $"Falha ao recarregar transação {transaction.Id} após persistência");
 
                 // STEP 6: Create idempotency record with transaction ID
                 var idempotencyRecord = TransactionIdempotency.Create(
@@ -113,7 +113,7 @@ public class CreateTransactionCommandHandler(
                 var eventPayload = domainEvent.SerializeToProtobuf();
 
                 logger.LogDebug(
-                    "Serialized TransactionCreatedEvent - Size: {PayloadSize} bytes, TransactionId: {TransactionId}",
+                    "TransactionCreatedEvent serializado - Tamanho: {PayloadSize} bytes, IdTransação: {TransactionId}",
                     eventPayload.Length, transaction.Id);
 
                 // STEP 9: Create outbox message
@@ -135,8 +135,8 @@ public class CreateTransactionCommandHandler(
                 await dbTransaction.CommitAsync(cancellationToken);
 
                 logger.LogInformation(
-                    "Transaction creation completed - TransactionId: {TransactionId}, IdempotencyKey: {IdempotencyKey}, " +
-                    "Amount: {Amount}, Status: {StatusId}, OutboxMessageId: {OutboxMessageId}",
+                    "Criação de transação concluída - IdTransação: {TransactionId}, ChaveIdempotência: {IdempotencyKey}, " +
+                    "Valor: {Amount}, Status: {StatusId}, IdMensagemOutbox: {OutboxMessageId}",
                     transaction.Id, request.IdempotencyKey, transaction.Amount,
                     transaction.StatusId, outboxMessage.Id);
 
@@ -145,8 +145,8 @@ public class CreateTransactionCommandHandler(
             catch (Exception ex)
             {
                 logger.LogError(ex,
-                    "Transaction creation failed - IdempotencyKey: {IdempotencyKey}, FundId: {FundId}, " +
-                    "Rolling back transaction",
+                    "Falha na criação de transação - ChaveIdempotência: {IdempotencyKey}, FundoId: {FundId}, " +
+                    "Revertendo transação",
                     request.IdempotencyKey, request.FundId);
 
                 await dbTransaction.RollbackAsync(cancellationToken);
@@ -172,8 +172,8 @@ public class CreateTransactionCommandHandler(
         }
 
         logger.LogInformation(
-            "Idempotent request detected - IdempotencyKey: {IdempotencyKey}, " +
-            "Returning existing TransactionId: {TransactionId}",
+            "Solicitação idempotente detectada - ChaveIdempotência: {IdempotencyKey}, " +
+            "Retornando IdTransação existente: {TransactionId}",
             idempotencyKey, existingIdempotency.TransactionId);
 
         // Load existing transaction with navigation properties using extension

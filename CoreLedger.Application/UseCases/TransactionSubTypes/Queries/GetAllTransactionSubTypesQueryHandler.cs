@@ -28,8 +28,8 @@ public class
     public async Task<IReadOnlyList<TransactionSubTypeDto>> Handle(GetAllTransactionSubTypesQuery request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Retrieving transaction subtypes{TypeFilter}",
-            request.TypeId.HasValue ? $" for type {request.TypeId}" : "");
+        _logger.LogInformation("Recuperando subtipos de transação{TypeFilter}",
+            request.TypeId.HasValue ? $" para tipo {request.TypeId}" : "");
 
         var query = _context.TransactionSubTypes.AsNoTracking();
 

@@ -3,7 +3,7 @@ using CoreLedger.Domain.Enums;
 namespace CoreLedger.Application.DTOs;
 
 /// <summary>
-///     DTO for Calendario entity.
+///     DTO para a entidade Calendário.
 /// </summary>
 public record CalendarioDto(
     int Id,
@@ -19,7 +19,7 @@ public record CalendarioDto(
 );
 
 /// <summary>
-///     DTO for creating a new Calendario entry.
+///     DTO para criar uma nova entrada de Calendário.
 /// </summary>
 public record CreateCalendarioDto(
     DateOnly Data,
@@ -29,7 +29,7 @@ public record CreateCalendarioDto(
 );
 
 /// <summary>
-///     DTO for updating an existing Calendario entry.
+///     DTO para atualizar uma entrada de Calendário existente.
 /// </summary>
 public record UpdateCalendarioDto(
     TipoDia TipoDia,
@@ -37,7 +37,7 @@ public record UpdateCalendarioDto(
 );
 
 /// <summary>
-///     DTO for business day check result.
+///     DTO para o resultado da verificação de dia útil.
 /// </summary>
 public record DiaUtilResultDto(
     DateOnly Data,
@@ -47,7 +47,7 @@ public record DiaUtilResultDto(
 );
 
 /// <summary>
-///     DTO for D+X calculation result.
+///     DTO para o resultado do cálculo D+X.
 /// </summary>
 public record CalculoDMaisResultDto(
     DateOnly DataInicial,
@@ -57,7 +57,7 @@ public record CalculoDMaisResultDto(
 );
 
 /// <summary>
-///     DTO for calendar import result.
+///     DTO para o resultado da importação do calendário.
 /// </summary>
 public record ImportarCalendarioResultDto(
     int Ano,
@@ -66,7 +66,7 @@ public record ImportarCalendarioResultDto(
 );
 
 /// <summary>
-///     DTO for calendar health check result (CAL-002/CAL-003).
+///     DTO para o resultado da verificação de saúde do calendário (CAL-002/CAL-003).
 /// </summary>
 public record CalendarioHealthDto(
     bool NacionalPreenchido,

@@ -1,7 +1,7 @@
 namespace CoreLedger.Domain.Enums;
 
 /// <summary>
-///     Represents the status of a security.
+///     Representa o status de um valor mobiliário.
 /// </summary>
 public enum SecurityStatus
 {

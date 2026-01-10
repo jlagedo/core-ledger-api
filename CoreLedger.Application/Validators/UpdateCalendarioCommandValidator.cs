@@ -11,12 +11,12 @@ public class UpdateCalendarioCommandValidator : AbstractValidator<UpdateCalendar
     public UpdateCalendarioCommandValidator()
     {
         RuleFor(x => x.Id)
-            .GreaterThan(0).WithMessage("Id must be greater than 0");
+            .GreaterThan(0).WithMessage("Id deve ser maior que 0");
 
         RuleFor(x => x.TipoDia)
-            .IsInEnum().WithMessage("TipoDia must be a valid enum value");
+            .IsInEnum().WithMessage("TipoDia deve ser um valor de enum válido");
 
         RuleFor(x => x.Descricao)
-            .MaximumLength(100).WithMessage("Descricao cannot exceed 100 characters");
+            .MaximumLength(100).WithMessage("Descricao não pode exceder 100 caracteres");
     }
 }

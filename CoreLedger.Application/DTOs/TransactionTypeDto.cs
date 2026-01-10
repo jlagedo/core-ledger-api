@@ -1,7 +1,7 @@
 namespace CoreLedger.Application.DTOs;
 
 /// <summary>
-///     Data transfer object for TransactionType entity.
+///     Objeto de transferência de dados para a entidade TipoTransação.
 /// </summary>
 public record TransactionTypeDto(
     int Id,

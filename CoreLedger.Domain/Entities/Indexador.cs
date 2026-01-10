@@ -5,7 +5,7 @@ using CoreLedger.Domain.Exceptions;
 namespace CoreLedger.Domain.Entities;
 
 /// <summary>
-///     Indexador domain entity representing economic indicators used as benchmarks.
+///     Entidade de domínio Indexador representando indicadores econômicos usados como benchmarks.
 /// </summary>
 public class Indexador : BaseEntity
 {
@@ -25,7 +25,7 @@ public class Indexador : BaseEntity
     public bool Ativo { get; private set; }
 
     /// <summary>
-    ///     Factory method to create a new Indexador with validation.
+    ///     Método factory para criar um novo Indexador com validação.
     /// </summary>
     public static Indexador Create(
         string codigo,
@@ -61,7 +61,7 @@ public class Indexador : BaseEntity
     }
 
     /// <summary>
-    ///     Updates the indexador with validation.
+    ///     Atualiza o indexador com validação.
     /// </summary>
     public void Update(
         string nome,
@@ -92,36 +92,36 @@ public class Indexador : BaseEntity
     }
 
     /// <summary>
-    ///     Activates the indexador.
+    ///     Ativa o indexador.
     /// </summary>
     public void Activate()
     {
         if (Ativo)
-            throw new DomainValidationException("Indexador is already active");
+            throw new DomainValidationException("Indexador já está ativo");
 
         Ativo = true;
         SetUpdated();
     }
 
     /// <summary>
-    ///     Deactivates the indexador.
+    ///     Desativa o indexador.
     /// </summary>
     public void Deactivate()
     {
         if (!Ativo)
-            throw new DomainValidationException("Indexador is already inactive");
+            throw new DomainValidationException("Indexador já está inativo");
 
         Ativo = false;
         SetUpdated();
     }
 
     /// <summary>
-    ///     Updates the accumulated factor with validation.
+    ///     Atualiza o fator acumulado com validação.
     /// </summary>
     public void UpdateFatorAcumulado(decimal fator, DateTime dataBase)
     {
         if (fator <= 0)
-            throw new DomainValidationException("Fator acumulado must be greater than zero");
+            throw new DomainValidationException("Fator acumulado deve ser maior que zero");
 
         FatorAcumulado = fator;
         DataBase = dataBase.Date;
@@ -131,23 +131,23 @@ public class Indexador : BaseEntity
     private static void ValidateCodigo(string codigo)
     {
         if (string.IsNullOrWhiteSpace(codigo))
-            throw new DomainValidationException("Código do indexador cannot be empty");
+            throw new DomainValidationException("Código do indexador não pode estar vazio");
 
         if (codigo.Length > 20)
-            throw new DomainValidationException("Código do indexador cannot exceed 20 characters");
+            throw new DomainValidationException("Código do indexador não pode exceder 20 caracteres");
 
         if (!Regex.IsMatch(codigo, "^[A-Z0-9]+$", RegexOptions.IgnoreCase))
             throw new DomainValidationException(
-                "Código do indexador must contain only alphanumeric characters (A-Z, 0-9)");
+                "Código do indexador deve conter apenas caracteres alfanuméricos (A-Z, 0-9)");
     }
 
     private static void ValidateNome(string nome)
     {
         if (string.IsNullOrWhiteSpace(nome))
-            throw new DomainValidationException("Nome do indexador cannot be empty");
+            throw new DomainValidationException("Nome do indexador não pode estar vazio");
 
         if (nome.Length > 100)
-            throw new DomainValidationException("Nome do indexador cannot exceed 100 characters");
+            throw new DomainValidationException("Nome do indexador não pode exceder 100 caracteres");
     }
 
     private static void ValidateFatorAcumulado(decimal? fatorAcumulado, DateTime? dataBase)
@@ -155,10 +155,10 @@ public class Indexador : BaseEntity
         if (fatorAcumulado.HasValue)
         {
             if (fatorAcumulado.Value <= 0)
-                throw new DomainValidationException("Fator acumulado must be greater than zero");
+                throw new DomainValidationException("Fator acumulado deve ser maior que zero");
 
             if (!dataBase.HasValue)
-                throw new DomainValidationException("Data base is required when fator acumulado is provided");
+                throw new DomainValidationException("Data base é obrigatória quando fator acumulado é fornecido");
         }
     }
 

@@ -13,37 +13,37 @@ public class UpdateIndexadorCommandValidator : AbstractValidator<UpdateIndexador
     {
         RuleFor(x => x.Id)
             .GreaterThan(0)
-            .WithMessage("Id must be a valid positive identifier");
+            .WithMessage("Id deve ser um identificador positivo válido");
 
         RuleFor(x => x.Nome)
             .NotEmpty()
-            .WithMessage("Nome is required")
+            .WithMessage("Nome é obrigatório")
             .MaximumLength(100)
-            .WithMessage("Nome cannot exceed 100 characters");
+            .WithMessage("Nome não pode exceder 100 caracteres");
 
         RuleFor(x => x.Tipo)
             .IsInEnum()
-            .WithMessage("Tipo must be a valid IndexadorTipo value");
+            .WithMessage("Tipo deve ser um valor válido de IndexadorTipo");
 
         RuleFor(x => x.Periodicidade)
             .IsInEnum()
-            .WithMessage("Periodicidade must be a valid Periodicidade value");
+            .WithMessage("Periodicidade deve ser um valor válido de Periodicidade");
 
         RuleFor(x => x.Fonte)
             .MaximumLength(100)
             .When(x => !string.IsNullOrWhiteSpace(x.Fonte))
-            .WithMessage("Fonte cannot exceed 100 characters");
+            .WithMessage("Fonte não pode exceder 100 caracteres");
 
         // FatorAcumulado requires DataBase
         RuleFor(x => x.FatorAcumulado)
             .GreaterThan(0)
             .When(x => x.FatorAcumulado.HasValue)
-            .WithMessage("Fator acumulado must be greater than zero");
+            .WithMessage("Fator acumulado deve ser maior que zero");
 
         RuleFor(x => x.DataBase)
             .NotNull()
             .When(x => x.FatorAcumulado.HasValue)
-            .WithMessage("Data base is required when fator acumulado is provided");
+            .WithMessage("Data base é obrigatória quando fator acumulado é fornecido");
 
         // IDX-003: ImportacaoAutomatica requires UrlFonte
         RuleFor(x => x.UrlFonte)
@@ -54,7 +54,7 @@ public class UpdateIndexadorCommandValidator : AbstractValidator<UpdateIndexador
         RuleFor(x => x.UrlFonte)
             .MaximumLength(500)
             .When(x => !string.IsNullOrWhiteSpace(x.UrlFonte))
-            .WithMessage("URL fonte cannot exceed 500 characters");
+            .WithMessage("URL fonte não pode exceder 500 caracteres");
 
         // IDX-004: Periodicidade compatibility with Tipo
         RuleFor(x => x)

@@ -4,7 +4,7 @@ using CoreLedger.Application.Configuration;
 namespace CoreLedger.Application.Models;
 
 /// <summary>
-///     Query parameters for RFC-8040 compliant GET operations with comprehensive validation.
+///     Parâmetros de consulta para operações GET em conformidade com RFC-8040 com validação abrangente.
 /// </summary>
 public class QueryParameters
 {
@@ -19,8 +19,8 @@ public class QueryParameters
     }
 
     /// <summary>
-    ///     Maximum number of items to return (configurable limit, minimum: 1).
-    ///     Automatically clamped to valid range [1, MaxPageSize].
+    ///     Número máximo de itens a retornar (limite configurável, mínimo: 1).
+    ///     Automaticamente limitado ao intervalo válido [1, MaxPageSize].
     /// </summary>
     public int Limit
     {
@@ -30,8 +30,8 @@ public class QueryParameters
     }
 
     /// <summary>
-    ///     Number of items to skip (for pagination).
-    ///     Automatically clamped to minimum of 0.
+    ///     Número de itens a pular (para paginação).
+    ///     Automaticamente limitado a um mínimo de 0.
     /// </summary>
     public int Offset
     {
@@ -40,13 +40,13 @@ public class QueryParameters
     }
 
     /// <summary>
-    ///     Field to sort by. Only whitelisted fields in repositories are used.
+    ///     Campo a ordenar. Apenas campos listados em repositórios são usados.
     /// </summary>
     public string? SortBy { get; set; }
 
     /// <summary>
-    ///     Sort direction (asc or desc). Automatically normalized to lowercase.
-    ///     Invalid values default to "asc".
+    ///     Direção de ordenação (asc ou desc). Automaticamente normalizado para minúscula.
+    ///     Valores inválidos padrão para "asc".
     /// </summary>
     public string SortDirection
     {
@@ -55,8 +55,8 @@ public class QueryParameters
     }
 
     /// <summary>
-    ///     Filter expression (simple field=value format).
-    ///     Validated to prevent SQL injection attempts.
+    ///     Expressão de filtro (formato simples campo=valor).
+    ///     Validado para prevenir tentativas de injeção SQL.
     /// </summary>
     public string? Filter
     {
@@ -74,7 +74,7 @@ public class QueryParameters
         {
             "asc" => "asc",
             "desc" => "desc",
-            _ => "asc" // Default to ascending for invalid values
+            _ => "asc" // Padrão para ascendente para valores inválidos
         };
     }
 
@@ -83,31 +83,31 @@ public class QueryParameters
         if (string.IsNullOrWhiteSpace(value))
             return value;
 
-        // Check for SQL injection patterns
+        // Verifica padrões de injeção SQL
         var dangerousPatterns = new[]
         {
             @"('|(--)|;|\/\*|\*\/|xp_|sp_|exec|execute|declare|create|drop|alter|insert|update|delete|union|select|cast|convert)",
-            @"(@@|@[a-z]+)", // SQL Server variables
-            @"(\bor\b|\band\b).*=.*", // OR/AND with equals (potential SQLi)
-            @"(<script|<iframe|javascript:|onerror=|onload=)" // XSS attempts
+            @"(@@|@[a-z]+)", // Variáveis do SQL Server
+            @"(\bor\b|\band\b).*=.*", // OR/AND com igualdade (possível SQLi)
+            @"(<script|<iframe|javascript:|onerror=|onload=)" // Tentativas de XSS
         };
 
         foreach (var pattern in dangerousPatterns)
             if (Regex.IsMatch(value, pattern, RegexOptions.IgnoreCase))
-                throw new ArgumentException($"Filter contains potentially dangerous pattern: {pattern}");
+                throw new ArgumentException($"Filtro contém padrão potencialmente perigoso: {pattern}");
 
-        // Ensure filter follows field=value format
+        // Garante que o filtro segue o formato campo=valor
         if (!Regex.IsMatch(value, @"^[a-zA-Z_][a-zA-Z0-9_]*\s*=\s*.+$"))
-            throw new ArgumentException("Filter must be in 'field=value' format with valid field name");
+            throw new ArgumentException("Filtro deve estar no formato 'campo=valor' com nome de campo válido");
 
         return value.Trim();
     }
 }
 
 /// <summary>
-///     Paged result wrapper for RFC-8040 compliance.
+///     Invólucro de resultado paginado para conformidade com RFC-8040.
 /// </summary>
-/// <typeparam name="T">Type of items in the result</typeparam>
+/// <typeparam name="T">Tipo de itens no resultado</typeparam>
 public record PagedResult<T>(
     IReadOnlyList<T> Items,
     int TotalCount,

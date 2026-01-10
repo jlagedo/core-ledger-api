@@ -5,7 +5,7 @@ using CoreLedger.Domain.Exceptions;
 namespace CoreLedger.Domain.Entities;
 
 /// <summary>
-///     Security domain entity with business rules and invariants.
+///     Entidade de domínio Ativo com regras de negócio e invariantes.
 /// </summary>
 public class Security : BaseEntity
 {
@@ -22,12 +22,12 @@ public class Security : BaseEntity
     public DateTime? DeactivatedAt { get; private set; }
 
     /// <summary>
-    ///     Identifier of the user who created this security.
+    ///     Identificador do usuário que criou este ativo.
     /// </summary>
     public string CreatedByUserId { get; private set; } = string.Empty;
 
     /// <summary>
-    ///     Factory method to create a new Security with validation.
+    ///     Método factory para criar um novo Ativo com validação.
     /// </summary>
     public static Security Create(
         string name,
@@ -56,7 +56,7 @@ public class Security : BaseEntity
     }
 
     /// <summary>
-    ///     Updates the security with validation.
+    ///     Atualiza o ativo com validação.
     /// </summary>
     public void Update(
         string name,
@@ -79,12 +79,12 @@ public class Security : BaseEntity
     }
 
     /// <summary>
-    ///     Deactivates the security.
+    ///     Desativa o ativo.
     /// </summary>
     public void Deactivate()
     {
         if (Status == SecurityStatus.Inactive)
-            throw new DomainValidationException("Security is already inactive");
+            throw new DomainValidationException("Ativo já está inativo");
 
         Status = SecurityStatus.Inactive;
         DeactivatedAt = DateTime.UtcNow;
@@ -94,46 +94,46 @@ public class Security : BaseEntity
     private static void ValidateName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new DomainValidationException("Name cannot be empty");
+            throw new DomainValidationException("Nome não pode estar vazio");
 
         if (name.Length > 200)
-            throw new DomainValidationException("Name cannot exceed 200 characters");
+            throw new DomainValidationException("Nome não pode exceder 200 caracteres");
     }
 
     private static void ValidateTicker(string ticker)
     {
         if (string.IsNullOrWhiteSpace(ticker))
-            throw new DomainValidationException("Ticker cannot be empty");
+            throw new DomainValidationException("Ticker não pode estar vazio");
 
         if (ticker.Length > 20)
-            throw new DomainValidationException("Ticker cannot exceed 20 characters");
+            throw new DomainValidationException("Ticker não pode exceder 20 caracteres");
 
         if (!Regex.IsMatch(ticker, "^[A-Z0-9-]+$", RegexOptions.IgnoreCase))
             throw new DomainValidationException(
-                "Ticker must contain only alphanumeric characters and hyphens (A-Z, 0-9, -)");
+                "Ticker deve conter apenas caracteres alfanuméricos e hífens (A-Z, 0-9, -)");
     }
 
     private static void ValidateIsin(string? isin)
     {
         if (isin != null && isin.Trim().Length > 12)
-            throw new DomainValidationException("ISIN cannot exceed 12 characters");
+            throw new DomainValidationException("ISIN não pode exceder 12 caracteres");
     }
 
     private static void ValidateCurrency(string currency)
     {
         if (string.IsNullOrWhiteSpace(currency))
-            throw new DomainValidationException("Currency cannot be empty");
+            throw new DomainValidationException("Moeda não pode estar vazia");
 
         if (currency.Length != 3)
-            throw new DomainValidationException("Currency must be a 3-letter ISO code");
+            throw new DomainValidationException("Moeda deve ser um código ISO de 3 letras");
 
         if (!Regex.IsMatch(currency, "^[A-Z]{3}$", RegexOptions.IgnoreCase))
-            throw new DomainValidationException("Currency must contain only letters (A-Z)");
+            throw new DomainValidationException("Moeda deve conter apenas letras (A-Z)");
     }
 
     private static void ValidateCreatedByUserId(string createdByUserId)
     {
         if (string.IsNullOrWhiteSpace(createdByUserId))
-            throw new DomainValidationException("CreatedByUserId cannot be empty");
+            throw new DomainValidationException("CreatedByUserId não pode estar vazio");
     }
 }

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace CoreLedger.Infrastructure.Persistence.Configurations;
 
 /// <summary>
-///     EF Core configuration for CoreJob entity.
+///     Configuração EF Core para a entidade CoreJob.
 /// </summary>
 public class CoreJobConfiguration : IEntityTypeConfiguration<CoreJob>
 {
@@ -51,10 +51,10 @@ public class CoreJobConfiguration : IEntityTypeConfiguration<CoreJob>
         builder.Property(j => j.UpdatedAt)
             .HasColumnName("updated_at");
 
-        // Non-unique index for query performance
+        // Índice não único para desempenho de consulta
         builder.HasIndex(j => j.ReferenceId);
 
-        // Index for filtering by status
+        // Índice para filtrar por status
         builder.HasIndex(j => j.Status);
     }
 }

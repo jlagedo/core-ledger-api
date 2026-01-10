@@ -25,14 +25,14 @@ public class DeleteAccountCommandHandler : IRequestHandler<DeleteAccountCommand>
         DeleteAccountCommand request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Deleting Account with ID: {AccountId}", request.Id);
+        _logger.LogInformation("Excluindo Conta com ID: {AccountId}", request.Id);
 
         var account = await _context.Accounts.FindAsync([request.Id], cancellationToken);
-        if (account == null) throw new EntityNotFoundException("Account", request.Id);
+        if (account == null) throw new EntityNotFoundException("Conta", request.Id);
 
         _context.Accounts.Remove(account);
         await _context.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Deleted Account with ID: {AccountId}", request.Id);
+        _logger.LogInformation("Conta excluída com ID: {AccountId}", request.Id);
     }
 }

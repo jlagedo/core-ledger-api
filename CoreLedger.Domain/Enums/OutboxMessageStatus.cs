@@ -1,22 +1,22 @@
 namespace CoreLedger.Domain.Enums;
 
 /// <summary>
-///     Represents the processing status of an outbox message.
+///     Representa o status de processamento de uma mensagem de caixa de saída.
 /// </summary>
 public enum OutboxMessageStatus
 {
     /// <summary>
-    ///     Message is pending publication to message queue.
+    ///     Mensagem aguardando publicação na fila de mensagens.
     /// </summary>
     Pending = 0,
 
     /// <summary>
-    ///     Message has been successfully published to message queue.
+    ///     Mensagem foi publicada com sucesso na fila de mensagens.
     /// </summary>
     Published = 1,
 
     /// <summary>
-    ///     Message publication failed after retry attempts.
+    ///     A publicação da mensagem falhou após tentativas de repetição.
     /// </summary>
     Failed = 2
 }

@@ -4,16 +4,16 @@ using Microsoft.EntityFrameworkCore;
 namespace CoreLedger.Application.Extensions;
 
 /// <summary>
-///     Extension methods for Transaction queries to encapsulate common navigation property loading patterns.
+///     Métodos de extensão para consultas de Transação para encapsular padrões comuns de carregamento de propriedades de navegação.
 /// </summary>
 public static class TransactionQueryExtensions
 {
     /// <summary>
-    ///     Includes all navigation properties for Transaction entity:
-    ///     Fund, Security, TransactionSubType (with Type), and Status.
+    ///     Inclui todas as propriedades de navegação para a entidade Transação:
+    ///     Fund, Security, TransactionSubType (com Type), e Status.
     /// </summary>
-    /// <param name="query">The queryable Transaction collection.</param>
-    /// <returns>The queryable with all navigation properties included.</returns>
+    /// <param name="query">A coleção Transação consultável.</param>
+    /// <returns>A consultável com todas as propriedades de navegação incluídas.</returns>
     public static IQueryable<Transaction> WithNavigationProperties(this IQueryable<Transaction> query) =>
         query
             .Include(t => t.Fund)

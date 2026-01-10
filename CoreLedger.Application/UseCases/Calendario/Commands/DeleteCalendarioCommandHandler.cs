@@ -24,19 +24,19 @@ public class DeleteCalendarioCommandHandler : IRequestHandler<DeleteCalendarioCo
 
     public async Task Handle(DeleteCalendarioCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Deleting Calendario with ID {Id}", request.Id);
+        _logger.LogInformation("Excluindo Calendário com ID {Id}", request.Id);
 
         var calendario = await _context.Calendarios
             .FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken);
 
         if (calendario == null)
         {
-            throw new EntityNotFoundException("Calendario", request.Id);
+            throw new EntityNotFoundException("Calendário", request.Id);
         }
 
         _context.Calendarios.Remove(calendario);
         await _context.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Calendario with ID {Id} deleted successfully", request.Id);
+        _logger.LogInformation("Calendário com ID {Id} excluído com sucesso", request.Id);
     }
 }

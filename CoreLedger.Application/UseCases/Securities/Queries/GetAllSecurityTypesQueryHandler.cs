@@ -21,7 +21,7 @@ public class GetAllSecurityTypesQueryHandler : IRequestHandler<GetAllSecurityTyp
         GetAllSecurityTypesQuery request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Retrieving all SecurityType enum values");
+        _logger.LogInformation("Recuperando todos os valores enum de Tipo de Segurança");
 
         var securityTypes = Enum.GetValues<SecurityType>()
             .Select(type => new SecurityTypeDto(
@@ -31,7 +31,7 @@ public class GetAllSecurityTypesQueryHandler : IRequestHandler<GetAllSecurityTyp
             ))
             .ToList();
 
-        _logger.LogInformation("Retrieved {Count} SecurityType values", securityTypes.Count);
+        _logger.LogInformation("Recuperados {Count} valores de Tipo de Segurança", securityTypes.Count);
 
         return Task.FromResult<IReadOnlyList<SecurityTypeDto>>(securityTypes);
     }

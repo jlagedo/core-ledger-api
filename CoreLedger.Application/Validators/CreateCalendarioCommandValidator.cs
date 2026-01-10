@@ -11,21 +11,21 @@ public class CreateCalendarioCommandValidator : AbstractValidator<CreateCalendar
     public CreateCalendarioCommandValidator()
     {
         RuleFor(x => x.Data)
-            .NotEmpty().WithMessage("Data is required")
-            .Must(BeValidDate).WithMessage("Data must be a valid date between 1900 and 2100");
+            .NotEmpty().WithMessage("Data é obrigatória")
+            .Must(BeValidDate).WithMessage("Data deve ser uma data válida entre 1900 e 2100");
 
         RuleFor(x => x.TipoDia)
-            .IsInEnum().WithMessage("TipoDia must be a valid enum value");
+            .IsInEnum().WithMessage("TipoDia deve ser um valor de enum válido");
 
         RuleFor(x => x.Praca)
-            .IsInEnum().WithMessage("Praca must be a valid enum value");
+            .IsInEnum().WithMessage("Praca deve ser um valor de enum válido");
 
         RuleFor(x => x.Descricao)
-            .MaximumLength(100).WithMessage("Descricao cannot exceed 100 characters");
+            .MaximumLength(100).WithMessage("Descricao não pode exceder 100 caracteres");
 
         RuleFor(x => x.CreatedByUserId)
-            .NotEmpty().WithMessage("CreatedByUserId is required")
-            .MaximumLength(200).WithMessage("CreatedByUserId cannot exceed 200 characters");
+            .NotEmpty().WithMessage("CreatedByUserId é obrigatório")
+            .MaximumLength(200).WithMessage("CreatedByUserId não pode exceder 200 caracteres");
     }
 
     private bool BeValidDate(DateOnly data)

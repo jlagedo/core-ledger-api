@@ -1,7 +1,7 @@
 namespace CoreLedger.Domain.Enums;
 
 /// <summary>
-///     Represents the status of a core job.
+///     Representa o status de um trabalho principal.
 /// </summary>
 public enum JobStatus
 {

@@ -26,17 +26,17 @@ public class DeleteAccountTypeCommandHandler : IRequestHandler<DeleteAccountType
         DeleteAccountTypeCommand request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Deleting AccountType with ID: {AccountTypeId}", request.Id);
+        _logger.LogInformation("Excluindo Tipo de Conta com ID: {AccountTypeId}", request.Id);
 
         var accountType = await _context.AccountTypes
             .FirstOrDefaultAsync(at => at.Id == request.Id, cancellationToken);
 
         if (accountType == null)
-            throw new EntityNotFoundException("AccountType", request.Id);
+            throw new EntityNotFoundException("Tipo de conta", request.Id);
 
         _context.AccountTypes.Remove(accountType);
         await _context.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Deleted AccountType with ID: {AccountTypeId}", request.Id);
+        _logger.LogInformation("Tipo de Conta excluído com ID: {AccountTypeId}", request.Id);
     }
 }

@@ -3,16 +3,16 @@ using ProtoBuf;
 namespace CoreLedger.Application.Extensions;
 
 /// <summary>
-///     Extension methods for Protobuf serialization operations.
+///     Métodos de extensão para operações de serialização Protobuf.
 /// </summary>
 public static class ProtobufExtensions
 {
     /// <summary>
-    ///     Serializes a message to Protobuf binary format.
+    ///     Serializa uma mensagem para formato binário Protobuf.
     /// </summary>
-    /// <typeparam name="T">The type of the message to serialize.</typeparam>
-    /// <param name="message">The message instance to serialize.</param>
-    /// <returns>Byte array containing the serialized message in Protobuf format.</returns>
+    /// <typeparam name="T">O tipo da mensagem a serializar.</typeparam>
+    /// <param name="message">A instância da mensagem a serializar.</param>
+    /// <returns>Array de bytes contendo a mensagem serializada em formato Protobuf.</returns>
     public static byte[] SerializeToProtobuf<T>(this T message)
     {
         using var memoryStream = new MemoryStream();
@@ -21,17 +21,17 @@ public static class ProtobufExtensions
     }
 
     /// <summary>
-    ///     Deserializes a Protobuf binary payload to a strongly-typed message.
+    ///     Desserializa um payload binário Protobuf para uma mensagem fortemente tipada.
     /// </summary>
-    /// <typeparam name="T">The type of the message to deserialize.</typeparam>
-    /// <param name="payload">Byte array containing the Protobuf-serialized message.</param>
-    /// <returns>Deserialized message instance.</returns>
-    /// <exception cref="ArgumentException">Thrown when payload is null or empty.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when deserialization fails.</exception>
+    /// <typeparam name="T">O tipo da mensagem a desserializar.</typeparam>
+    /// <param name="payload">Array de bytes contendo a mensagem serializada em Protobuf.</param>
+    /// <returns>Instância da mensagem desserializada.</returns>
+    /// <exception cref="ArgumentException">Lançado quando o payload é nulo ou vazio.</exception>
+    /// <exception cref="InvalidOperationException">Lançado quando a desserialização falha.</exception>
     public static T DeserializeFromProtobuf<T>(this byte[] payload)
     {
         if (payload == null || payload.Length == 0)
-            throw new ArgumentException("Payload cannot be null or empty.", nameof(payload));
+            throw new ArgumentException("Payload não pode ser nulo ou vazio.", nameof(payload));
 
         try
         {
@@ -41,8 +41,8 @@ public static class ProtobufExtensions
         catch (Exception ex)
         {
             throw new InvalidOperationException(
-                $"Failed to deserialize Protobuf payload to type {typeof(T).Name}. " +
-                $"Payload size: {payload.Length} bytes.", ex);
+                $"Falha ao desserializar payload Protobuf para o tipo {typeof(T).Name}. " +
+                $"Tamanho do payload: {payload.Length} bytes.", ex);
         }
     }
 }

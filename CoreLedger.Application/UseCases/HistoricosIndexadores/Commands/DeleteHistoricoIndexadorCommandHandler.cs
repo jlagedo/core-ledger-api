@@ -25,7 +25,7 @@ public class DeleteHistoricoIndexadorCommandHandler : IRequestHandler<DeleteHist
 
         if (historico == null)
         {
-            throw new EntityNotFoundException("HistoricoIndexador", request.Id);
+            throw new EntityNotFoundException("Histórico do Indexador", request.Id);
         }
 
         _context.HistoricosIndexadores.Remove(historico);

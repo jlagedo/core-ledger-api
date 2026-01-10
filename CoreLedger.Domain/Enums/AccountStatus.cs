@@ -1,7 +1,7 @@
 namespace CoreLedger.Domain.Enums;
 
 /// <summary>
-///     Represents the status of an account.
+///     Representa o status de uma conta.
 /// </summary>
 public enum AccountStatus
 {

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace CoreLedger.Infrastructure.Persistence.Configurations;
 
 /// <summary>
-///     Entity Framework Core configuration for the Calendario entity.
+///     Configuração Entity Framework Core para a entidade Calendario.
 /// </summary>
 public class CalendarioConfiguration : IEntityTypeConfiguration<Calendario>
 {
@@ -13,7 +13,7 @@ public class CalendarioConfiguration : IEntityTypeConfiguration<Calendario>
     {
         builder.ToTable("calendarios");
 
-        // Primary key
+        // Chave primária
         builder.HasKey(c => c.Id);
 
         builder.Property(c => c.Id)
@@ -25,24 +25,24 @@ public class CalendarioConfiguration : IEntityTypeConfiguration<Calendario>
             .HasColumnName("data")
             .IsRequired();
 
-        // DiaUtil (computed from TipoDia)
+        // DiaUtil (computado a partir de TipoDia)
         builder.Property(c => c.DiaUtil)
             .HasColumnName("dia_util")
             .IsRequired();
 
-        // TipoDia (enum stored as int)
+        // TipoDia (enum armazenado como int)
         builder.Property(c => c.TipoDia)
             .HasColumnName("tipo_dia")
             .HasConversion<int>()
             .IsRequired();
 
-        // Praca (enum stored as int)
+        // Praca (enum armazenado como int)
         builder.Property(c => c.Praca)
             .HasColumnName("praca")
             .HasConversion<int>()
             .IsRequired();
 
-        // Descricao (optional, max 100 characters)
+        // Descricao (opcional, máx 100 caracteres)
         builder.Property(c => c.Descricao)
             .HasColumnName("descricao")
             .HasMaxLength(100);
@@ -61,16 +61,16 @@ public class CalendarioConfiguration : IEntityTypeConfiguration<Calendario>
         builder.Property(c => c.UpdatedAt)
             .HasColumnName("updated_at");
 
-        // CAL-001: Unique composite index on (data, praca)
+        // CAL-001: Índice composto único em (data, praca)
         builder.HasIndex(c => new { c.Data, c.Praca })
             .IsUnique()
             .HasDatabaseName("ix_calendarios_data_praca");
 
-        // Additional index for querying by data
+        // Índice adicional para consulta por data
         builder.HasIndex(c => c.Data)
             .HasDatabaseName("ix_calendarios_data");
 
-        // Additional index for querying by praca
+        // Índice adicional para consulta por praca
         builder.HasIndex(c => c.Praca)
             .HasDatabaseName("ix_calendarios_praca");
     }

@@ -1,7 +1,7 @@
 namespace CoreLedger.Application.DTOs;
 
 /// <summary>
-///     Data transfer object for User entity.
+///     Objeto de transferência de dados para a entidade Usuário.
 /// </summary>
 public record UserDto(
     int Id,
