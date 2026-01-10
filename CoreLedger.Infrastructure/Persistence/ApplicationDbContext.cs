@@ -27,6 +27,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<TransactionIdempotency> TransactionIdempotencies => Set<TransactionIdempotency>();
     public DbSet<TransactionCreatedOutboxMessage> TransactionCreatedOutboxMessages => Set<TransactionCreatedOutboxMessage>();
+    public DbSet<Indexador> Indexadores => Set<Indexador>();
+    public DbSet<HistoricoIndexador> HistoricosIndexadores => Set<HistoricoIndexador>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

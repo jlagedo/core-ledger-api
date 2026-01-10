@@ -53,6 +53,8 @@ public static class DependencyInjection
         services.AddScoped<ICoreJobQueryService, CoreJobQueryService>();
         services.AddScoped<ITransactionQueryService, TransactionQueryService>();
         services.AddScoped<IAuditLogQueryService, AuditLogQueryService>();
+        services.AddScoped<IIndexadorQueryService, IndexadorQueryService>();
+        services.AddScoped<IHistoricoIndexadorQueryService, HistoricoIndexadorQueryService>();
 
         // Get HTTP client options for Auth0 service configuration
         var httpClientOptions =

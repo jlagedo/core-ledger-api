@@ -125,6 +125,8 @@ try
     app.MapTransactionSubTypesEndpoints();
     app.MapTransactionStatusesEndpoints();
     app.MapSecurityTypesEndpoints();
+    app.MapIndexadoresEndpoints();
+    app.MapHistoricosIndexadoresEndpoints();
 
     app.MapHealthChecks("/health");
     app.MapHealthChecks("/health/ready");

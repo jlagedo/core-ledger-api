@@ -14,6 +14,8 @@ public interface IApplicationDbContext
     DbSet<Account> Accounts { get; }
     DbSet<CoreJob> CoreJobs { get; }
     DbSet<Fund> Funds { get; }
+    DbSet<Indexador> Indexadores { get; }
+    DbSet<HistoricoIndexador> HistoricosIndexadores { get; }
     DbSet<Security> Securities { get; }
     DbSet<TransactionStatus> TransactionStatuses { get; }
     DbSet<TransactionType> TransactionTypes { get; }
