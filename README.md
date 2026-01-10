@@ -1,3 +1,5 @@
+<img width="1280" height="640" alt="core-fund-accounting-social-card" src="https://github.com/user-attachments/assets/525189ff-20bb-43fc-a2a2-8c6f3d315e79" />
+
 # Core Ledger API
 
 Uma API REST .NET 10 pronta para produção para **contabilidade de fundos (Fund Accounting)** voltada ao mercado brasileiro de fundos de investimento, implementando princípios de Clean Architecture com foco em segurança, auditabilidade e conformidade regulatória. Este sistema serve como a fonte autoritativa de dados contábeis (ABOR - Accounting Book of Records) para fundos de investimento.
