@@ -4,6 +4,7 @@ using System.Text.Json;
 using CoreLedger.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CoreLedger.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260110063344_AddCalendario")]
+    partial class AddCalendario
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -343,141 +346,6 @@ namespace CoreLedger.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("funds", (string)null);
-                });
-
-            modelBuilder.Entity("CoreLedger.Domain.Entities.HistoricoIndexador", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<DateTime>("DataReferencia")
-                        .HasColumnType("date")
-                        .HasColumnName("data_referencia");
-
-                    b.Property<decimal?>("FatorDiario")
-                        .HasColumnType("decimal(20,12)")
-                        .HasColumnName("fator_diario");
-
-                    b.Property<string>("Fonte")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("fonte");
-
-                    b.Property<Guid?>("ImportacaoId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("importacao_id");
-
-                    b.Property<int>("IndexadorId")
-                        .HasColumnType("integer")
-                        .HasColumnName("indexador_id");
-
-                    b.Property<decimal>("Valor")
-                        .HasColumnType("decimal(20,12)")
-                        .HasColumnName("valor");
-
-                    b.Property<decimal?>("VariacaoPercentual")
-                        .HasColumnType("decimal(12,8)")
-                        .HasColumnName("variacao_percentual");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DataReferencia")
-                        .HasDatabaseName("ix_historicos_indexadores_data_referencia");
-
-                    b.HasIndex("IndexadorId")
-                        .HasDatabaseName("ix_historicos_indexadores_indexador_id");
-
-                    b.HasIndex("IndexadorId", "DataReferencia")
-                        .IsUnique()
-                        .HasDatabaseName("ix_historicos_indexadores_indexador_data");
-
-                    b.ToTable("historicos_indexadores", (string)null);
-                });
-
-            modelBuilder.Entity("CoreLedger.Domain.Entities.Indexador", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("Ativo")
-                        .HasColumnType("boolean")
-                        .HasColumnName("ativo");
-
-                    b.Property<string>("Codigo")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("codigo");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<DateTime?>("DataBase")
-                        .HasColumnType("date")
-                        .HasColumnName("data_base");
-
-                    b.Property<decimal?>("FatorAcumulado")
-                        .HasColumnType("decimal(20,12)")
-                        .HasColumnName("fator_acumulado");
-
-                    b.Property<string>("Fonte")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("fonte");
-
-                    b.Property<bool>("ImportacaoAutomatica")
-                        .HasColumnType("boolean")
-                        .HasColumnName("importacao_automatica");
-
-                    b.Property<string>("Nome")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("nome");
-
-                    b.Property<int>("Periodicidade")
-                        .HasColumnType("integer")
-                        .HasColumnName("periodicidade");
-
-                    b.Property<int>("Tipo")
-                        .HasColumnType("integer")
-                        .HasColumnName("tipo");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<string>("UrlFonte")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("url_fonte");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Ativo")
-                        .HasDatabaseName("ix_indexadores_ativo");
-
-                    b.HasIndex("Codigo")
-                        .IsUnique()
-                        .HasDatabaseName("ix_indexadores_codigo");
-
-                    b.HasIndex("Tipo")
-                        .HasDatabaseName("ix_indexadores_tipo");
-
-                    b.ToTable("indexadores", (string)null);
                 });
 
             modelBuilder.Entity("CoreLedger.Domain.Entities.Security", b =>
@@ -917,17 +785,6 @@ namespace CoreLedger.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Type");
-                });
-
-            modelBuilder.Entity("CoreLedger.Domain.Entities.HistoricoIndexador", b =>
-                {
-                    b.HasOne("CoreLedger.Domain.Entities.Indexador", "Indexador")
-                        .WithMany()
-                        .HasForeignKey("IndexadorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Indexador");
                 });
 
             modelBuilder.Entity("CoreLedger.Domain.Entities.Transaction", b =>

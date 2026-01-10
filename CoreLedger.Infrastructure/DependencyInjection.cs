@@ -53,6 +53,7 @@ public static class DependencyInjection
         services.AddScoped<ICoreJobQueryService, CoreJobQueryService>();
         services.AddScoped<ITransactionQueryService, TransactionQueryService>();
         services.AddScoped<IAuditLogQueryService, AuditLogQueryService>();
+        services.AddScoped<ICalendarioQueryService, CalendarioQueryService>();
         services.AddScoped<IIndexadorQueryService, IndexadorQueryService>();
         services.AddScoped<IHistoricoIndexadorQueryService, HistoricoIndexadorQueryService>();
 

@@ -125,6 +125,7 @@ try
     app.MapTransactionSubTypesEndpoints();
     app.MapTransactionStatusesEndpoints();
     app.MapSecurityTypesEndpoints();
+    app.MapCalendarioEndpoints();
     app.MapIndexadoresEndpoints();
     app.MapHistoricosIndexadoresEndpoints();
 

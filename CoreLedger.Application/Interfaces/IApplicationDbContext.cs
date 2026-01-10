@@ -25,6 +25,7 @@ public interface IApplicationDbContext
     DbSet<TransactionCreatedOutboxMessage> TransactionCreatedOutboxMessages { get; }
     DbSet<User> Users { get; }
     DbSet<AuditLog> AuditLogs { get; }
+    DbSet<Calendario> Calendarios { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
