@@ -1,297 +1,297 @@
 # Core Ledger API
 
-A production-ready .NET 10 REST API for **fund accounting ABOR (Accounting Book of Records)** designed for institutional financial clients, implementing Clean Architecture principles with a focus on safety, auditability, and maintainability. This system serves as the authoritative source of accounting data for investment funds.
+Uma API REST .NET 10 pronta para produção para **contabilidade de fundos ABOR (Accounting Book of Records)** projetada para clientes financeiros institucionais, implementando princípios de Clean Architecture com foco em segurança, auditabilidade e manutenibilidade. Este sistema serve como a fonte autoritativa de dados contábeis para fundos de investimento.
 
-## 🏗️ Architecture
+## Arquitetura
 
-This project follows **Clean Architecture** (Hexagonal Architecture) with clear separation of concerns:
+Este projeto segue **Clean Architecture** (Arquitetura Hexagonal) com clara separação de responsabilidades:
 
 ```
-CoreLedger.API/              # Presentation Layer (Controllers, Middleware, Extensions)
-CoreLedger.Application/      # Application Layer (Use Cases, DTOs, Validators)
-CoreLedger.Domain/           # Domain Layer (Entities, Value Objects, Interfaces)
-CoreLedger.Infrastructure/   # Infrastructure Layer (EF Core, Repositories, Persistence)
-CoreLedger.UnitTests/        # Unit Tests (xUnit + NSubstitute)
-CoreLedger.IntegrationTests/ # Integration Tests (Testcontainers + xUnit)
+CoreLedger.API/              # Camada de Apresentação (Controllers, Middleware, Extensions)
+CoreLedger.Application/      # Camada de Aplicação (Use Cases, DTOs, Validators)
+CoreLedger.Domain/           # Camada de Domínio (Entities, Value Objects, Interfaces)
+CoreLedger.Infrastructure/   # Camada de Infraestrutura (EF Core, Repositories, Persistence)
+CoreLedger.UnitTests/        # Testes Unitários (xUnit + NSubstitute)
+CoreLedger.IntegrationTests/ # Testes de Integração (Testcontainers + xUnit)
 ```
 
-### Key Architectural Patterns
+### Padrões Arquiteturais Principais
 
-- **CQRS**: Command Query Responsibility Segregation using MediatR
-- **Direct DbContext Usage**: Entity Framework Core DbSet<T> as data access pattern
-- **Query Services**: Infrastructure layer services for complex RFC-8040 filtering operations
-- **Dependency Injection**: Constructor injection throughout
-- **Domain-Driven Design**: Rich domain models with business logic
-- **Middleware Pipeline**: Cross-cutting concerns (exception handling, logging, correlation IDs)
+- **CQRS**: Command Query Responsibility Segregation usando MediatR
+- **Uso Direto do DbContext**: Entity Framework Core DbSet<T> como padrão de acesso a dados
+- **Query Services**: Serviços da camada de infraestrutura para operações complexas de filtragem RFC-8040
+- **Injeção de Dependência**: Injeção por construtor em toda a aplicação
+- **Domain-Driven Design**: Modelos de domínio ricos com lógica de negócio
+- **Pipeline de Middleware**: Responsabilidades transversais (tratamento de exceções, logging, IDs de correlação)
 
-## 🛠️ Tech Stack
+## Stack Tecnológica
 
-### Core Framework
-- **.NET 10.0** - Latest .NET framework
-- **ASP.NET Core** - Web API framework
-- **C# 13** - Latest language features with nullable reference types
+### Framework Principal
+- **.NET 10.0** - Framework .NET mais recente
+- **ASP.NET Core** - Framework para Web API
+- **C# 13** - Recursos mais recentes da linguagem com tipos de referência anuláveis
 
-### Database & ORM
-- **PostgreSQL 18** - Primary database
+### Banco de Dados & ORM
+- **PostgreSQL 18** - Banco de dados principal
 - **Entity Framework Core 10** - ORM
-- **Npgsql** - PostgreSQL provider
+- **Npgsql** - Provider PostgreSQL
 
-### Application Patterns
-- **MediatR 14** - CQRS and mediator pattern
-- **AutoMapper 16** - Object-to-object mapping
-- **FluentValidation 12** - Input validation
+### Padrões de Aplicação
+- **MediatR 14** - Padrão CQRS e mediator
+- **AutoMapper 16** - Mapeamento objeto-para-objeto
+- **FluentValidation 12** - Validação de entrada
 
-### Messaging & Authentication
-- **RabbitMQ** - Message broker for async processing and worker communication
-- **Auth0** - JWT Bearer authentication and user management
+### Mensageria & Autenticação
+- **RabbitMQ** - Message broker para processamento assíncrono e comunicação com workers
+- **Auth0** - Autenticação JWT Bearer e gerenciamento de usuários
 
-### Logging & Monitoring
-- **Serilog** - Structured logging
-- **Health Checks** - Application health monitoring
-- **Correlation IDs** - Request tracing
+### Logging & Monitoramento
+- **Serilog** - Logging estruturado
+- **Health Checks** - Monitoramento de saúde da aplicação
+- **IDs de Correlação** - Rastreamento de requisições
 
-### API Documentation
-- **Swagger/OpenAPI** - Interactive API documentation
-- **XML Documentation** - Code-level documentation
+### Documentação da API
+- **Swagger/OpenAPI** - Documentação interativa da API
+- **Documentação XML** - Documentação em nível de código
 
-### Testing
-- **xUnit** - Test framework
-- **NSubstitute** - Mocking library
-- **Testcontainers** - Integration testing with disposable Docker containers
+### Testes
+- **xUnit** - Framework de testes
+- **NSubstitute** - Biblioteca de mocking
+- **Testcontainers** - Testes de integração com containers Docker descartáveis
 
 ### DevOps
-- **Docker** - Containerization
-- **Docker Compose** - Local development environment
+- **Docker** - Containerização
+- **Docker Compose** - Ambiente de desenvolvimento local
 
-## 📋 Prerequisites
+## Pré-requisitos
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop) (for local PostgreSQL and RabbitMQ)
-- [PostgreSQL 18](https://www.postgresql.org/download/) (or use Docker)
-- [RabbitMQ](https://www.rabbitmq.com/download.html) (or use Docker)
-- IDE: [Visual Studio 2025](https://visualstudio.microsoft.com/), [Rider](https://www.jetbrains.com/rider/), or [VS Code](https://code.visualstudio.com/)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop) (para PostgreSQL e RabbitMQ local)
+- [PostgreSQL 18](https://www.postgresql.org/download/) (ou use Docker)
+- [RabbitMQ](https://www.rabbitmq.com/download.html) (ou use Docker)
+- IDE: [Visual Studio 2025](https://visualstudio.microsoft.com/), [Rider](https://www.jetbrains.com/rider/), ou [VS Code](https://code.visualstudio.com/)
 
-## 🚀 Getting Started
+## Começando
 
-### 1. Clone the Repository
+### 1. Clone o Repositório
 
 ```bash
 git clone https://github.com/your-org/core-ledger-api.git
 cd core-ledger-api
 ```
 
-### 2. Set Up Environment Variables
+### 2. Configure as Variáveis de Ambiente
 
 ```bash
-# Copy the environment template
+# Copie o template de ambiente
 cp .env.template .env
 
-# Edit .env with your configuration
-# For local development, the defaults should work with Docker Compose
+# Edite .env com sua configuração
+# Para desenvolvimento local, os padrões devem funcionar com Docker Compose
 ```
 
-### 3. Start PostgreSQL and RabbitMQ with Docker
+### 3. Inicie o PostgreSQL e RabbitMQ com Docker
 
 ```bash
-# Start PostgreSQL and RabbitMQ containers
+# Inicie os containers PostgreSQL e RabbitMQ
 docker-compose up -d
 
-# Verify containers are running
+# Verifique se os containers estão rodando
 docker ps
 ```
 
-The following services will be available:
+Os seguintes serviços estarão disponíveis:
 - **PostgreSQL**: localhost:5432
 - **RabbitMQ AMQP**: localhost:5672
 - **RabbitMQ Management UI**: http://localhost:15672 (guest/guest)
 
-### 4. Apply Database Migrations
+### 4. Aplique as Migrations do Banco de Dados
 
 ```bash
-# From the solution root
+# A partir da raiz da solução
 dotnet ef database update --project CoreLedger.Infrastructure --startup-project CoreLedger.API
 ```
 
-### 5. Run the Application
+### 5. Execute a Aplicação
 
 ```bash
-# Development mode with hot reload
+# Modo desenvolvimento com hot reload
 dotnet watch run --project CoreLedger.API
 
-# Or standard run
+# Ou execução padrão
 dotnet run --project CoreLedger.API
 ```
 
-The API will be available at:
+A API estará disponível em:
 - **HTTPS**: https://localhost:7001
 - **HTTP**: http://localhost:5001
 - **Swagger UI**: https://localhost:7001/swagger
 
-## 🧪 Testing
+## Testes
 
-### Run All Tests
+### Executar Todos os Testes
 
 ```bash
 dotnet test
 ```
 
-### Run Unit Tests Only
+### Executar Apenas Testes Unitários
 
 ```bash
 dotnet test CoreLedger.UnitTests/CoreLedger.UnitTests.csproj
 ```
 
-### Run Integration Tests Only
+### Executar Apenas Testes de Integração
 
 ```bash
 dotnet test CoreLedger.IntegrationTests/CoreLedger.IntegrationTests.csproj
 ```
 
-### Code Coverage
+### Cobertura de Código
 
 ```bash
 dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
 ```
 
-## 📚 API Documentation
+## Documentação da API
 
 ### Swagger UI
 
-When running in Development mode, access the interactive API documentation at:
+Ao executar em modo Development, acesse a documentação interativa da API em:
 
 **https://localhost:7001/swagger**
 
 ### Health Checks
 
-- **General Health**: `GET /health`
-- **Readiness**: `GET /health/ready`
-- **Liveness**: `GET /health/live`
+- **Saúde Geral**: `GET /health`
+- **Prontidão**: `GET /health/ready`
+- **Vivacidade**: `GET /health/live`
 
-### Example Endpoints
+### Exemplos de Endpoints
 
-#### ToDos API
+#### API de ToDos
 
 ```bash
-# Get all ToDos
+# Obter todos os ToDos
 GET /api/todos
 
-# Get ToDo by ID
+# Obter ToDo por ID
 GET /api/todos/{id}
 
-# Create new ToDo
+# Criar novo ToDo
 POST /api/todos
 Content-Type: application/json
 {
-  "description": "Complete the project documentation"
+  "description": "Completar a documentação do projeto"
 }
 
-# Update ToDo
+# Atualizar ToDo
 PUT /api/todos/{id}
 Content-Type: application/json
 {
-  "description": "Updated description",
+  "description": "Descrição atualizada",
   "isCompleted": true
 }
 
-# Delete ToDo
+# Excluir ToDo
 DELETE /api/todos/{id}
 ```
 
-## 🗂️ Project Structure
+## Estrutura do Projeto
 
 ```
 core-ledger-api/
 ├── CoreLedger.API/
-│   ├── Controllers/          # API Controllers
-│   ├── Extensions/           # Service configuration extensions
-│   ├── Middleware/           # Custom middleware
-│   └── Program.cs            # Application entry point
+│   ├── Controllers/          # Controllers da API
+│   ├── Extensions/           # Extensões de configuração de serviços
+│   ├── Middleware/           # Middleware customizado
+│   └── Program.cs            # Ponto de entrada da aplicação
 ├── CoreLedger.Application/
 │   ├── DTOs/                 # Data Transfer Objects
-│   ├── Mappings/             # AutoMapper profiles
-│   ├── UseCases/             # Commands and Queries (CQRS)
-│   └── Validators/           # FluentValidation validators
+│   ├── Mappings/             # Profiles do AutoMapper
+│   ├── UseCases/             # Commands e Queries (CQRS)
+│   └── Validators/           # Validadores FluentValidation
 ├── CoreLedger.Domain/
-│   ├── Entities/             # Domain entities
-│   ├── Exceptions/           # Domain exceptions
-│   ├── Interfaces/           # Application interfaces (IApplicationDbContext)
+│   ├── Entities/             # Entidades de domínio
+│   ├── Exceptions/           # Exceções de domínio
+│   ├── Interfaces/           # Interfaces da aplicação (IApplicationDbContext)
 │   └── ValueObjects/         # Value objects
 ├── CoreLedger.Infrastructure/
-│   ├── Persistence/          # DbContext and entity configurations
-│   │   └── Migrations/       # EF Core migrations
+│   ├── Persistence/          # DbContext e configurações de entidades
+│   │   └── Migrations/       # Migrations do EF Core
 │   └── Services/
-│       ├── QueryServices/    # RFC-8040 filtering and pagination
-│       └── External/         # External service integrations
+│       ├── QueryServices/    # Filtragem e paginação RFC-8040
+│       └── External/         # Integrações com serviços externos
 ├── CoreLedger.Worker/
-│   ├── Consumers/            # RabbitMQ message consumers
-│   └── Program.cs            # Worker service entry point
+│   ├── Consumers/            # Consumidores de mensagens RabbitMQ
+│   └── Program.cs            # Ponto de entrada do worker service
 ├── CoreLedger.UnitTests/
-│   ├── Application/          # Application layer tests
-│   └── Domain/               # Domain layer tests
+│   ├── Application/          # Testes da camada de aplicação
+│   └── Domain/               # Testes da camada de domínio
 ├── CoreLedger.IntegrationTests/
-│   └── API/                  # API integration tests
+│   └── API/                  # Testes de integração da API
 └── docs/
-    └── archive/              # Archived documentation
+    └── archive/              # Documentação arquivada
 ```
 
-## 💻 Development Guidelines
+## Diretrizes de Desenvolvimento
 
-### Code Standards
+### Padrões de Código
 
-- **Nullable Reference Types**: Enabled project-wide (`<Nullable>enable</Nullable>`)
-- **Warnings as Errors**: Strict compilation (`<TreatWarningsAsErrors>true</TreatWarningsAsErrors>`)
-- **XML Documentation**: Required for all public APIs
-- **Naming Conventions**: Follow Microsoft .NET guidelines
+- **Tipos de Referência Anuláveis**: Habilitado em todo o projeto (`<Nullable>enable</Nullable>`)
+- **Warnings como Erros**: Compilação estrita (`<TreatWarningsAsErrors>true</TreatWarningsAsErrors>`)
+- **Documentação XML**: Obrigatória para todas as APIs públicas
+- **Convenções de Nomenclatura**: Seguir as diretrizes Microsoft .NET
 
-### Testing Standards
+### Padrões de Testes
 
-- **Unit Test Coverage**: Minimum 80% for Application and Domain layers
-- **Test Naming**: `MethodName_Scenario_ExpectedBehavior`
-- **Arrange-Act-Assert**: Follow AAA pattern in all tests
-- **Mocking**: Use NSubstitute for interface-based mocking
+- **Cobertura de Testes Unitários**: Mínimo de 80% para camadas de Application e Domain
+- **Nomenclatura de Testes**: `NomeDoMetodo_Cenario_ComportamentoEsperado`
+- **Arrange-Act-Assert**: Seguir padrão AAA em todos os testes
+- **Mocking**: Usar NSubstitute para mocking baseado em interfaces
 
-### Security Best Practices
+### Melhores Práticas de Segurança
 
-- **Secrets Management**: Use User Secrets (dev) or Azure Key Vault (prod)
-- **Input Validation**: FluentValidation for all commands and queries
-- **Error Handling**: Global exception middleware prevents leaking internal details
-- **HTTPS**: Enforced in non-development environments
-- **Audit Trails**: Structured logging with correlation IDs
+- **Gerenciamento de Secrets**: Usar User Secrets (dev) ou Azure Key Vault (prod)
+- **Validação de Entrada**: FluentValidation para todos os commands e queries
+- **Tratamento de Erros**: Middleware global de exceções previne vazamento de detalhes internos
+- **HTTPS**: Obrigatório em ambientes não-desenvolvimento
+- **Trilhas de Auditoria**: Logging estruturado com IDs de correlação
 
-### Database Guidelines
+### Diretrizes de Banco de Dados
 
-- **Migrations**: Always use explicit migrations; never `EnsureCreated()`
-- **Transactions**: Explicit transactions for multi-step accounting operations
-- **Concurrency**: Optimistic concurrency tokens for critical accounting data
-- **Money Handling**: Use `decimal` with explicit precision/scale for all monetary values
+- **Migrations**: Sempre usar migrations explícitas; nunca `EnsureCreated()`
+- **Transações**: Transações explícitas para operações contábeis multi-etapas
+- **Concorrência**: Tokens de concorrência otimista para dados contábeis críticos
+- **Tratamento de Valores Monetários**: Usar `decimal` com precisão/escala explícitas para todos os valores monetários
 
-## 🔧 Database Migrations
+## Migrations do Banco de Dados
 
-### Create a New Migration
+### Criar uma Nova Migration
 
 ```bash
-dotnet ef migrations add MigrationName --project CoreLedger.Infrastructure --startup-project CoreLedger.API
+dotnet ef migrations add NomeDaMigration --project CoreLedger.Infrastructure --startup-project CoreLedger.API
 ```
 
-### Apply Migrations
+### Aplicar Migrations
 
 ```bash
 dotnet ef database update --project CoreLedger.Infrastructure --startup-project CoreLedger.API
 ```
 
-### Rollback Migration
+### Reverter Migration
 
 ```bash
-dotnet ef database update PreviousMigrationName --project CoreLedger.Infrastructure --startup-project CoreLedger.API
+dotnet ef database update NomeDaMigrationAnterior --project CoreLedger.Infrastructure --startup-project CoreLedger.API
 ```
 
-### Remove Last Migration (if not applied)
+### Remover Última Migration (se não aplicada)
 
 ```bash
 dotnet ef migrations remove --project CoreLedger.Infrastructure --startup-project CoreLedger.API
 ```
 
-## 📦 Building for Production
+## Build para Produção
 
 ### Build Release
 
@@ -299,66 +299,66 @@ dotnet ef migrations remove --project CoreLedger.Infrastructure --startup-projec
 dotnet build --configuration Release
 ```
 
-### Publish
+### Publicar
 
 ```bash
 dotnet publish CoreLedger.API/CoreLedger.API.csproj --configuration Release --output ./publish
 ```
 
-### Docker Build (Future)
+### Build Docker (Futuro)
 
 ```bash
-# TODO: Add Dockerfile
+# TODO: Adicionar Dockerfile
 docker build -t core-ledger-api:latest .
 ```
 
-## 🔍 Logging
+## Logging
 
-Logs are written to:
-- **Console**: Structured output with timestamps
-- **File**: `logs/core-ledger-{Date}.log` (retained for 30 days)
+Os logs são escritos em:
+- **Console**: Saída estruturada com timestamps
+- **Arquivo**: `logs/core-ledger-{Date}.log` (retido por 30 dias)
 
-### Log Levels
-- **Information**: High-level events (transaction recorded, journal entry posted, NAV calculated)
-- **Warning**: Recoverable anomalies
-- **Error**: Failures requiring attention
-- **Critical**: System-level failures
+### Níveis de Log
+- **Information**: Eventos de alto nível (transação registrada, lançamento contábil postado, NAV calculado)
+- **Warning**: Anomalias recuperáveis
+- **Error**: Falhas que requerem atenção
+- **Critical**: Falhas em nível de sistema
 
-### Correlation IDs
+### IDs de Correlação
 
-Every request receives a correlation ID (via `X-Correlation-ID` header or auto-generated) for end-to-end tracing.
+Cada requisição recebe um ID de correlação (via header `X-Correlation-ID` ou gerado automaticamente) para rastreamento de ponta a ponta.
 
-## 🤝 Contributing
+## Contribuindo
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. Faça fork do repositório
+2. Crie uma branch de feature (`git checkout -b feature/funcionalidade-incrivel`)
+3. Faça commit das suas alterações (`git commit -m 'Adiciona funcionalidade incrível'`)
+4. Faça push para a branch (`git push origin feature/funcionalidade-incrivel`)
+5. Abra um Pull Request
 
-### PR Requirements
+### Requisitos para PR
 
-- ✅ All tests pass (`dotnet test`)
-- ✅ Code follows project conventions
-- ✅ XML documentation for public APIs
-- ✅ Unit tests for new features
-- ✅ No warnings or errors
+- Todos os testes passam (`dotnet test`)
+- Código segue as convenções do projeto
+- Documentação XML para APIs públicas
+- Testes unitários para novas funcionalidades
+- Sem warnings ou erros
 
-## 📄 License
+## Licença
 
-[Specify your license here - MIT, Apache 2.0, Proprietary, etc.]
+[Especifique sua licença aqui - MIT, Apache 2.0, Proprietária, etc.]
 
-## 👥 Authors
+## Autores
 
-- **Development Team** - [Your Organization]
+- **Equipe de Desenvolvimento** - [Sua Organização]
 
-## 🙏 Acknowledgments
+## Agradecimentos
 
-- Built as a fund accounting ABOR system for institutional financial clients
-- Follows enterprise-grade security and compliance standards
-- Designed for auditability, data integrity, and deterministic behavior
-- Serves as the authoritative accounting book of records for investment funds
+- Construído como um sistema de contabilidade de fundos ABOR para clientes financeiros institucionais
+- Segue padrões de segurança e conformidade de nível empresarial
+- Projetado para auditabilidade, integridade de dados e comportamento determinístico
+- Serve como o livro contábil autoritativo de registros para fundos de investimento
 
 ---
 
-**For support or questions, please open an issue on GitHub.**
+**Para suporte ou dúvidas, por favor abra uma issue no GitHub.**
