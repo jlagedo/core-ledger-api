@@ -18,6 +18,12 @@ public interface IApplicationDbContext
     DbSet<CoreJob> CoreJobs { get; }
     DbSet<Fund> Funds { get; }
     DbSet<Fundo> Fundos { get; }
+    DbSet<FundoClasse> FundoClasses { get; }
+    DbSet<FundoSubclasse> FundoSubclasses { get; }
+    DbSet<FundoTaxa> FundoTaxas { get; }
+    DbSet<FundoTaxaPerformance> FundoTaxasPerformance { get; }
+    DbSet<FundoPrazo> FundoPrazos { get; }
+    DbSet<FundoPrazoExcecao> FundoPrazoExcecoes { get; }
     DbSet<Indexador> Indexadores { get; }
     DbSet<HistoricoIndexador> HistoricosIndexadores { get; }
     DbSet<Security> Securities { get; }

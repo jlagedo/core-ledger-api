@@ -23,6 +23,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{A1FC68
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{A35E6EDA-C6F1-4564-8799-52426D4C678B}"
+	ProjectSection(SolutionItems) = preProject
+		docs\specs\10_TESTES.md = docs\specs\10_TESTES.md
+		docs\specs\09_VALIDACOES_REGRAS.md = docs\specs\09_VALIDACOES_REGRAS.md
+		docs\specs\05_PRAZOS_OPERACIONAIS.md = docs\specs\05_PRAZOS_OPERACIONAIS.md
+		docs\specs\04_TAXAS.md = docs\specs\04_TAXAS.md
+		docs\specs\08_API_ENDPOINTS.md = docs\specs\08_API_ENDPOINTS.md
+		docs\specs\01_ENTIDADES_BASE.md = docs\specs\01_ENTIDADES_BASE.md
+		docs\specs\07_PARAMETROS_FIDC.md = docs\specs\07_PARAMETROS_FIDC.md
+		docs\specs\06_VINCULOS_INSTITUCIONAIS.md = docs\specs\06_VINCULOS_INSTITUCIONAIS.md
+		docs\specs\00_VISAO_GERAL_IMPLEMENTACAO.md = docs\specs\00_VISAO_GERAL_IMPLEMENTACAO.md
+		docs\specs\02_FUNDO_CORE.md = docs\specs\02_FUNDO_CORE.md
+		docs\specs\03_CLASSES_SUBCLASSES.md = docs\specs\03_CLASSES_SUBCLASSES.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

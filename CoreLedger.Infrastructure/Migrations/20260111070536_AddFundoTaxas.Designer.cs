@@ -4,6 +4,7 @@ using System.Text.Json;
 using CoreLedger.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CoreLedger.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260111070536_AddFundoTaxas")]
+    partial class AddFundoTaxas
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -280,142 +283,6 @@ namespace CoreLedger.Infrastructure.Migrations
                         .HasFilter("deleted_at IS NULL");
 
                     b.ToTable("fundo_classe", "cadastros");
-                });
-
-            modelBuilder.Entity("CoreLedger.Domain.Cadastros.Entities.FundoPrazo", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<bool>("Ativo")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true)
-                        .HasColumnName("ativo");
-
-                    b.Property<int?>("CalendarioId")
-                        .HasColumnType("integer")
-                        .HasColumnName("calendario_id");
-
-                    b.Property<Guid?>("ClasseId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("classe_id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp")
-                        .HasColumnName("created_at");
-
-                    b.Property<int?>("DiasCarencia")
-                        .HasColumnType("integer")
-                        .HasColumnName("dias_carencia");
-
-                    b.Property<int>("DiasCotizacao")
-                        .HasColumnType("integer")
-                        .HasColumnName("dias_cotizacao");
-
-                    b.Property<int>("DiasLiquidacao")
-                        .HasColumnType("integer")
-                        .HasColumnName("dias_liquidacao");
-
-                    b.Property<bool>("DiasUteis")
-                        .HasColumnType("boolean")
-                        .HasColumnName("dias_uteis");
-
-                    b.Property<Guid>("FundoId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("fundo_id");
-
-                    b.Property<TimeOnly>("HorarioLimite")
-                        .HasColumnType("time")
-                        .HasColumnName("horario_limite");
-
-                    b.Property<decimal?>("PercentualMinimo")
-                        .HasColumnType("decimal(5,2)")
-                        .HasColumnName("percentual_minimo");
-
-                    b.Property<bool>("PermiteParcial")
-                        .HasColumnType("boolean")
-                        .HasColumnName("permite_parcial");
-
-                    b.Property<string>("TipoPrazo")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("tipo_prazo");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp")
-                        .HasColumnName("updated_at");
-
-                    b.Property<decimal?>("ValorMinimo")
-                        .HasColumnType("decimal(18,2)")
-                        .HasColumnName("valor_minimo");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClasseId")
-                        .HasDatabaseName("ix_prazo_classe");
-
-                    b.HasIndex("FundoId")
-                        .HasDatabaseName("ix_prazo_fundo");
-
-                    b.HasIndex("FundoId", "ClasseId", "TipoPrazo")
-                        .IsUnique()
-                        .HasDatabaseName("ix_prazo_tipo")
-                        .HasFilter("ativo = true");
-
-                    b.ToTable("fundo_prazo", "cadastros");
-                });
-
-            modelBuilder.Entity("CoreLedger.Domain.Cadastros.Entities.FundoPrazoExcecao", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp")
-                        .HasColumnName("created_at");
-
-                    b.Property<DateOnly>("DataFim")
-                        .HasColumnType("date")
-                        .HasColumnName("data_fim");
-
-                    b.Property<DateOnly>("DataInicio")
-                        .HasColumnType("date")
-                        .HasColumnName("data_inicio");
-
-                    b.Property<int>("DiasCotizacao")
-                        .HasColumnType("integer")
-                        .HasColumnName("dias_cotizacao");
-
-                    b.Property<int>("DiasLiquidacao")
-                        .HasColumnType("integer")
-                        .HasColumnName("dias_liquidacao");
-
-                    b.Property<string>("Motivo")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("motivo");
-
-                    b.Property<long>("PrazoId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("prazo_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PrazoId")
-                        .HasDatabaseName("ix_prazo_excecao_prazo");
-
-                    b.ToTable("fundo_prazo_excecao", "cadastros");
                 });
 
             modelBuilder.Entity("CoreLedger.Domain.Cadastros.Entities.FundoSubclasse", b =>
@@ -1535,35 +1402,6 @@ namespace CoreLedger.Infrastructure.Migrations
                     b.Navigation("Fundo");
                 });
 
-            modelBuilder.Entity("CoreLedger.Domain.Cadastros.Entities.FundoPrazo", b =>
-                {
-                    b.HasOne("CoreLedger.Domain.Cadastros.Entities.FundoClasse", "Classe")
-                        .WithMany()
-                        .HasForeignKey("ClasseId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("CoreLedger.Domain.Cadastros.Entities.Fundo", "Fundo")
-                        .WithMany()
-                        .HasForeignKey("FundoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Classe");
-
-                    b.Navigation("Fundo");
-                });
-
-            modelBuilder.Entity("CoreLedger.Domain.Cadastros.Entities.FundoPrazoExcecao", b =>
-                {
-                    b.HasOne("CoreLedger.Domain.Cadastros.Entities.FundoPrazo", "Prazo")
-                        .WithMany("Excecoes")
-                        .HasForeignKey("PrazoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Prazo");
-                });
-
             modelBuilder.Entity("CoreLedger.Domain.Cadastros.Entities.FundoSubclasse", b =>
                 {
                     b.HasOne("CoreLedger.Domain.Cadastros.Entities.FundoClasse", "Classe")
@@ -1699,11 +1537,6 @@ namespace CoreLedger.Infrastructure.Migrations
                     b.Navigation("Subclasses");
 
                     b.Navigation("Taxas");
-                });
-
-            modelBuilder.Entity("CoreLedger.Domain.Cadastros.Entities.FundoPrazo", b =>
-                {
-                    b.Navigation("Excecoes");
                 });
 
             modelBuilder.Entity("CoreLedger.Domain.Cadastros.Entities.FundoTaxa", b =>

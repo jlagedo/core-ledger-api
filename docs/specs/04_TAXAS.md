@@ -63,7 +63,7 @@ CREATE INDEX ix_taxa_tipo ON cadastros.fundo_taxa(tipo_taxa);
 - TaxaResponseDto
 
 ## Critérios de Aceite
-- [ ] Migration para tabelas de taxa
-- [ ] FK para indexador (já existente)
-- [ ] Validação: taxa duplicada ativa
-- [ ] Validação: performance requer benchmark
+- [x] Migration para tabelas de taxa
+- [x] FK para indexador (já existente)
+- [x] Validação: taxa duplicada ativa
+- [x] Validação: performance requer benchmark

@@ -140,6 +140,16 @@ public class Fundo
     public DateTime? DeletedAt { get; private set; }
 
     /// <summary>
+    ///     Classes de cotas do fundo (relacionamento 1:N).
+    /// </summary>
+    public ICollection<FundoClasse> Classes { get; private set; } = new List<FundoClasse>();
+
+    /// <summary>
+    ///     Taxas do fundo (relacionamento 1:N).
+    /// </summary>
+    public ICollection<FundoTaxa> Taxas { get; private set; } = new List<FundoTaxa>();
+
+    /// <summary>
     ///     Identificador do usuário que criou o registro.
     /// </summary>
     public string? CreatedBy { get; private set; }

@@ -22,6 +22,12 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<CoreJob> CoreJobs => Set<CoreJob>();
     public DbSet<Fund> Funds => Set<Fund>();
     public DbSet<Fundo> Fundos => Set<Fundo>();
+    public DbSet<FundoClasse> FundoClasses => Set<FundoClasse>();
+    public DbSet<FundoSubclasse> FundoSubclasses => Set<FundoSubclasse>();
+    public DbSet<FundoTaxa> FundoTaxas => Set<FundoTaxa>();
+    public DbSet<FundoTaxaPerformance> FundoTaxasPerformance => Set<FundoTaxaPerformance>();
+    public DbSet<FundoPrazo> FundoPrazos => Set<FundoPrazo>();
+    public DbSet<FundoPrazoExcecao> FundoPrazoExcecoes => Set<FundoPrazoExcecao>();
     public DbSet<Security> Securities => Set<Security>();
     public DbSet<TransactionStatus> TransactionStatuses => Set<TransactionStatus>();
     public DbSet<TransactionType> TransactionTypes => Set<TransactionType>();

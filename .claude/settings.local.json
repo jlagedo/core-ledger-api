@@ -5,7 +5,8 @@
       "WebSearch",
       "WebFetch(domain:brasilindicadores.com.br)",
       "WebFetch(domain:www.portaldefinancas.com)",
-      "WebFetch(domain:www.bcb.gov.br)"
+      "WebFetch(domain:www.bcb.gov.br)",
+      "Skill(implement)"
     ]
   },
   "enabledMcpjsonServers": [

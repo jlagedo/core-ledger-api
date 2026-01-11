@@ -66,7 +66,7 @@ CREATE UNIQUE INDEX ix_classe_codigo ON cadastros.fundo_classe(fundo_id, codigo_
 - SubclasseResponseDto
 
 ## Critérios de Aceite
-- [ ] Migration para tabelas classe e subclasse
-- [ ] Relacionamento 1:N Fundo→Classe
-- [ ] Relacionamento 1:N Classe→Subclasse
-- [ ] Validação de tipo_classe_fidc para FIDCs
+- [x] Migration para tabelas classe e subclasse
+- [x] Relacionamento 1:N Fundo→Classe
+- [x] Relacionamento 1:N Classe→Subclasse
+- [x] Validação de tipo_classe_fidc para FIDCs

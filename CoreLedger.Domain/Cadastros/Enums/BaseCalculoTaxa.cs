@@ -18,5 +18,15 @@ public enum BaseCalculoTaxa
     /// <summary>
     ///     Total de cotas emitidas.
     /// </summary>
-    CotasEmitidas = 3
+    CotasEmitidas = 3,
+
+    /// <summary>
+    ///     Valor da cota.
+    /// </summary>
+    Cota = 4,
+
+    /// <summary>
+    ///     Rentabilidade do período.
+    /// </summary>
+    Rentabilidade = 5
 }

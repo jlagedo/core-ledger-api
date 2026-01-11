@@ -63,7 +63,7 @@ CREATE UNIQUE INDEX ix_prazo_tipo ON cadastros.fundo_prazo(fundo_id, classe_id, 
 - PrazoExcecaoDto
 
 ## Critérios de Aceite
-- [ ] Migration para tabelas de prazo
-- [ ] FK para calendário existente
-- [ ] Validação: dias não negativos
-- [ ] Cálculo D+X usando calendário
+- [x] Migration para tabelas de prazo
+- [x] FK para calendário existente
+- [x] Validação: dias não negativos
+- [ ] Cálculo D+X usando calendário (implementação futura - requer lógica de negócio)
