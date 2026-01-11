@@ -56,7 +56,7 @@ public static class IndexadoresEndpoints
     }
 
     private static async Task<IResult> GetAll(
-        [AsParameters] PaginationParameters pagination,
+        [AsParameters] IndexadorPaginationParameters pagination,
         IMediator mediator,
         HttpContext context,
         ILoggerFactory loggerFactory,
@@ -66,15 +66,21 @@ public static class IndexadoresEndpoints
         var userId = context.GetUserId();
 
         logger.LogInformation(
-            "Retrieving indexadores - Limit: {Limit}, Offset: {Offset}, SortBy: {SortBy}, Filter: {Filter}, User: {UserId}",
-            pagination.Limit, pagination.Offset, pagination.SortBy ?? "none", pagination.Filter ?? "none", userId);
+            "Retrieving indexadores - Limit: {Limit}, Offset: {Offset}, SortBy: {SortBy}, Filter: {Filter}, Tipo: {Tipo}, Ativo: {Ativo}, User: {UserId}",
+            pagination.Limit, pagination.Offset, pagination.SortBy ?? "none", pagination.Filter ?? "none",
+            pagination.Tipo?.ToString() ?? "none", pagination.Ativo?.ToString() ?? "none", userId);
 
         var query = new GetIndexadoresWithQueryQuery(
             pagination.Limit,
             pagination.Offset,
             pagination.SortBy,
             pagination.SortDirection,
-            pagination.Filter);
+            pagination.Filter,
+            pagination.Tipo,
+            pagination.Periodicidade,
+            pagination.Fonte,
+            pagination.Ativo,
+            pagination.ImportacaoAutomatica);
 
         var result = await mediator.Send(query, cancellationToken);
 

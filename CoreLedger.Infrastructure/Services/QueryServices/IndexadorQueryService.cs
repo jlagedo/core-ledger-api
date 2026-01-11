@@ -9,7 +9,8 @@ using Npgsql;
 namespace CoreLedger.Infrastructure.Services.QueryServices;
 
 /// <summary>
-///     Query service implementation for complex Indexador queries with RFC-8040 filtering, sorting, and pagination.
+///     Query service implementation for complex Indexador queries with filtering, sorting, and pagination.
+///     Supports multiple simultaneous filters matching the frontend Angular application.
 /// </summary>
 public class IndexadorQueryService : IIndexadorQueryService
 {
@@ -21,49 +22,59 @@ public class IndexadorQueryService : IIndexadorQueryService
     }
 
     public async Task<(IReadOnlyList<IndexadorListProjection> Indexadores, int TotalCount)> GetWithQueryAsync(
-        QueryParameters parameters,
+        IndexadorQueryParameters parameters,
         CancellationToken cancellationToken = default)
     {
-        var whereClause = string.Empty;
+        // Build WHERE clause with multiple filters using parameterized queries
+        var conditions = new List<string>();
         var sqlParameters = new List<object>();
 
+        // Free-text search filter (case-insensitive substring match on codigo and nome)
         if (!string.IsNullOrWhiteSpace(parameters.Filter))
         {
-            var filterParts = parameters.Filter.Split('=', StringSplitOptions.RemoveEmptyEntries);
-            if (filterParts.Length == 2)
-            {
-                var field = filterParts[0].Trim();
-                var value = filterParts[1].Trim().Trim('\'', '"');
-
-                whereClause = field switch
-                {
-                    "codigo" => $"WHERE i.codigo ILIKE {{{sqlParameters.Count}}}",
-                    "nome" => $"WHERE i.nome ILIKE {{{sqlParameters.Count}}}",
-                    "tipo" => $"WHERE i.tipo = {{{sqlParameters.Count}}}",
-                    "ativo" => $"WHERE i.ativo = {{{sqlParameters.Count}}}",
-                    "periodicidade" => $"WHERE i.periodicidade = {{{sqlParameters.Count}}}",
-                    "fonte" => $"WHERE i.fonte ILIKE {{{sqlParameters.Count}}}",
-                    "importacaoautomatica" => $"WHERE i.importacao_automatica = {{{sqlParameters.Count}}}",
-                    _ => string.Empty
-                };
-
-                if (!string.IsNullOrEmpty(whereClause))
-                {
-                    if (field == "codigo" || field == "nome" || field == "fonte")
-                        sqlParameters.Add($"%{value}%");
-                    else if (field == "tipo" && Enum.TryParse(typeof(IndexadorTipo), value, true, out var tipoEnum))
-                        sqlParameters.Add((int)tipoEnum!);
-                    else if (field == "ativo" && bool.TryParse(value, out var ativo))
-                        sqlParameters.Add(ativo);
-                    else if (field == "periodicidade" && Enum.TryParse(typeof(Periodicidade), value, true, out var periodicidadeEnum))
-                        sqlParameters.Add((int)periodicidadeEnum!);
-                    else if (field == "importacaoautomatica" && bool.TryParse(value, out var importacaoAutomatica))
-                        sqlParameters.Add(importacaoAutomatica);
-                    else
-                        whereClause = string.Empty;
-                }
-            }
+            conditions.Add($"(i.codigo ILIKE {{{sqlParameters.Count}}} OR i.nome ILIKE {{{sqlParameters.Count}}})");
+            sqlParameters.Add($"%{parameters.Filter}%");
         }
+
+        // Tipo filter
+        if (parameters.Tipo.HasValue)
+        {
+            conditions.Add($"i.tipo = {{{sqlParameters.Count}}}");
+            sqlParameters.Add(parameters.Tipo.Value);
+        }
+
+        // Periodicidade filter
+        if (parameters.Periodicidade.HasValue)
+        {
+            conditions.Add($"i.periodicidade = {{{sqlParameters.Count}}}");
+            sqlParameters.Add(parameters.Periodicidade.Value);
+        }
+
+        // Fonte filter (case-insensitive substring match)
+        if (!string.IsNullOrWhiteSpace(parameters.Fonte))
+        {
+            conditions.Add($"i.fonte ILIKE {{{sqlParameters.Count}}}");
+            sqlParameters.Add($"%{parameters.Fonte}%");
+        }
+
+        // Ativo filter
+        if (parameters.Ativo.HasValue)
+        {
+            conditions.Add($"i.ativo = {{{sqlParameters.Count}}}");
+            sqlParameters.Add(parameters.Ativo.Value);
+        }
+
+        // ImportacaoAutomatica filter
+        if (parameters.ImportacaoAutomatica.HasValue)
+        {
+            conditions.Add($"i.importacao_automatica = {{{sqlParameters.Count}}}");
+            sqlParameters.Add(parameters.ImportacaoAutomatica.Value);
+        }
+
+        // Build WHERE clause from conditions
+        var whereClause = conditions.Count > 0
+            ? "WHERE " + string.Join(" AND ", conditions)
+            : string.Empty;
 
         var orderByClause = string.Empty;
         if (!string.IsNullOrWhiteSpace(parameters.SortBy))
