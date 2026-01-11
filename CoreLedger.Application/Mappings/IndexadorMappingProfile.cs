@@ -11,6 +11,8 @@ public class IndexadorMappingProfile : Profile
 {
     public IndexadorMappingProfile()
     {
+        // Note: This mapping provides default null/0 values for historico stats.
+        // For accurate stats, use manual DTO construction with query service.
         CreateMap<Indexador, IndexadorDto>()
             .ConstructUsing(src => new IndexadorDto(
                 src.Id,
@@ -27,7 +29,10 @@ public class IndexadorMappingProfile : Profile
                 src.ImportacaoAutomatica,
                 src.Ativo,
                 src.CreatedAt,
-                src.UpdatedAt
+                src.UpdatedAt,
+                null,  // UltimoValor - requires separate query
+                null,  // UltimaData - requires separate query
+                0      // HistoricoCount - requires separate query
             ));
     }
 }

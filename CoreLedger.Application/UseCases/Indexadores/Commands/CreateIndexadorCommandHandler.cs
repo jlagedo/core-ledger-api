@@ -1,4 +1,3 @@
-using AutoMapper;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.Interfaces;
 using CoreLedger.Domain.Entities;
@@ -16,15 +15,12 @@ public class CreateIndexadorCommandHandler : IRequestHandler<CreateIndexadorComm
 {
     private readonly IApplicationDbContext _context;
     private readonly ILogger<CreateIndexadorCommandHandler> _logger;
-    private readonly IMapper _mapper;
 
     public CreateIndexadorCommandHandler(
         IApplicationDbContext context,
-        IMapper mapper,
         ILogger<CreateIndexadorCommandHandler> logger)
     {
         _context = context;
-        _mapper = mapper;
         _logger = logger;
     }
 
@@ -64,6 +60,26 @@ public class CreateIndexadorCommandHandler : IRequestHandler<CreateIndexadorComm
 
         _logger.LogInformation("Indexador criado com ID: {IndexadorId}", indexador.Id);
 
-        return _mapper.Map<IndexadorDto>(indexador);
+        // New indexador has no historico yet
+        return new IndexadorDto(
+            indexador.Id,
+            indexador.Codigo,
+            indexador.Nome,
+            indexador.Tipo,
+            indexador.Tipo.ToString(),
+            indexador.Fonte,
+            indexador.Periodicidade,
+            indexador.Periodicidade.ToString(),
+            indexador.FatorAcumulado,
+            indexador.DataBase,
+            indexador.UrlFonte,
+            indexador.ImportacaoAutomatica,
+            indexador.Ativo,
+            indexador.CreatedAt,
+            indexador.UpdatedAt,
+            null,  // UltimoValor
+            null,  // UltimaData
+            0      // HistoricoCount
+        );
     }
 }

@@ -3,6 +3,7 @@ using CoreLedger.API.Models;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.UseCases.Indexadores.Commands;
 using CoreLedger.Application.UseCases.Indexadores.Queries;
+using CoreLedger.Application.UseCases.HistoricosIndexadores.Commands;
 using CoreLedger.Application.UseCases.HistoricosIndexadores.Queries;
 using CoreLedger.Domain.Models;
 using MediatR;
@@ -30,6 +31,14 @@ public static class IndexadoresEndpoints
 
         group.MapGet("/{id:int}/historico", GetHistorico)
             .WithName("GetIndexadorHistorico");
+
+        group.MapGet("/{id:int}/historico/exportar", ExportHistorico)
+            .WithName("ExportIndexadorHistorico")
+            .Produces(StatusCodes.Status200OK, contentType: "text/csv");
+
+        group.MapPost("/{id:int}/historico/importar", ImportHistorico)
+            .WithName("ImportIndexadorHistorico")
+            .DisableAntiforgery();
 
         group.MapPost("/", Create)
             .WithName("CreateIndexador");
@@ -100,6 +109,8 @@ public static class IndexadoresEndpoints
     private static async Task<IResult> GetHistorico(
         int id,
         [AsParameters] PaginationParameters pagination,
+        DateOnly? dataInicio,
+        DateOnly? dataFim,
         IMediator mediator,
         HttpContext context,
         ILoggerFactory loggerFactory,
@@ -109,8 +120,8 @@ public static class IndexadoresEndpoints
         var userId = context.GetUserId();
 
         logger.LogInformation(
-            "Retrieving historical data for indexador {IndexadorId} - Limit: {Limit}, Offset: {Offset}, User: {UserId}",
-            id, pagination.Limit, pagination.Offset, userId);
+            "Retrieving historical data for indexador {IndexadorId} - Limit: {Limit}, Offset: {Offset}, DataInicio: {DataInicio}, DataFim: {DataFim}, User: {UserId}",
+            id, pagination.Limit, pagination.Offset, dataInicio?.ToString() ?? "none", dataFim?.ToString() ?? "none", userId);
 
         var parameters = new QueryParameters
         {
@@ -121,12 +132,84 @@ public static class IndexadoresEndpoints
             Filter = pagination.Filter
         };
 
-        var query = new GetHistoricoIndexadorQuery(id, parameters);
+        var query = new GetHistoricoIndexadorQuery(id, parameters, dataInicio, dataFim);
         var result = await mediator.Send(query, cancellationToken);
 
         logger.LogInformation(
             "Historical data retrieved - Returned: {Count} of {Total} total records for indexador {IndexadorId}",
             result.Items.Count, result.TotalCount, id);
+
+        return Results.Ok(result);
+    }
+
+    private static async Task<IResult> ExportHistorico(
+        int id,
+        DateOnly? dataInicio,
+        DateOnly? dataFim,
+        IMediator mediator,
+        HttpContext context,
+        ILoggerFactory loggerFactory,
+        CancellationToken cancellationToken)
+    {
+        var logger = loggerFactory.CreateLogger(LoggerName);
+        var userId = context.GetUserId();
+
+        logger.LogInformation(
+            "Exporting historical data for indexador {IndexadorId} - DataInicio: {DataInicio}, DataFim: {DataFim}, User: {UserId}",
+            id, dataInicio?.ToString() ?? "none", dataFim?.ToString() ?? "none", userId);
+
+        var query = new ExportHistoricoIndexadorQuery(id, dataInicio, dataFim);
+        var result = await mediator.Send(query, cancellationToken);
+
+        logger.LogInformation(
+            "Historical data exported for indexador {IndexadorId} - FileName: {FileName}",
+            id, result.FileName);
+
+        return Results.File(
+            result.CsvContent,
+            contentType: "text/csv; charset=utf-8",
+            fileDownloadName: result.FileName);
+    }
+
+    private static async Task<IResult> ImportHistorico(
+        int id,
+        IFormFile file,
+        bool sobrescrever,
+        IMediator mediator,
+        HttpContext context,
+        ILoggerFactory loggerFactory,
+        CancellationToken cancellationToken)
+    {
+        var logger = loggerFactory.CreateLogger(LoggerName);
+        var userId = context.GetUserId();
+
+        if (file == null || file.Length == 0)
+        {
+            return Results.BadRequest(new { error = "Arquivo CSV é obrigatório" });
+        }
+
+        // Validate file type
+        if (!file.ContentType.Contains("csv") &&
+            !file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+        {
+            return Results.BadRequest(new { error = "Apenas arquivos CSV são aceitos" });
+        }
+
+        logger.LogInformation(
+            "Importing historical data for indexador {IndexadorId} - FileName: {FileName}, Size: {Size}, Sobrescrever: {Sobrescrever}, User: {UserId}",
+            id, file.FileName, file.Length, sobrescrever, userId);
+
+        // Read file content
+        using var memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream, cancellationToken);
+        var csvContent = memoryStream.ToArray();
+
+        var command = new ImportHistoricoIndexadorCommand(id, csvContent, sobrescrever);
+        var result = await mediator.Send(command, cancellationToken);
+
+        logger.LogInformation(
+            "Historical data import completed for indexador {IndexadorId} - Total: {Total}, Imported: {Imported}, Overwritten: {Overwritten}, Skipped: {Skipped}, Errors: {Errors}",
+            id, result.TotalRows, result.ImportedRows, result.OverwrittenRows, result.SkippedRows, result.Errors.Count);
 
         return Results.Ok(result);
     }
@@ -184,15 +267,13 @@ public static class IndexadoresEndpoints
         var userId = context.GetUserId();
 
         logger.LogInformation(
-            "Updating indexador {IndexadorId} - Nome: {Nome}, Tipo: {Tipo}, UpdatedBy: {UserId}",
-            id, dto.Nome, dto.Tipo, userId);
+            "Updating indexador {IndexadorId} - Nome: {Nome}, UpdatedBy: {UserId}",
+            id, dto.Nome, userId);
 
         var command = new UpdateIndexadorCommand(
             id,
             dto.Nome,
-            dto.Tipo,
             dto.Fonte,
-            dto.Periodicidade,
             dto.FatorAcumulado,
             dto.DataBase,
             dto.UrlFonte,

@@ -1,11 +1,11 @@
 using CoreLedger.Application.UseCases.Indexadores.Commands;
-using CoreLedger.Domain.Enums;
 using FluentValidation;
 
 namespace CoreLedger.Application.Validators;
 
 /// <summary>
-///     Validator for UpdateIndexadorCommand with business rules IDX-003, IDX-004.
+///     Validator for UpdateIndexadorCommand with business rule IDX-003.
+///     Note: Tipo and Periodicidade are immutable after creation (IDX-004 validated at creation only).
 /// </summary>
 public class UpdateIndexadorCommandValidator : AbstractValidator<UpdateIndexadorCommand>
 {
@@ -20,14 +20,6 @@ public class UpdateIndexadorCommandValidator : AbstractValidator<UpdateIndexador
             .WithMessage("Nome é obrigatório")
             .MaximumLength(100)
             .WithMessage("Nome não pode exceder 100 caracteres");
-
-        RuleFor(x => x.Tipo)
-            .IsInEnum()
-            .WithMessage("Tipo deve ser um valor válido de IndexadorTipo");
-
-        RuleFor(x => x.Periodicidade)
-            .IsInEnum()
-            .WithMessage("Periodicidade deve ser um valor válido de Periodicidade");
 
         RuleFor(x => x.Fonte)
             .MaximumLength(100)
@@ -55,34 +47,5 @@ public class UpdateIndexadorCommandValidator : AbstractValidator<UpdateIndexador
             .MaximumLength(500)
             .When(x => !string.IsNullOrWhiteSpace(x.UrlFonte))
             .WithMessage("URL fonte não pode exceder 500 caracteres");
-
-        // IDX-004: Periodicidade compatibility with Tipo
-        RuleFor(x => x)
-            .Custom((command, context) =>
-            {
-                if (!IsPeriodicidadeCompatibleWithTipo(command.Tipo, command.Periodicidade))
-                {
-                    context.AddFailure(
-                        nameof(command.Periodicidade),
-                        $"Periodicidade {command.Periodicidade} não é compatível com o tipo {command.Tipo}");
-                }
-            });
-    }
-
-    private static bool IsPeriodicidadeCompatibleWithTipo(IndexadorTipo tipo, Periodicidade periodicidade)
-    {
-        return tipo switch
-        {
-            IndexadorTipo.Juros => periodicidade == Periodicidade.Diaria,
-            IndexadorTipo.Inflacao => periodicidade == Periodicidade.Mensal ||
-                                      periodicidade == Periodicidade.Anual,
-            IndexadorTipo.Cambio => periodicidade == Periodicidade.Diaria,
-            IndexadorTipo.IndiceBolsa => periodicidade == Periodicidade.Diaria,
-            IndexadorTipo.IndiceRendaFixa => periodicidade == Periodicidade.Diaria ||
-                                             periodicidade == Periodicidade.Mensal,
-            IndexadorTipo.Crypto => periodicidade == Periodicidade.Diaria,
-            IndexadorTipo.Outro => true, // Outro permite qualquer periodicidade
-            _ => false
-        };
     }
 }
