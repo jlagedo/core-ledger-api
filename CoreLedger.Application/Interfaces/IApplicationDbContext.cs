@@ -1,6 +1,9 @@
+using CoreLedger.Domain.Cadastros.Entities;
 using CoreLedger.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+
+#pragma warning disable CS0618 // Type or member is obsolete - Fund is deprecated but still used for legacy support
 
 namespace CoreLedger.Application.Interfaces;
 
@@ -14,6 +17,7 @@ public interface IApplicationDbContext
     DbSet<Account> Accounts { get; }
     DbSet<CoreJob> CoreJobs { get; }
     DbSet<Fund> Funds { get; }
+    DbSet<Fundo> Fundos { get; }
     DbSet<Indexador> Indexadores { get; }
     DbSet<HistoricoIndexador> HistoricosIndexadores { get; }
     DbSet<Security> Securities { get; }

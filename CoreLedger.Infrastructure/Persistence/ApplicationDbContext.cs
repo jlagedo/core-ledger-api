@@ -1,6 +1,9 @@
+using CoreLedger.Domain.Cadastros.Entities;
 using CoreLedger.Domain.Entities;
 using CoreLedger.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
+
+#pragma warning disable CS0618 // Type or member is obsolete - Fund is deprecated but still used for legacy support
 
 namespace CoreLedger.Infrastructure.Persistence;
 
@@ -13,11 +16,12 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         : base(options)
     {
     }
-    
+
     public DbSet<AccountType> AccountTypes => Set<AccountType>();
     public DbSet<Account> Accounts => Set<Account>();
     public DbSet<CoreJob> CoreJobs => Set<CoreJob>();
     public DbSet<Fund> Funds => Set<Fund>();
+    public DbSet<Fundo> Fundos => Set<Fundo>();
     public DbSet<Security> Securities => Set<Security>();
     public DbSet<TransactionStatus> TransactionStatuses => Set<TransactionStatus>();
     public DbSet<TransactionType> TransactionTypes => Set<TransactionType>();

@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__postgres__execute_sql",
+      "WebSearch",
+      "WebFetch(domain:brasilindicadores.com.br)",
+      "WebFetch(domain:www.portaldefinancas.com)",
+      "WebFetch(domain:www.bcb.gov.br)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "angular-cli",
+    "nuget",
+    "postgres",
+    "microsoft-docs"
+  ]
+}

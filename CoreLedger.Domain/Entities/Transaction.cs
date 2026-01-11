@@ -1,6 +1,8 @@
 using System.Text.RegularExpressions;
 using CoreLedger.Domain.Exceptions;
 
+#pragma warning disable CS0618 // Type or member is obsolete - Fund is deprecated but still used for legacy transactions
+
 namespace CoreLedger.Domain.Entities;
 
 /// <summary>

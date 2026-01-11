@@ -2,6 +2,8 @@ using CoreLedger.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
+#pragma warning disable CS0618 // Type or member is obsolete - Fund is deprecated but still used for legacy support
+
 namespace CoreLedger.Infrastructure.Persistence.Configurations;
 
 /// <summary>

@@ -82,8 +82,8 @@ Resposta completa com relacionamentos.
 Versão resumida para listagens.
 
 ## Critérios de Aceite
-- [ ] Migration criada para tabela fundo
-- [ ] Entidade com encapsulamento (setters privados)
-- [ ] Configuration do EF Core completa
-- [ ] DTOs criados
-- [ ] AutoMapper profiles configurados
+- [x] Migration criada para tabela fundo
+- [x] Entidade com encapsulamento (setters privados)
+- [x] Configuration do EF Core completa
+- [x] DTOs criados
+- [x] AutoMapper profiles configurados

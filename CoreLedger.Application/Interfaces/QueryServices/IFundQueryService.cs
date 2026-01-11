@@ -1,6 +1,8 @@
 using CoreLedger.Domain.Entities;
 using CoreLedger.Domain.Models;
 
+#pragma warning disable CS0618 // Type or member is obsolete - Fund is deprecated but still used for legacy support
+
 namespace CoreLedger.Application.Interfaces.QueryServices;
 
 /// <summary>

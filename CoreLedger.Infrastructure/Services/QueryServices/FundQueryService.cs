@@ -5,6 +5,8 @@ using CoreLedger.Domain.Models;
 using CoreLedger.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
+#pragma warning disable CS0618 // Type or member is obsolete - Fund is deprecated but still used for legacy support
+
 namespace CoreLedger.Infrastructure.Services.QueryServices;
 
 /// <summary>

@@ -7,6 +7,7 @@ namespace CoreLedger.Domain.Entities;
 /// <summary>
 ///     Entidade de domínio Fundo com regras de negócio e invariantes.
 /// </summary>
+[Obsolete("DEPRECATED: Use CoreLedger.Domain.Cadastros.Entities.Fundo instead. This entity will be removed in a future version.", false)]
 public class Fund : BaseEntity
 {
     private Fund()

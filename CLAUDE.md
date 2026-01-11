@@ -10,6 +10,20 @@ Sistema de Fund Accounting para mercado brasileiro. Stack: .NET 10, PostgreSQL, 
 ### Documentação
 Especificações em `/docs/specs/`. Sempre consulte antes de implementar.
 
+### ⚠️ IMPORTANTE: Fund vs Fundo
+
+**NÃO CONFUNDA estas duas entidades:**
+
+| Entidade | Localização | Status | Uso |
+|----------|-------------|--------|-----|
+| `Fund` | `CoreLedger.Domain/Entities/Fund.cs` | **DEPRECATED** | Legado, NÃO usar |
+| `Fundo` | `CoreLedger.Domain/Cadastros/Entities/Fundo.cs` | **ATIVO** | Nova implementação CVM 175 |
+
+- **Sempre use `Fundo`** (namespace `CoreLedger.Domain.Cadastros.Entities`) para novas funcionalidades
+- **Nunca use `Fund`** - está marcado como `[Obsolete]` e será removido
+- Se precisar modificar código existente que usa `Fund`, migre para `Fundo`
+- Especificação completa em `/docs/specs/02_FUNDO_CORE.md`
+
 ## Project Overview
 
 **Core Ledger API** is a production-ready .NET 10 REST API for fund accounting ABOR (Accounting Book of Records) designed for institutional financial clients. It implements Clean Architecture (Hexagonal Architecture) with strict separation of concerns across four layers.

@@ -7,6 +7,8 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
+#pragma warning disable CS0618 // Type or member is obsolete - Fund is deprecated but still used for legacy support
+
 namespace CoreLedger.Application.UseCases.Funds.Commands;
 
 /// <summary>
