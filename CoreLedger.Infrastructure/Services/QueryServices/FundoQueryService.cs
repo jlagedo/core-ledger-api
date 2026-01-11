@@ -1,6 +1,7 @@
 using CoreLedger.Application.Interfaces.QueryServices;
 using CoreLedger.Domain.Cadastros.Entities;
 using CoreLedger.Domain.Cadastros.Enums;
+using CoreLedger.Domain.Cadastros.ValueObjects;
 using CoreLedger.Domain.Models;
 using CoreLedger.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -36,7 +37,8 @@ public class FundoQueryService : IFundoQueryService
 
                 query = field switch
                 {
-                    "cnpj" => query.Where(f => f.Cnpj.Valor == value.Replace(".", "").Replace("/", "").Replace("-", "")),
+                    "cnpj" when CNPJ.TentarCriar(value, out var cnpjFilter) => query.Where(f => f.Cnpj == cnpjFilter),
+                    "cnpj" => query, // Invalid CNPJ format, return empty result
                     "razaosocial" => query.Where(f => EF.Functions.ILike(f.RazaoSocial, $"%{value}%")),
                     "nomefantasia" => query.Where(f => f.NomeFantasia != null && EF.Functions.ILike(f.NomeFantasia, $"%{value}%")),
                     "nomecurto" => query.Where(f => f.NomeCurto != null && EF.Functions.ILike(f.NomeCurto, $"%{value}%")),
@@ -110,7 +112,7 @@ public class FundoQueryService : IFundoQueryService
                 EF.Functions.ILike(f.RazaoSocial, pattern) ||
                 (f.NomeFantasia != null && EF.Functions.ILike(f.NomeFantasia, pattern)) ||
                 (f.NomeCurto != null && EF.Functions.ILike(f.NomeCurto, pattern)) ||
-                EF.Functions.ILike(f.Cnpj.Valor, pattern))
+                EF.Functions.ILike(EF.Property<string>(f, "Cnpj"), pattern))
             .OrderBy(f => f.RazaoSocial)
             .Take(limit)
             .ToListAsync(cancellationToken);
@@ -125,10 +127,11 @@ public class FundoQueryService : IFundoQueryService
         if (string.IsNullOrWhiteSpace(cnpj))
             return null;
 
-        var normalizedCnpj = cnpj.Replace(".", "").Replace("/", "").Replace("-", "").Trim();
+        if (!CNPJ.TentarCriar(cnpj, out var cnpjVO))
+            return null;
 
         return await _context.Fundos
             .AsNoTracking()
-            .FirstOrDefaultAsync(f => f.Cnpj.Valor == normalizedCnpj, cancellationToken);
+            .FirstOrDefaultAsync(f => f.Cnpj == cnpjVO, cancellationToken);
     }
 }

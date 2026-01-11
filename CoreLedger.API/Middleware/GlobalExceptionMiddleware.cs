@@ -38,9 +38,11 @@ public class GlobalExceptionMiddleware
         var correlationId = context.Items["CorrelationId"]?.ToString();
         var traceId = context.TraceIdentifier;
 
-        _logger.LogError(exception,
-            "Unhandled exception occurred. CorrelationId: {CorrelationId}, TraceId: {TraceId}",
-            correlationId, traceId);
+        // Use appropriate log level based on exception type
+        // - Validation errors and not-found are expected business scenarios (Warning)
+        // - External service errors are infrastructure issues (Error)
+        // - Unknown exceptions are true errors (Error)
+        LogException(exception, correlationId, traceId);
 
         var (statusCode, errorCode, message, errors) = exception switch
         {
@@ -96,6 +98,35 @@ public class GlobalExceptionMiddleware
         };
 
         await context.Response.WriteAsync(JsonSerializer.Serialize(response, options));
+    }
+
+    private void LogException(Exception exception, string? correlationId, string traceId)
+    {
+        switch (exception)
+        {
+            case ValidationException:
+            case DomainValidationException:
+            case EntityNotFoundException:
+                // Expected business scenarios - log as Warning
+                _logger.LogWarning(exception,
+                    "Business exception occurred. CorrelationId: {CorrelationId}, TraceId: {TraceId}",
+                    correlationId, traceId);
+                break;
+
+            case ExternalServiceException:
+                // Infrastructure issue - log as Error
+                _logger.LogError(exception,
+                    "External service exception. CorrelationId: {CorrelationId}, TraceId: {TraceId}",
+                    correlationId, traceId);
+                break;
+
+            default:
+                // Unexpected exception - log as Error
+                _logger.LogError(exception,
+                    "Unhandled exception occurred. CorrelationId: {CorrelationId}, TraceId: {TraceId}",
+                    correlationId, traceId);
+                break;
+        }
     }
 
     private static string GetSafeMessage(Exception exception)

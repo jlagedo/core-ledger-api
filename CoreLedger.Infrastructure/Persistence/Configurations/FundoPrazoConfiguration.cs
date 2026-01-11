@@ -77,12 +77,12 @@ public class FundoPrazoConfiguration : IEntityTypeConfiguration<FundoPrazo>
 
         builder.Property(fp => fp.CreatedAt)
             .HasColumnName("created_at")
-            .HasColumnType("timestamp")
+            .HasColumnType("timestamptz")
             .IsRequired();
 
         builder.Property(fp => fp.UpdatedAt)
             .HasColumnName("updated_at")
-            .HasColumnType("timestamp");
+            .HasColumnType("timestamptz");
 
         // Relacionamentos
         builder.HasOne(fp => fp.Fundo)

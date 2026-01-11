@@ -112,7 +112,7 @@ public class CreateFundoCommandValidator : AbstractValidator<CreateFundoCommand>
 
         var exists = await _context.Fundos
             .AsNoTracking()
-            .AnyAsync(f => f.Cnpj.Valor == cnpjVO.Valor && f.DeletedAt == null, cancellationToken);
+            .AnyAsync(f => f.Cnpj == cnpjVO && f.DeletedAt == null, cancellationToken);
 
         return !exists;
     }

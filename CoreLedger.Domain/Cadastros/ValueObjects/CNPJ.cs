@@ -1,14 +1,30 @@
+using System.Text.RegularExpressions;
 using CoreLedger.Domain.Exceptions;
 
 namespace CoreLedger.Domain.Cadastros.ValueObjects;
 
 /// <summary>
 ///     Value Object representando um CNPJ (Cadastro Nacional da Pessoa Jurídica).
+///     Suporta tanto o formato numérico tradicional quanto o novo formato alfanumérico
+///     (IN RFB 2.229/2024).
 /// </summary>
-public sealed class CNPJ : IEquatable<CNPJ>
+public sealed partial class CNPJ : IEquatable<CNPJ>
 {
+    private const int TamanhoCnpjSemDv = 12;
+    private const int TamanhoCnpjTotal = 14;
+    private const int ValorBase = '0'; // ASCII 48
+
+    // Base: 12 caracteres alfanuméricos (A-Z, 0-9), DV: 2 dígitos numéricos
+    private static readonly Regex RegexFormacaoBase = RegexFormacaoBaseCompiled();
+    private static readonly Regex RegexFormacaoDv = RegexFormacaoDvCompiled();
+    private static readonly Regex RegexCaracteresFormatacao = RegexCaracteresFormatacaoCompiled();
+    private static readonly Regex RegexValorZerado = RegexValorZeradoCompiled();
+
+    // Pesos para cálculo dos dígitos verificadores
+    private static readonly int[] PesosDv = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+
     /// <summary>
-    ///     CNPJ apenas com dígitos (14 caracteres).
+    ///     CNPJ normalizado (14 caracteres alfanuméricos, uppercase).
     /// </summary>
     public string Valor { get; }
 
@@ -28,18 +44,22 @@ public sealed class CNPJ : IEquatable<CNPJ>
         if (string.IsNullOrWhiteSpace(cnpj))
             throw new DomainValidationException("CNPJ não pode ser vazio.");
 
-        var apenasDigitos = ExtrairDigitos(cnpj);
+        var cnpjNormalizado = RemoverCaracteresFormatacao(cnpj);
 
-        if (apenasDigitos.Length != 14)
-            throw new DomainValidationException("CNPJ deve conter 14 dígitos.");
+        if (!IsCnpjFormacaoValidaComDv(cnpjNormalizado))
+            throw new DomainValidationException("CNPJ deve conter 12 caracteres alfanuméricos + 2 dígitos verificadores.");
 
-        if (TodosDigitosIguais(apenasDigitos))
+        if (RegexValorZerado.IsMatch(cnpjNormalizado[..TamanhoCnpjSemDv]))
             throw new DomainValidationException("CNPJ inválido.");
 
-        if (!ValidarDigitosVerificadores(apenasDigitos))
+        var baseCnpj = cnpjNormalizado[..TamanhoCnpjSemDv];
+        var dvInformado = cnpjNormalizado[TamanhoCnpjSemDv..];
+        var dvCalculado = CalcularDv(baseCnpj);
+
+        if (dvCalculado != dvInformado)
             throw new DomainValidationException("CNPJ inválido - dígitos verificadores incorretos.");
 
-        return new CNPJ(apenasDigitos);
+        return new CNPJ(cnpjNormalizado);
     }
 
     /// <summary>
@@ -55,18 +75,22 @@ public sealed class CNPJ : IEquatable<CNPJ>
         if (string.IsNullOrWhiteSpace(cnpj))
             return false;
 
-        var apenasDigitos = ExtrairDigitos(cnpj);
+        var cnpjNormalizado = RemoverCaracteresFormatacao(cnpj);
 
-        if (apenasDigitos.Length != 14)
+        if (!IsCnpjFormacaoValidaComDv(cnpjNormalizado))
             return false;
 
-        if (TodosDigitosIguais(apenasDigitos))
+        if (RegexValorZerado.IsMatch(cnpjNormalizado[..TamanhoCnpjSemDv]))
             return false;
 
-        if (!ValidarDigitosVerificadores(apenasDigitos))
+        var baseCnpj = cnpjNormalizado[..TamanhoCnpjSemDv];
+        var dvInformado = cnpjNormalizado[TamanhoCnpjSemDv..];
+        var dvCalculado = CalcularDv(baseCnpj);
+
+        if (dvCalculado != dvInformado)
             return false;
 
-        resultado = new CNPJ(apenasDigitos);
+        resultado = new CNPJ(cnpjNormalizado);
         return true;
     }
 
@@ -76,43 +100,82 @@ public sealed class CNPJ : IEquatable<CNPJ>
     public string Formatado =>
         $"{Valor[..2]}.{Valor[2..5]}.{Valor[5..8]}/{Valor[8..12]}-{Valor[12..]}";
 
-    private static string ExtrairDigitos(string valor)
+    /// <summary>
+    ///     Indica se o CNPJ é alfanumérico (contém letras na base).
+    /// </summary>
+    public bool IsAlfanumerico => Valor[..TamanhoCnpjSemDv].Any(char.IsLetter);
+
+    /// <summary>
+    ///     Calcula os dígitos verificadores para uma base de CNPJ.
+    /// </summary>
+    /// <param name="baseCnpj">Base do CNPJ (12 caracteres alfanuméricos).</param>
+    /// <returns>String com os 2 dígitos verificadores.</returns>
+    public static string CalcularDv(string baseCnpj)
     {
-        return new string(valor.Where(char.IsDigit).ToArray());
+        if (string.IsNullOrWhiteSpace(baseCnpj))
+            throw new ArgumentException("Base do CNPJ não pode ser vazia.", nameof(baseCnpj));
+
+        baseCnpj = RemoverCaracteresFormatacao(baseCnpj);
+
+        if (!IsCnpjFormacaoValidaSemDv(baseCnpj))
+            throw new ArgumentException($"Base do CNPJ '{baseCnpj}' não é válida para cálculo do DV.", nameof(baseCnpj));
+
+        var dv1 = CalcularDigito(baseCnpj);
+        var dv2 = CalcularDigito(baseCnpj + dv1);
+
+        return $"{dv1}{dv2}";
     }
 
-    private static bool TodosDigitosIguais(string digitos)
+    private static int CalcularDigito(string cnpj)
     {
-        return digitos.Distinct().Count() == 1;
-    }
-
-    private static bool ValidarDigitosVerificadores(string cnpj)
-    {
-        // Cálculo do primeiro dígito verificador
-        int[] multiplicadores1 = { 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 };
         var soma = 0;
+        var tamanho = cnpj.Length;
 
-        for (var i = 0; i < 12; i++)
-            soma += (cnpj[i] - '0') * multiplicadores1[i];
+        for (var i = tamanho - 1; i >= 0; i--)
+        {
+            var valorCaracter = cnpj[i] - ValorBase;
+            var indicePeso = PesosDv.Length - tamanho + i;
+            soma += valorCaracter * PesosDv[indicePeso];
+        }
 
         var resto = soma % 11;
-        var digito1 = resto < 2 ? 0 : 11 - resto;
+        return resto < 2 ? 0 : 11 - resto;
+    }
 
-        if (cnpj[12] - '0' != digito1)
+    private static string RemoverCaracteresFormatacao(string cnpj)
+    {
+        return RegexCaracteresFormatacao.Replace(cnpj.Trim().ToUpperInvariant(), "");
+    }
+
+    private static bool IsCnpjFormacaoValidaSemDv(string cnpj)
+    {
+        return cnpj.Length == TamanhoCnpjSemDv &&
+               RegexFormacaoBase.IsMatch(cnpj) &&
+               !RegexValorZerado.IsMatch(cnpj);
+    }
+
+    private static bool IsCnpjFormacaoValidaComDv(string cnpj)
+    {
+        if (cnpj.Length != TamanhoCnpjTotal)
             return false;
 
-        // Cálculo do segundo dígito verificador
-        int[] multiplicadores2 = { 6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 };
-        soma = 0;
+        var baseCnpj = cnpj[..TamanhoCnpjSemDv];
+        var dv = cnpj[TamanhoCnpjSemDv..];
 
-        for (var i = 0; i < 13; i++)
-            soma += (cnpj[i] - '0') * multiplicadores2[i];
-
-        resto = soma % 11;
-        var digito2 = resto < 2 ? 0 : 11 - resto;
-
-        return cnpj[13] - '0' == digito2;
+        return RegexFormacaoBase.IsMatch(baseCnpj) && RegexFormacaoDv.IsMatch(dv);
     }
+
+    [GeneratedRegex(@"^[A-Z\d]{12}$")]
+    private static partial Regex RegexFormacaoBaseCompiled();
+
+    [GeneratedRegex(@"^\d{2}$")]
+    private static partial Regex RegexFormacaoDvCompiled();
+
+    [GeneratedRegex(@"[./-]")]
+    private static partial Regex RegexCaracteresFormatacaoCompiled();
+
+    [GeneratedRegex(@"^0+$")]
+    private static partial Regex RegexValorZeradoCompiled();
 
     public bool Equals(CNPJ? other)
     {

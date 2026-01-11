@@ -1,5 +1,6 @@
 using CoreLedger.Application.Interfaces.QueryServices;
 using CoreLedger.Domain.Cadastros.Entities;
+using CoreLedger.Domain.Cadastros.ValueObjects;
 using CoreLedger.Domain.Models;
 using CoreLedger.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -30,8 +31,9 @@ public class InstituicaoQueryService : IInstituicaoQueryService
         if (!string.IsNullOrWhiteSpace(search))
         {
             var normalizedSearch = search.Replace(".", "").Replace("/", "").Replace("-", "").Trim();
+            var searchPattern = $"%{normalizedSearch}%";
             query = query.Where(i =>
-                i.Cnpj.Valor.Contains(normalizedSearch) ||
+                EF.Functions.ILike(EF.Property<string>(i, "Cnpj"), searchPattern) ||
                 EF.Functions.ILike(i.RazaoSocial, $"%{search}%") ||
                 (i.NomeFantasia != null && EF.Functions.ILike(i.NomeFantasia, $"%{search}%")));
         }
@@ -53,7 +55,8 @@ public class InstituicaoQueryService : IInstituicaoQueryService
 
                 query = field switch
                 {
-                    "cnpj" => query.Where(i => i.Cnpj.Valor == value.Replace(".", "").Replace("/", "").Replace("-", "")),
+                    "cnpj" when CNPJ.TentarCriar(value, out var cnpjFilter) => query.Where(i => i.Cnpj == cnpjFilter),
+                    "cnpj" => query, // Invalid CNPJ format, no filter applied
                     "razaosocial" => query.Where(i => EF.Functions.ILike(i.RazaoSocial, $"%{value}%")),
                     "nomefantasia" => query.Where(i => i.NomeFantasia != null && EF.Functions.ILike(i.NomeFantasia, $"%{value}%")),
                     "ativo" => bool.TryParse(value, out var ativoValue)
@@ -97,10 +100,11 @@ public class InstituicaoQueryService : IInstituicaoQueryService
         if (string.IsNullOrWhiteSpace(cnpj))
             return null;
 
-        var normalizedCnpj = cnpj.Replace(".", "").Replace("/", "").Replace("-", "").Trim();
+        if (!CNPJ.TentarCriar(cnpj, out var cnpjVO))
+            return null;
 
         return await _context.Instituicoes
             .AsNoTracking()
-            .FirstOrDefaultAsync(i => i.Cnpj.Valor == normalizedCnpj, cancellationToken);
+            .FirstOrDefaultAsync(i => i.Cnpj == cnpjVO, cancellationToken);
     }
 }

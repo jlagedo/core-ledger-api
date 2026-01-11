@@ -2,6 +2,7 @@ using AutoMapper;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.Interfaces;
 using CoreLedger.Domain.Cadastros.Entities;
+using CoreLedger.Domain.Cadastros.ValueObjects;
 using CoreLedger.Domain.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -35,11 +36,14 @@ public class CreateInstituicaoCommandHandler : IRequestHandler<CreateInstituicao
             request.Cnpj,
             request.RazaoSocial);
 
-        // Check for duplicate CNPJ
+        // Create CNPJ value object for comparison (validates format early)
+        var cnpjToCheck = CNPJ.Criar(request.Cnpj);
+
+        // Check for duplicate CNPJ - EF Core uses value converter for the comparison
         var existingByCnpj = await _context.Instituicoes
             .AsNoTracking()
             .FirstOrDefaultAsync(
-                i => i.Cnpj.Valor == request.Cnpj,
+                i => i.Cnpj == cnpjToCheck,
                 cancellationToken);
 
         if (existingByCnpj != null)
@@ -63,6 +67,6 @@ public class CreateInstituicaoCommandHandler : IRequestHandler<CreateInstituicao
             instituicao.Id,
             request.Cnpj);
 
-        return _mapper.Map<InstituicaoDto>(instituicao);
+             return _mapper.Map<InstituicaoDto>(instituicao);
     }
 }

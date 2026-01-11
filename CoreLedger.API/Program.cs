@@ -81,12 +81,14 @@ try
     }
 
     app.UseSecurityHeaders();
-    app.UseGlobalExceptionHandler();
 
     // Authentication must come before correlation ID middleware to ensure user claims are available
     app.UseAuthentication();
     app.UseCorrelationId();
 
+    // Serilog request logging must come BEFORE exception handler so it logs the correct status code
+    // Pipeline: SerilogRequestLogging → GlobalExceptionHandler → Endpoints
+    // When exception bubbles up: Endpoints → GlobalExceptionHandler (sets 400) → SerilogRequestLogging (logs 400)
     app.UseSerilogRequestLogging(options =>
     {
         options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
@@ -103,6 +105,9 @@ try
             diagnosticContext.Set("IsAuthenticated", isAuthenticated);
         };
     });
+
+    // Exception handler must be AFTER Serilog so correct status codes are logged
+    app.UseGlobalExceptionHandler();
 
     if (app.Environment.IsDevelopment()) app.UseSwaggerDocumentation();
 

@@ -48,7 +48,7 @@ public class FundoPrazoExcecaoConfiguration : IEntityTypeConfiguration<FundoPraz
 
         builder.Property(fpe => fpe.CreatedAt)
             .HasColumnName("created_at")
-            .HasColumnType("timestamp")
+            .HasColumnType("timestamptz")
             .IsRequired();
 
         // Relacionamento

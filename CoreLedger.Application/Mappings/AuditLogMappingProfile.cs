@@ -25,6 +25,7 @@ public class AuditLogMappingProfile : Profile
                 src.CorrelationId,
                 src.RequestId,
                 src.Source
-            ));
+            ))
+            .ForAllMembers(opt => opt.Ignore());
     }
 }

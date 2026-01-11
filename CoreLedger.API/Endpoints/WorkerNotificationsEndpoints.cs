@@ -55,13 +55,23 @@ public static class WorkerNotificationsEndpoints
                 type = notification.Success ? "success" : "error"
             };
 
-            await hubContext.Clients
-                .User(notification.CreatedByUserId)
-                .SendAsync("ReceiveNotification", signalRMessage);
+            // Only send SignalR notification if we have a valid user ID
+            if (!string.IsNullOrEmpty(notification.CreatedByUserId))
+            {
+                await hubContext.Clients
+                    .User(notification.CreatedByUserId)
+                    .SendAsync("ReceiveNotification", signalRMessage);
 
-            logger.LogInformation(
-                "SignalR notification sent to user - TransactionId: {TransactionId}, UserId: {UserId}, Type: {Type}",
-                notification.TransactionId, notification.CreatedByUserId, signalRMessage.type);
+                logger.LogInformation(
+                    "SignalR notification sent to user - TransactionId: {TransactionId}, UserId: {UserId}, Type: {Type}",
+                    notification.TransactionId, notification.CreatedByUserId, signalRMessage.type);
+            }
+            else
+            {
+                logger.LogWarning(
+                    "Cannot send SignalR notification - CreatedByUserId is null or empty for TransactionId: {TransactionId}",
+                    notification.TransactionId);
+            }
 
             return Results.Ok(new { Message = "Notification received and broadcast successfully" });
         }
@@ -77,7 +87,7 @@ public static class WorkerNotificationsEndpoints
 /// <param name="ErrorMessage">Error message if processing failed.</param>
 /// <param name="ProcessedAt">UTC timestamp when processing completed.</param>
 /// <param name="CorrelationId">Correlation ID for distributed tracing.</param>
-/// <param name="CreatedByUserId">User ID of the person who created the transaction.</param>
+/// <param name="CreatedByUserId">User ID of the person who created the transaction (may be null for batch operations).</param>
 public record TransactionProcessedNotification(
     int TransactionId,
     bool Success,
@@ -85,5 +95,5 @@ public record TransactionProcessedNotification(
     string? ErrorMessage,
     DateTime ProcessedAt,
     string? CorrelationId,
-    string CreatedByUserId
+    string? CreatedByUserId
 );

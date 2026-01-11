@@ -15,6 +15,7 @@ public class Auth0Service : IAuth0Service
     private readonly string _domain;
     private readonly HttpClient _httpClient;
     private readonly ILogger<Auth0Service> _logger;
+    private readonly bool _useMockAuth;
 
     public Auth0Service(
         HttpClient httpClient,
@@ -23,19 +24,38 @@ public class Auth0Service : IAuth0Service
     {
         _httpClient = httpClient;
         _logger = logger;
+        _useMockAuth = configuration.GetValue<bool>("Auth:UseMock");
 
-        _domain = configuration["Auth0:Domain"]
-                  ?? throw new InvalidOperationException("Auth0:Domain configuration is missing");
+        // Only require Auth0:Domain when not using mock auth
+        if (!_useMockAuth)
+        {
+            _domain = configuration["Auth0:Domain"]
+                      ?? throw new InvalidOperationException("Auth0:Domain configuration is missing");
 
-        // Ensure domain has proper format
-        if (!_domain.StartsWith("https://")) _domain = $"https://{_domain}";
-        if (_domain.EndsWith("/")) _domain = _domain.TrimEnd('/');
+            // Ensure domain has proper format
+            if (!_domain.StartsWith("https://")) _domain = $"https://{_domain}";
+            if (_domain.EndsWith("/")) _domain = _domain.TrimEnd('/');
+        }
+        else
+        {
+            _domain = string.Empty;
+        }
     }
 
     public async Task<Auth0UserProfile> GetUserProfileAsync(
         string accessToken,
         CancellationToken cancellationToken = default)
     {
+        // Return mock user data when in mock auth mode
+        if (_useMockAuth)
+        {
+            _logger.LogDebug("Returning mock user profile (mock auth mode)");
+            return new Auth0UserProfile(
+                Sub: "mock|admin-001",
+                Email: "admin@coreledger.local",
+                Name: "Mock Admin User");
+        }
+
         try
         {
             var requestUri = $"{_domain}/userinfo";

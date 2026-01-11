@@ -2,6 +2,7 @@ using AutoMapper;
 using CoreLedger.Application.DTOs.Fundo;
 using CoreLedger.Application.Interfaces;
 using CoreLedger.Domain.Cadastros.Entities;
+using CoreLedger.Domain.Cadastros.ValueObjects;
 using CoreLedger.Domain.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -35,14 +36,14 @@ public class CreateFundoCommandHandler : IRequestHandler<CreateFundoCommand, Fun
             request.Cnpj,
             request.RazaoSocial);
 
-        // Normalize CNPJ
-        var normalizedCnpj = request.Cnpj.Replace(".", "").Replace("/", "").Replace("-", "").Trim();
+        // Create CNPJ value object for comparison (validates format early)
+        var cnpjToCheck = CNPJ.Criar(request.Cnpj);
 
-        // Check for duplicate CNPJ
+        // Check for duplicate CNPJ - EF Core uses value converter for the comparison
         var existingByCnpj = await _context.Fundos
             .AsNoTracking()
             .FirstOrDefaultAsync(
-                f => f.Cnpj.Valor == normalizedCnpj && f.DeletedAt == null,
+                f => f.Cnpj == cnpjToCheck && f.DeletedAt == null,
                 cancellationToken);
 
         if (existingByCnpj != null)
