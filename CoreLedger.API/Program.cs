@@ -1,4 +1,5 @@
 using CoreLedger.API.Endpoints;
+using CoreLedger.API.Endpoints.Cadastros;
 using CoreLedger.API.Extensions;
 using CoreLedger.API.Middleware;
 using CoreLedger.Application;
@@ -128,6 +129,14 @@ try
     app.MapCalendarioEndpoints();
     app.MapIndexadoresEndpoints();
     app.MapHistoricosIndexadoresEndpoints();
+
+    // Cadastros module endpoints
+    app.MapFundosEndpoints();
+    app.MapClassesEndpoints();
+    app.MapTaxasEndpoints();
+    app.MapPrazosEndpoints();
+    app.MapVinculosEndpoints();
+    app.MapInstituicoesEndpoints();
 
     app.MapHealthChecks("/health");
     app.MapHealthChecks("/health/ready");

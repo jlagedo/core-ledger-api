@@ -1,11 +1,12 @@
 ﻿# Etapa 08 - API Endpoints
 
 ## Objetivo
-Implementar controllers e handlers MediatR.
+Implementar endpoints Minimal API e handlers MediatR.
 
 ## Localização
-- Controllers: `FundAccounting.API/Controllers/Cadastros/`
-- Handlers: `FundAccounting.Application/Cadastros/`
+- Endpoints: `CoreLedger.API/Endpoints/Cadastros/`
+- Handlers: `CoreLedger.Application/UseCases/Cadastros/`
+- QueryServices: `CoreLedger.Application/Interfaces/QueryServices/` + `CoreLedger.Infrastructure/Services/QueryServices/`
 
 ## Estrutura CQRS
 
@@ -111,7 +112,8 @@ Application/Cadastros/
 ```
 
 ## Critérios de Aceite
-- [ ] Controllers criados com rotas corretas
-- [ ] Handlers MediatR implementados
-- [ ] Swagger/OpenAPI documentado
-- [ ] Respostas padronizadas
+- [x] Endpoints Minimal API criados com rotas corretas
+- [x] Handlers MediatR implementados (Commands + Queries)
+- [x] Swagger/OpenAPI documentado via WithTags e WithName
+- [x] Respostas padronizadas (PagedResult para listas, DTOs para detalhes)
+- [x] Build e testes passando (277 testes, 0 falhas)

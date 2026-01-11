@@ -36,6 +36,8 @@ public interface IApplicationDbContext
     DbSet<User> Users { get; }
     DbSet<AuditLog> AuditLogs { get; }
     DbSet<Calendario> Calendarios { get; }
+    DbSet<Instituicao> Instituicoes { get; }
+    DbSet<FundoVinculo> FundoVinculos { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -57,6 +57,10 @@ public static class DependencyInjection
         services.AddScoped<IIndexadorQueryService, IndexadorQueryService>();
         services.AddScoped<IHistoricoIndexadorQueryService, HistoricoIndexadorQueryService>();
 
+        // Query Services for Cadastros module (Fundo, Instituicao)
+        services.AddScoped<IFundoQueryService, FundoQueryService>();
+        services.AddScoped<IInstituicaoQueryService, InstituicaoQueryService>();
+
         // Get HTTP client options for Auth0 service configuration
         var httpClientOptions =
             configuration.GetSection("HttpClient").Get<HttpClientOptions>() ?? new HttpClientOptions();
