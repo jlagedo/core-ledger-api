@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Fund Accounting - Instruções para Claude Code
+
+### Contexto
+Sistema de Fund Accounting para mercado brasileiro. Stack: .NET 10, PostgreSQL, EF Core.
+
+### Documentação
+Especificações em `/docs/specs/`. Sempre consulte antes de implementar.
+
 ## Project Overview
 
 **Core Ledger API** is a production-ready .NET 10 REST API for fund accounting ABOR (Accounting Book of Records) designed for institutional financial clients. It implements Clean Architecture (Hexagonal Architecture) with strict separation of concerns across four layers.
