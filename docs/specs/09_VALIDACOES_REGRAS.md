@@ -107,8 +107,8 @@ public class FundoDomainService
 | VINCULO_PRINCIPAL_EXISTS | Já existe vínculo principal |
 
 ## Critérios de Aceite
-- [ ] Validators para todos Commands
-- [ ] Pipeline behavior de validação (MediatR)
-- [ ] Domain service implementado
-- [ ] Mensagens de erro em português
-- [ ] Códigos de erro padronizados
+- [x] Validators para todos Commands
+- [x] Pipeline behavior de validação (MediatR)
+- [x] Domain service implementado
+- [x] Mensagens de erro em português
+- [x] Códigos de erro padronizados
