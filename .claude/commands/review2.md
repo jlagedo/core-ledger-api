@@ -1,5 +1,5 @@
 ---
-name: review
+name: review2
 description: Revisa implementação de uma etapa
 arguments:
   - name: etapa

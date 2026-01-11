@@ -59,7 +59,12 @@ CREATE INDEX ix_vinculo_vigente ON cadastros.fundo_vinculo(fundo_id, tipo_vincul
 - VinculoResponseDto
 
 ## Critérios de Aceite
-- [ ] Migration para instituição e vínculo
+- [x] Migration para instituição e vínculo
+- [x] Entidades Instituicao e FundoVinculo criadas com validações
+- [x] Configurações EF Core (InstituicaoConfiguration e FundoVinculoConfiguration)
+- [x] DTOs criados (Create, Update, Response)
+- [x] Validators FluentValidation implementados
+- [x] Testes unitários básicos
 - [ ] Seed de instituições principais (B3, principais admins)
 - [ ] Validação: vínculos obrigatórios
 - [ ] Endpoint de encerramento (PATCH)

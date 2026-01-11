@@ -28,6 +28,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<FundoTaxaPerformance> FundoTaxasPerformance => Set<FundoTaxaPerformance>();
     public DbSet<FundoPrazo> FundoPrazos => Set<FundoPrazo>();
     public DbSet<FundoPrazoExcecao> FundoPrazoExcecoes => Set<FundoPrazoExcecao>();
+    public DbSet<Instituicao> Instituicoes => Set<Instituicao>();
+    public DbSet<FundoVinculo> FundoVinculos => Set<FundoVinculo>();
     public DbSet<Security> Securities => Set<Security>();
     public DbSet<TransactionStatus> TransactionStatuses => Set<TransactionStatus>();
     public DbSet<TransactionType> TransactionTypes => Set<TransactionType>();
