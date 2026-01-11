@@ -65,7 +65,7 @@ LAQUS, CERC, TAG
 - ParametrosFIDCResponseDto
 
 ## Critérios de Aceite
-- [ ] Migration para tabela parametros_fidc
-- [ ] Validação: somente para FIDC/FICFIDC
-- [ ] Campo JSON para tipos_recebiveis
-- [ ] Relacionamento 1:1 com Fundo
+- [x] Migration para tabela parametros_fidc
+- [x] Validação: somente para FIDC/FICFIDC
+- [x] Campo JSON para tipos_recebiveis
+- [x] Relacionamento 1:1 com Fundo

@@ -30,6 +30,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<FundoPrazoExcecao> FundoPrazoExcecoes => Set<FundoPrazoExcecao>();
     public DbSet<Instituicao> Instituicoes => Set<Instituicao>();
     public DbSet<FundoVinculo> FundoVinculos => Set<FundoVinculo>();
+    public DbSet<FundoParametrosFIDC> FundoParametrosFIDC => Set<FundoParametrosFIDC>();
     public DbSet<Security> Securities => Set<Security>();
     public DbSet<TransactionStatus> TransactionStatuses => Set<TransactionStatus>();
     public DbSet<TransactionType> TransactionTypes => Set<TransactionType>();

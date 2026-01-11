@@ -150,6 +150,11 @@ public class Fundo
     public ICollection<FundoTaxa> Taxas { get; private set; } = new List<FundoTaxa>();
 
     /// <summary>
+    ///     Parâmetros específicos para FIDC (relacionamento 1:1, opcional).
+    /// </summary>
+    public FundoParametrosFIDC? ParametrosFIDC { get; private set; }
+
+    /// <summary>
     ///     Identificador do usuário que criou o registro.
     /// </summary>
     public string? CreatedBy { get; private set; }
