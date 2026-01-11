@@ -21,9 +21,27 @@ public class HistoricoIndexadorQueryService : IHistoricoIndexadorQueryService
     public async Task<(IReadOnlyList<HistoricoIndexador> Historicos, int TotalCount)> GetByIndexadorIdAsync(
         int indexadorId,
         QueryParameters parameters,
+        DateOnly? dataInicio = null,
+        DateOnly? dataFim = null,
         CancellationToken cancellationToken = default)
     {
         var sqlParameters = new List<object> { indexadorId };
+        var whereConditions = new List<string> { "h.indexador_id = {0}" };
+
+        // Add date range filters
+        if (dataInicio.HasValue)
+        {
+            whereConditions.Add($"h.data_referencia >= {{{sqlParameters.Count}}}");
+            sqlParameters.Add(dataInicio.Value);
+        }
+
+        if (dataFim.HasValue)
+        {
+            whereConditions.Add($"h.data_referencia <= {{{sqlParameters.Count}}}");
+            sqlParameters.Add(dataFim.Value);
+        }
+
+        var whereClause = $"WHERE {string.Join(" AND ", whereConditions)}";
 
         var orderByClause = string.Empty;
         if (!string.IsNullOrWhiteSpace(parameters.SortBy))
@@ -55,17 +73,17 @@ public class HistoricoIndexadorQueryService : IHistoricoIndexadorQueryService
         var countSql = $@"
             SELECT COUNT(*)::int AS ""Value""
             FROM historicos_indexadores h
-            WHERE h.indexador_id = {{0}}";
+            {whereClause}";
 
         var dataSql = $@"
             SELECT h.*
             FROM historicos_indexadores h
-            WHERE h.indexador_id = {{0}}
+            {whereClause}
             {orderByClause}
             LIMIT {{{limitParam}}} OFFSET {{{offsetParam}}}";
 
         var totalCount = await _context.Database
-            .SqlQueryRaw<int>(countSql, new object[] { indexadorId })
+            .SqlQueryRaw<int>(countSql, sqlParameters.Take(limitParam).ToArray())
             .FirstOrDefaultAsync(cancellationToken);
 
         var historicos = await _context.Set<HistoricoIndexador>()

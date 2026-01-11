@@ -26,6 +26,8 @@ public class GetHistoricoIndexadorQueryHandler : IRequestHandler<GetHistoricoInd
         var (historicos, totalCount) = await _queryService.GetByIndexadorIdAsync(
             request.IndexadorId,
             request.Parameters,
+            request.DataInicio,
+            request.DataFim,
             cancellationToken);
 
         var dtos = historicos.Select(_mapper.Map<HistoricoIndexadorDto>).ToList();

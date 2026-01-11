@@ -62,12 +62,11 @@ public class Indexador : BaseEntity
 
     /// <summary>
     ///     Atualiza o indexador com validação.
+    ///     Nota: Tipo e Periodicidade são imutáveis após criação e não podem ser alterados.
     /// </summary>
     public void Update(
         string nome,
-        IndexadorTipo tipo,
         string? fonte,
-        Periodicidade periodicidade,
         decimal? fatorAcumulado,
         DateTime? dataBase,
         string? urlFonte,
@@ -77,12 +76,9 @@ public class Indexador : BaseEntity
         ValidateNome(nome);
         ValidateFatorAcumulado(fatorAcumulado, dataBase);
         ValidateUrlFonte(urlFonte, importacaoAutomatica);
-        ValidatePeriodicidadeCompatibility(tipo, periodicidade);
 
         Nome = nome.Trim();
-        Tipo = tipo;
         Fonte = fonte?.Trim();
-        Periodicidade = periodicidade;
         FatorAcumulado = fatorAcumulado;
         DataBase = dataBase?.Date;
         UrlFonte = urlFonte?.Trim();

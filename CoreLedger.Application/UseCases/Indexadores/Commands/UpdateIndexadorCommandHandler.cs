@@ -1,4 +1,3 @@
-using AutoMapper;
 using CoreLedger.Application.DTOs;
 using CoreLedger.Application.Interfaces;
 using CoreLedger.Domain.Entities;
@@ -16,15 +15,12 @@ public class UpdateIndexadorCommandHandler : IRequestHandler<UpdateIndexadorComm
 {
     private readonly IApplicationDbContext _context;
     private readonly ILogger<UpdateIndexadorCommandHandler> _logger;
-    private readonly IMapper _mapper;
 
     public UpdateIndexadorCommandHandler(
         IApplicationDbContext context,
-        IMapper mapper,
         ILogger<UpdateIndexadorCommandHandler> logger)
     {
         _context = context;
-        _mapper = mapper;
         _logger = logger;
     }
 
@@ -45,9 +41,7 @@ public class UpdateIndexadorCommandHandler : IRequestHandler<UpdateIndexadorComm
 
         indexador.Update(
             request.Nome,
-            request.Tipo,
             request.Fonte,
-            request.Periodicidade,
             request.FatorAcumulado,
             request.DataBase,
             request.UrlFonte,
@@ -58,6 +52,37 @@ public class UpdateIndexadorCommandHandler : IRequestHandler<UpdateIndexadorComm
 
         _logger.LogInformation("Indexador {Id} atualizado", indexador.Id);
 
-        return _mapper.Map<IndexadorDto>(indexador);
+        // Get the latest historico entry and count
+        var historicoStats = await _context.HistoricosIndexadores
+            .Where(h => h.IndexadorId == request.Id)
+            .GroupBy(h => h.IndexadorId)
+            .Select(g => new
+            {
+                UltimoValor = g.OrderByDescending(h => h.DataReferencia).Select(h => (decimal?)h.Valor).FirstOrDefault(),
+                UltimaData = g.OrderByDescending(h => h.DataReferencia).Select(h => (DateTime?)h.DataReferencia).FirstOrDefault(),
+                Count = g.Count()
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return new IndexadorDto(
+            indexador.Id,
+            indexador.Codigo,
+            indexador.Nome,
+            indexador.Tipo,
+            indexador.Tipo.ToString(),
+            indexador.Fonte,
+            indexador.Periodicidade,
+            indexador.Periodicidade.ToString(),
+            indexador.FatorAcumulado,
+            indexador.DataBase,
+            indexador.UrlFonte,
+            indexador.ImportacaoAutomatica,
+            indexador.Ativo,
+            indexador.CreatedAt,
+            indexador.UpdatedAt,
+            historicoStats?.UltimoValor,
+            historicoStats?.UltimaData,
+            historicoStats?.Count ?? 0
+        );
     }
 }
