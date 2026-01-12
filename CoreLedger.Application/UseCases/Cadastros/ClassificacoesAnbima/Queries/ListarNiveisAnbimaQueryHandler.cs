@@ -60,6 +60,10 @@ public class ListarNiveisAnbimaQueryHandler
                     .ToList()
             );
 
+        _logger.LogInformation(
+            "Retrieved hierarchical levels - Nivel1 count: {Nivel1Count}, Total classifications: {TotalCount}",
+            nivel1Counts.Count, classificacoes.Count);
+
         return new NiveisClassificacaoAnbimaResponse(nivel1Counts, nivel2PorNivel1);
     }
 }

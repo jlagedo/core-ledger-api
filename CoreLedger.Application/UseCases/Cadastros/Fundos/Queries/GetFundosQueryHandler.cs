@@ -48,6 +48,8 @@ public class GetFundosQueryHandler : IRequestHandler<GetFundosQuery, AppModels.P
 
         var dtos = fundos.Select(f => _mapper.Map<FundoListDto>(f)).ToList();
 
+        _logger.LogInformation("Retrieved {Count} fundos out of {TotalCount} total", dtos.Count, totalCount);
+
         return new AppModels.PagedResult<FundoListDto>(dtos, totalCount, request.Limit, request.Offset);
     }
 }

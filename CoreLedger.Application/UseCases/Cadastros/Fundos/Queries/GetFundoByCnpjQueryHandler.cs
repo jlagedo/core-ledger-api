@@ -37,6 +37,8 @@ public class GetFundoByCnpjQueryHandler : IRequestHandler<GetFundoByCnpjQuery, F
             throw new EntityNotFoundException("Fundo", request.Cnpj);
         }
 
+        _logger.LogInformation("Fundo retrieved by CNPJ - CNPJ: {Cnpj}, Id: {Id}, RazaoSocial: {RazaoSocial}", fundo.Cnpj.Formatado, fundo.Id, fundo.RazaoSocial);
+
         return _mapper.Map<FundoResponseDto>(fundo);
     }
 }

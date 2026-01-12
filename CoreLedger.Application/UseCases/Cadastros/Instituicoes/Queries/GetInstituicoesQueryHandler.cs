@@ -51,6 +51,8 @@ public class GetInstituicoesQueryHandler : IRequestHandler<GetInstituicoesQuery,
 
         var dtos = instituicoes.Select(i => _mapper.Map<InstituicaoDto>(i)).ToList();
 
+        _logger.LogInformation("Retrieved {Count} instituições out of {TotalCount} total", dtos.Count, totalCount);
+
         return new AppModels.PagedResult<InstituicaoDto>(dtos, totalCount, request.Limit, request.Offset);
     }
 }

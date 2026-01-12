@@ -40,6 +40,8 @@ public class GetFundoByIdQueryHandler : IRequestHandler<GetFundoByIdQuery, Fundo
             throw new EntityNotFoundException("Fundo", request.Id);
         }
 
+        _logger.LogInformation("Fundo retrieved successfully - Id: {Id}, CNPJ: {Cnpj}, RazaoSocial: {RazaoSocial}", fundo.Id, fundo.Cnpj.Formatado, fundo.RazaoSocial);
+
         return _mapper.Map<FundoResponseDto>(fundo);
     }
 }

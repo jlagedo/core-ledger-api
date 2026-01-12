@@ -40,6 +40,10 @@ public class GetClasseByIdQueryHandler : IRequestHandler<GetClasseByIdQuery, Fun
             throw new EntityNotFoundException("Classe", request.Id);
         }
 
+        _logger.LogInformation(
+            "Classe retrieved successfully - Id: {Id}, CodigoClasse: {CodigoClasse}",
+            classe.Id, classe.CodigoClasse);
+
         return _mapper.Map<FundoClasseResponseDto>(classe);
     }
 }

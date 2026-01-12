@@ -61,6 +61,10 @@ public class ListarClassificacoesAnbimaQueryHandler
             mensagem = $"Classificação CVM '{request.ClassificacaoCvm}' não possui classificações ANBIMA correspondentes";
         }
 
+        _logger.LogInformation(
+            "Retrieved {Count} ANBIMA classifications",
+            dtos.Count);
+
         return new ListarClassificacoesAnbimaResponse(
             dtos,
             dtos.Count,

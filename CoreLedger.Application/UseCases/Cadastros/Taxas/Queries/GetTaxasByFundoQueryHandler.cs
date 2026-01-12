@@ -58,6 +58,8 @@ public class GetTaxasByFundoQueryHandler : IRequestHandler<GetTaxasByFundoQuery,
             .ThenBy(t => t.DataInicioVigencia)
             .ToListAsync(cancellationToken);
 
+        _logger.LogInformation("Retrieved {Count} taxas for fundo {FundoId} (IncluirInativas: {IncluirInativas})", taxas.Count, request.FundoId, request.IncluirInativas);
+
         return taxas.Select(t => _mapper.Map<FundoTaxaListDto>(t)).ToList();
     }
 }

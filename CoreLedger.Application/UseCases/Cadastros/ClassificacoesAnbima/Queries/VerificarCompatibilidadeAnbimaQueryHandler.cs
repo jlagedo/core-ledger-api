@@ -55,6 +55,10 @@ public class VerificarCompatibilidadeAnbimaQueryHandler
                        $"Esperado: {classificacao.ClassificacaoCvm}";
         }
 
+        _logger.LogInformation(
+            "Compatibility verified - CodigoAnbima: {CodigoAnbima}, ClassificacaoCvm: {ClassificacaoCvm}, Compatible: {Compativel}",
+            request.CodigoAnbima, request.ClassificacaoCvm, compativel);
+
         return new VerificarCompatibilidadeResponse(
             compativel,
             request.CodigoAnbima,

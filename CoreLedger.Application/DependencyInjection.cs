@@ -1,5 +1,6 @@
 using System.Reflection;
 using CoreLedger.Application.Behaviors;
+using CoreLedger.Domain.Cadastros.Services;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,6 +23,9 @@ public static class DependencyInjection
 
         services.AddAutoMapper(cfg => { }, assembly);
         services.AddValidatorsFromAssembly(assembly);
+
+        // Register Domain Services
+        services.AddScoped<FundoDomainService>();
 
         return services;
     }

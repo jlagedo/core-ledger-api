@@ -59,6 +59,10 @@ public class GetVinculosByFundoQueryHandler : IRequestHandler<GetVinculosByFundo
             .ThenBy(v => v.DataInicio)
             .ToListAsync(cancellationToken);
 
+        _logger.LogInformation(
+            "Retrieved {Count} vínculos for fundo {FundoId} (IncluirEncerrados: {IncluirEncerrados})",
+            vinculos.Count, request.FundoId, request.IncluirEncerrados);
+
         return vinculos.Select(v => _mapper.Map<FundoVinculoDto>(v)).ToList();
     }
 }

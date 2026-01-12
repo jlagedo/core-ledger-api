@@ -1,6 +1,8 @@
 using CoreLedger.Domain.Cadastros.Entities;
 using CoreLedger.Domain.Cadastros.Enums;
 using CoreLedger.Domain.Cadastros.Services;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
 
 namespace CoreLedger.UnitTests.Domain.Cadastros.Services;
 
@@ -10,10 +12,12 @@ namespace CoreLedger.UnitTests.Domain.Cadastros.Services;
 public class FundoDomainServiceTests
 {
     private readonly FundoDomainService _service;
+    private readonly ILogger<FundoDomainService> _logger;
 
     public FundoDomainServiceTests()
     {
-        _service = new FundoDomainService();
+        _logger = Substitute.For<ILogger<FundoDomainService>>();
+        _service = new FundoDomainService(_logger);
     }
 
     #region PodeAtivar Tests

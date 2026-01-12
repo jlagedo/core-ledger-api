@@ -35,6 +35,10 @@ public class SearchFundosQueryHandler : IRequestHandler<SearchFundosQuery, IRead
 
         var fundos = await _queryService.SearchAsync(request.SearchTerm, request.Limit, cancellationToken);
 
-        return fundos.Select(f => _mapper.Map<FundoListDto>(f)).ToList();
+        var dtos = fundos.Select(f => _mapper.Map<FundoListDto>(f)).ToList();
+
+        _logger.LogInformation("Search completed - Found {Count} fundos for term '{SearchTerm}'", dtos.Count, request.SearchTerm);
+
+        return dtos;
     }
 }

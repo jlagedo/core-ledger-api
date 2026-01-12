@@ -43,6 +43,8 @@ public class ObterClassificacaoAnbimaPorCodigoQueryHandler
             return null;
         }
 
+        _logger.LogInformation("ANBIMA classification retrieved - Codigo: {Codigo}, Nome: {Nome}", classificacao.Codigo, classificacao.Nome);
+
         return _mapper.Map<ClassificacaoAnbimaDto>(classificacao);
     }
 }

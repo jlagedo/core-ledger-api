@@ -32,6 +32,7 @@ public class CriarFundoWizardCommandHandler : IRequestHandler<CriarFundoWizardCo
         CancellationToken cancellationToken)
     {
         var request = command.Request;
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
         _logger.LogInformation(
             "Iniciando criação de fundo via wizard - CNPJ: {Cnpj}, RazaoSocial: {RazaoSocial}, TipoFundo: {TipoFundo}",
@@ -210,10 +211,19 @@ public class CriarFundoWizardCommandHandler : IRequestHandler<CriarFundoWizardCo
             // 11. Commit transaction
             await transaction.CommitAsync(cancellationToken);
 
+            stopwatch.Stop();
+
             _logger.LogInformation(
-                "Fundo criado via wizard com sucesso - Id: {FundoId}, CNPJ: {Cnpj}",
+                "Fundo criado via wizard com sucesso - Id: {FundoId}, CNPJ: {Cnpj}, " +
+                "Classes: {ClassesCount}, Taxas: {TaxasCount}, Prazos: {PrazosCount}, " +
+                "Vínculos: {VinculosCount}, Tempo: {ElapsedMs}ms",
                 fundo.Id,
-                request.Identificacao.Cnpj);
+                request.Identificacao.Cnpj,
+                request.Classes?.Count ?? 0,
+                request.Taxas.Count,
+                request.Prazos.Count,
+                request.Vinculos.Count,
+                stopwatch.ElapsedMilliseconds);
 
             // Return response
             return new FundoWizardResponseDto(

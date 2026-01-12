@@ -56,6 +56,8 @@ public class GetPrazosByFundoQueryHandler : IRequestHandler<GetPrazosByFundoQuer
             .OrderBy(p => p.TipoPrazo)
             .ToListAsync(cancellationToken);
 
+        _logger.LogInformation("Retrieved {Count} prazos for fundo {FundoId} (IncluirInativos: {IncluirInativos})", prazos.Count, request.FundoId, request.IncluirInativos);
+
         return prazos.Select(p => _mapper.Map<FundoPrazoListDto>(p)).ToList();
     }
 }

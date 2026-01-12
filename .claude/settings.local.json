@@ -14,5 +14,6 @@
     "nuget",
     "postgres",
     "microsoft-docs"
-  ]
+  ],
+  "enableAllProjectMcpServers": true
 }

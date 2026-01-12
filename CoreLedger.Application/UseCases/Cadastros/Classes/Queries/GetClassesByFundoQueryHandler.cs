@@ -49,6 +49,8 @@ public class GetClassesByFundoQueryHandler : IRequestHandler<GetClassesByFundoQu
             .OrderBy(c => c.CodigoClasse)
             .ToListAsync(cancellationToken);
 
+        _logger.LogInformation("Retrieved {Count} classes for fundo {FundoId}", classes.Count, request.FundoId);
+
         return classes.Select(c => _mapper.Map<FundoClasseListDto>(c)).ToList();
     }
 }
