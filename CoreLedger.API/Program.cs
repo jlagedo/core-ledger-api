@@ -142,6 +142,7 @@ try
     app.MapPrazosEndpoints();
     app.MapVinculosEndpoints();
     app.MapInstituicoesEndpoints();
+    app.MapClassificacoesAnbimaEndpoints();
 
     app.MapHealthChecks("/health");
     app.MapHealthChecks("/health/ready");

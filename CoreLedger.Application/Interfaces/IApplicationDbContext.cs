@@ -37,6 +37,7 @@ public interface IApplicationDbContext
     DbSet<AuditLog> AuditLogs { get; }
     DbSet<Calendario> Calendarios { get; }
     DbSet<Instituicao> Instituicoes { get; }
+    DbSet<ClassificacaoAnbima> ClassificacoesAnbima { get; }
     DbSet<FundoVinculo> FundoVinculos { get; }
     DbSet<FundoParametrosFIDC> FundoParametrosFIDC { get; }
     DbSet<FundoParametrosCota> FundoParametrosCota { get; }

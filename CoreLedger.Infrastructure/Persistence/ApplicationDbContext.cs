@@ -29,6 +29,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<FundoPrazo> FundoPrazos => Set<FundoPrazo>();
     public DbSet<FundoPrazoExcecao> FundoPrazoExcecoes => Set<FundoPrazoExcecao>();
     public DbSet<Instituicao> Instituicoes => Set<Instituicao>();
+    public DbSet<ClassificacaoAnbima> ClassificacoesAnbima => Set<ClassificacaoAnbima>();
     public DbSet<FundoVinculo> FundoVinculos => Set<FundoVinculo>();
     public DbSet<FundoParametrosFIDC> FundoParametrosFIDC => Set<FundoParametrosFIDC>();
     public DbSet<FundoParametrosCota> FundoParametrosCota => Set<FundoParametrosCota>();
