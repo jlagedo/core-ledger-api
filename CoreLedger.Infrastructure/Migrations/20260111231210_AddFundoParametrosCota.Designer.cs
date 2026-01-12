@@ -4,6 +4,7 @@ using System.Text.Json;
 using CoreLedger.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CoreLedger.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260111231210_AddFundoParametrosCota")]
+    partial class AddFundoParametrosCota
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -222,10 +225,6 @@ namespace CoreLedger.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.Property<DateOnly?>("DataEncerramento")
-                        .HasColumnType("date")
-                        .HasColumnName("data_encerramento");
-
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
@@ -233,11 +232,6 @@ namespace CoreLedger.Infrastructure.Migrations
                     b.Property<Guid>("FundoId")
                         .HasColumnType("uuid")
                         .HasColumnName("fundo_id");
-
-                    b.Property<string>("MotivoEncerramento")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("motivo_encerramento");
 
                     b.Property<string>("NomeClasse")
                         .IsRequired()
@@ -248,12 +242,6 @@ namespace CoreLedger.Infrastructure.Migrations
                     b.Property<int?>("OrdemSubordinacao")
                         .HasColumnType("integer")
                         .HasColumnName("ordem_subordinacao");
-
-                    b.Property<bool>("PermiteResgateAntecipado")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true)
-                        .HasColumnName("permite_resgate_antecipado");
 
                     b.Property<decimal?>("RentabilidadeAlvo")
                         .HasColumnType("decimal(8,4)")
@@ -528,24 +516,6 @@ namespace CoreLedger.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("permite_parcial");
 
-                    b.Property<bool>("PermiteResgateProgramado")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("permite_resgate_programado");
-
-                    b.Property<int?>("PrazoMaximoProgramacao")
-                        .HasColumnType("integer")
-                        .HasColumnName("prazo_maximo_programacao");
-
-                    b.Property<string>("TipoCalendario")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasDefaultValue("NACIONAL")
-                        .HasColumnName("tipo_calendario");
-
                     b.Property<string>("TipoPrazo")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -731,10 +701,6 @@ namespace CoreLedger.Infrastructure.Migrations
                     b.Property<Guid>("FundoId")
                         .HasColumnType("uuid")
                         .HasColumnName("fundo_id");
-
-                    b.Property<bool?>("LinhaDaguaGlobal")
-                        .HasColumnType("boolean")
-                        .HasColumnName("linha_dagua_global");
 
                     b.Property<decimal>("Percentual")
                         .HasColumnType("decimal(8,4)")

@@ -28,5 +28,35 @@ public enum TipoVinculoInstitucional
     /// <summary>
     ///     Auditor independente do fundo.
     /// </summary>
-    Auditor = 5
+    Auditor = 5,
+
+    /// <summary>
+    ///     Escriturador de cotas.
+    /// </summary>
+    Escriturador = 6,
+
+    /// <summary>
+    ///     Controlador (se terceirizado).
+    /// </summary>
+    Controlador = 7,
+
+    /// <summary>
+    ///     Consultoria de crédito (FIDC).
+    /// </summary>
+    ConsultoriaCredito = 8,
+
+    /// <summary>
+    ///     Agente de cobrança (FIDC).
+    /// </summary>
+    AgenteCobranca = 9,
+
+    /// <summary>
+    ///     Cedente de recebíveis (FIDC).
+    /// </summary>
+    Cedente = 10,
+
+    /// <summary>
+    ///     Formador de mercado (ETF/FII).
+    /// </summary>
+    FormadorMercado = 11
 }

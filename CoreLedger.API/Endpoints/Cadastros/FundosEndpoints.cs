@@ -1,6 +1,7 @@
 using CoreLedger.API.Extensions;
 using CoreLedger.API.Models;
 using CoreLedger.Application.DTOs.Fundo;
+using CoreLedger.Application.DTOs.Wizard;
 using CoreLedger.Application.UseCases.Cadastros.Fundos.Commands;
 using CoreLedger.Application.UseCases.Cadastros.Fundos.Queries;
 using MediatR;
@@ -32,8 +33,18 @@ public static class FundosEndpoints
         group.MapGet("/busca", Search)
             .WithName("SearchFundos");
 
+        group.MapGet("/verificar-cnpj/{cnpj}", VerificarCnpjDisponivel)
+            .WithName("VerificarCnpjDisponivel")
+            .Produces<CnpjDisponibilidadeResponseDto>(StatusCodes.Status200OK);
+
         group.MapPost("/", Create)
             .WithName("CreateFundo");
+
+        group.MapPost("/wizard", CreateWizard)
+            .WithName("CreateFundoWizard")
+            .Produces<FundoWizardResponseDto>(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status409Conflict);
 
         group.MapPut("/{id:guid}", Update)
             .WithName("UpdateFundo");
@@ -231,5 +242,57 @@ public static class FundosEndpoints
         logger.LogInformation("Fundo deleted - Id: {FundoId}", id);
 
         return Results.NoContent();
+    }
+
+    /// <summary>
+    ///     Cria um novo fundo via wizard com todas as entidades relacionadas.
+    /// </summary>
+    private static async Task<IResult> CreateWizard(
+        FundoWizardRequestDto dto,
+        IMediator mediator,
+        HttpContext context,
+        ILoggerFactory loggerFactory,
+        CancellationToken cancellationToken)
+    {
+        var logger = loggerFactory.CreateLogger(LoggerName);
+        var userId = context.GetUserId();
+
+        logger.LogInformation(
+            "Creating fundo via wizard - CNPJ: {Cnpj}, RazaoSocial: {RazaoSocial}, TipoFundo: {TipoFundo}, CreatedBy: {UserId}",
+            dto.Identificacao.Cnpj,
+            dto.Identificacao.RazaoSocial,
+            dto.Identificacao.TipoFundo,
+            userId);
+
+        var command = new CriarFundoWizardCommand(dto, userId);
+        var result = await mediator.Send(command, cancellationToken);
+
+        logger.LogInformation(
+            "Fundo created via wizard - Id: {FundoId}, CNPJ: {Cnpj}",
+            result.Id,
+            result.Cnpj);
+
+        return Results.Created($"/api/v1/fundos/{result.Id}", result);
+    }
+
+    /// <summary>
+    ///     Verifica se um CNPJ está disponível para cadastro de novo fundo.
+    /// </summary>
+    private static async Task<IResult> VerificarCnpjDisponivel(
+        string cnpj,
+        IMediator mediator,
+        HttpContext context,
+        ILoggerFactory loggerFactory,
+        CancellationToken cancellationToken)
+    {
+        var logger = loggerFactory.CreateLogger(LoggerName);
+        var userId = context.GetUserId();
+
+        logger.LogInformation("Verificando disponibilidade do CNPJ {Cnpj} para user {UserId}", cnpj, userId);
+
+        var query = new VerificarCnpjDisponivelQuery(cnpj);
+        var result = await mediator.Send(query, cancellationToken);
+
+        return Results.Ok(result);
     }
 }

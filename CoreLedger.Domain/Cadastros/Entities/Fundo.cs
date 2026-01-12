@@ -155,6 +155,11 @@ public class Fundo
     public FundoParametrosFIDC? ParametrosFIDC { get; private set; }
 
     /// <summary>
+    ///     Parâmetros de cálculo e exibição da cota (relacionamento 1:1, opcional).
+    /// </summary>
+    public FundoParametrosCota? ParametrosCota { get; private set; }
+
+    /// <summary>
     ///     Identificador do usuário que criou o registro.
     /// </summary>
     public string? CreatedBy { get; private set; }

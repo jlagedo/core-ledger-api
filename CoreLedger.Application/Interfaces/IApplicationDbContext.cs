@@ -38,6 +38,8 @@ public interface IApplicationDbContext
     DbSet<Calendario> Calendarios { get; }
     DbSet<Instituicao> Instituicoes { get; }
     DbSet<FundoVinculo> FundoVinculos { get; }
+    DbSet<FundoParametrosFIDC> FundoParametrosFIDC { get; }
+    DbSet<FundoParametrosCota> FundoParametrosCota { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

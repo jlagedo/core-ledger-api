@@ -70,6 +70,21 @@ public class FundoClasse
     public bool Ativa { get; private set; }
 
     /// <summary>
+    ///     Indica se a classe permite resgate antecipado.
+    /// </summary>
+    public bool PermiteResgateAntecipado { get; private set; } = true;
+
+    /// <summary>
+    ///     Data de encerramento da classe (se encerrada).
+    /// </summary>
+    public DateOnly? DataEncerramento { get; private set; }
+
+    /// <summary>
+    ///     Motivo do encerramento da classe.
+    /// </summary>
+    public string? MotivoEncerramento { get; private set; }
+
+    /// <summary>
     ///     Data e hora de criação do registro.
     /// </summary>
     public DateTime CreatedAt { get; private set; }
@@ -118,6 +133,7 @@ public class FundoClasse
     /// <param name="responsabilidadeLimitada">Se possui responsabilidade limitada</param>
     /// <param name="segregacaoPatrimonial">Se possui segregação patrimonial</param>
     /// <param name="valorMinimoAplicacao">Valor mínimo de aplicação</param>
+    /// <param name="permiteResgateAntecipado">Se permite resgate antecipado</param>
     public static FundoClasse Criar(
         Guid fundoId,
         string codigoClasse,
@@ -129,7 +145,8 @@ public class FundoClasse
         decimal? rentabilidadeAlvo = null,
         bool responsabilidadeLimitada = false,
         bool segregacaoPatrimonial = false,
-        decimal? valorMinimoAplicacao = null)
+        decimal? valorMinimoAplicacao = null,
+        bool permiteResgateAntecipado = true)
     {
         ValidarParametros(codigoClasse, nomeClasse, tipoFundo, tipoClasseFidc, ordemSubordinacao,
             rentabilidadeAlvo, valorMinimoAplicacao, cnpjClasse);
@@ -147,6 +164,7 @@ public class FundoClasse
             ResponsabilidadeLimitada = responsabilidadeLimitada,
             SegregacaoPatrimonial = segregacaoPatrimonial,
             ValorMinimoAplicacao = valorMinimoAplicacao,
+            PermiteResgateAntecipado = permiteResgateAntecipado,
             Ativa = true,
             CreatedAt = DateTime.UtcNow
         };
@@ -164,7 +182,8 @@ public class FundoClasse
         bool responsabilidadeLimitada,
         bool segregacaoPatrimonial,
         decimal? valorMinimoAplicacao,
-        TipoFundo tipoFundo)
+        TipoFundo tipoFundo,
+        bool permiteResgateAntecipado = true)
     {
         ValidarParametros(CodigoClasse, nomeClasse, tipoFundo, tipoClasseFidc, ordemSubordinacao,
             rentabilidadeAlvo, valorMinimoAplicacao, cnpjClasse);
@@ -177,6 +196,37 @@ public class FundoClasse
         ResponsabilidadeLimitada = responsabilidadeLimitada;
         SegregacaoPatrimonial = segregacaoPatrimonial;
         ValorMinimoAplicacao = valorMinimoAplicacao;
+        PermiteResgateAntecipado = permiteResgateAntecipado;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    ///     Encerra a classe com data e motivo.
+    /// </summary>
+    /// <param name="dataEncerramento">Data do encerramento.</param>
+    /// <param name="motivoEncerramento">Motivo do encerramento.</param>
+    public void Encerrar(DateOnly dataEncerramento, string? motivoEncerramento = null)
+    {
+        if (DataEncerramento.HasValue)
+            throw new DomainValidationException("A classe já foi encerrada.");
+
+        DataEncerramento = dataEncerramento;
+        MotivoEncerramento = motivoEncerramento?.Trim();
+        Ativa = false;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    ///     Reabre uma classe encerrada.
+    /// </summary>
+    public void Reabrir()
+    {
+        if (!DataEncerramento.HasValue)
+            throw new DomainValidationException("A classe não está encerrada.");
+
+        DataEncerramento = null;
+        MotivoEncerramento = null;
+        Ativa = true;
         UpdatedAt = DateTime.UtcNow;
     }
 

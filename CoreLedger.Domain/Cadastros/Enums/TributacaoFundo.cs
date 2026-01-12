@@ -23,5 +23,15 @@ public enum TributacaoFundo
     /// <summary>
     ///     Fundo isento de tributação.
     /// </summary>
-    Isento = 4
+    Isento = 4,
+
+    /// <summary>
+    ///     Regime de previdência (PGBL/VGBL).
+    /// </summary>
+    Previdencia = 5,
+
+    /// <summary>
+    ///     Tributação de fundos imobiliários (isenção PF em condições específicas).
+    /// </summary>
+    Imobiliario = 6
 }

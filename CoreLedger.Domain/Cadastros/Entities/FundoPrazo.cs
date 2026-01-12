@@ -74,6 +74,22 @@ public class FundoPrazo
     public bool PermiteParcial { get; private set; }
 
     /// <summary>
+    ///     Tipo de calendário para contagem de dias D+X.
+    ///     Valores: NACIONAL, SAO_PAULO, RIO_DE_JANEIRO, EXTERIOR_EUA, EXTERIOR_EUR.
+    /// </summary>
+    public string TipoCalendario { get; private set; } = "NACIONAL";
+
+    /// <summary>
+    ///     Indica se permite resgate programado/agendado.
+    /// </summary>
+    public bool PermiteResgateProgramado { get; private set; }
+
+    /// <summary>
+    ///     Prazo máximo em dias úteis para programar resgate.
+    /// </summary>
+    public int? PrazoMaximoProgramacao { get; private set; }
+
+    /// <summary>
     ///     Percentual mínimo para resgate parcial (%).
     /// </summary>
     public decimal? PercentualMinimo { get; private set; }
@@ -123,6 +139,9 @@ public class FundoPrazo
     /// <param name="permiteParcial">Se permite operação parcial.</param>
     /// <param name="percentualMinimo">Percentual mínimo para operação parcial.</param>
     /// <param name="valorMinimo">Valor mínimo para operação.</param>
+    /// <param name="tipoCalendario">Tipo de calendário para D+X.</param>
+    /// <param name="permiteResgateProgramado">Se permite resgate programado.</param>
+    /// <param name="prazoMaximoProgramacao">Prazo máximo para programar resgate.</param>
     /// <returns>Nova instância de FundoPrazo.</returns>
     /// <exception cref="DomainValidationException">Quando os dados são inválidos.</exception>
     public static FundoPrazo Criar(
@@ -137,12 +156,17 @@ public class FundoPrazo
         int? calendarioId = null,
         bool permiteParcial = false,
         decimal? percentualMinimo = null,
-        decimal? valorMinimo = null)
+        decimal? valorMinimo = null,
+        string tipoCalendario = "NACIONAL",
+        bool permiteResgateProgramado = false,
+        int? prazoMaximoProgramacao = null)
     {
         ValidarFundoId(fundoId);
         ValidarDias(diasCotizacao, diasLiquidacao, diasCarencia);
         ValidarPercentualMinimo(percentualMinimo);
         ValidarValorMinimo(valorMinimo);
+        ValidarTipoCalendario(tipoCalendario);
+        ValidarPrazoMaximoProgramacao(permiteResgateProgramado, prazoMaximoProgramacao);
 
         return new FundoPrazo
         {
@@ -158,6 +182,9 @@ public class FundoPrazo
             PermiteParcial = permiteParcial,
             PercentualMinimo = percentualMinimo,
             ValorMinimo = valorMinimo,
+            TipoCalendario = tipoCalendario.Trim().ToUpperInvariant(),
+            PermiteResgateProgramado = permiteResgateProgramado,
+            PrazoMaximoProgramacao = prazoMaximoProgramacao,
             Ativo = true,
             CreatedAt = DateTime.UtcNow
         };
@@ -175,6 +202,9 @@ public class FundoPrazo
     /// <param name="permiteParcial">Se permite operação parcial.</param>
     /// <param name="percentualMinimo">Percentual mínimo.</param>
     /// <param name="valorMinimo">Valor mínimo.</param>
+    /// <param name="tipoCalendario">Tipo de calendário para D+X.</param>
+    /// <param name="permiteResgateProgramado">Se permite resgate programado.</param>
+    /// <param name="prazoMaximoProgramacao">Prazo máximo para programar resgate.</param>
     public void Atualizar(
         int diasCotizacao,
         int diasLiquidacao,
@@ -184,11 +214,16 @@ public class FundoPrazo
         int? calendarioId,
         bool permiteParcial,
         decimal? percentualMinimo,
-        decimal? valorMinimo)
+        decimal? valorMinimo,
+        string tipoCalendario = "NACIONAL",
+        bool permiteResgateProgramado = false,
+        int? prazoMaximoProgramacao = null)
     {
         ValidarDias(diasCotizacao, diasLiquidacao, diasCarencia);
         ValidarPercentualMinimo(percentualMinimo);
         ValidarValorMinimo(valorMinimo);
+        ValidarTipoCalendario(tipoCalendario);
+        ValidarPrazoMaximoProgramacao(permiteResgateProgramado, prazoMaximoProgramacao);
 
         DiasCotizacao = diasCotizacao;
         DiasLiquidacao = diasLiquidacao;
@@ -199,6 +234,9 @@ public class FundoPrazo
         PermiteParcial = permiteParcial;
         PercentualMinimo = percentualMinimo;
         ValorMinimo = valorMinimo;
+        TipoCalendario = tipoCalendario.Trim().ToUpperInvariant();
+        PermiteResgateProgramado = permiteResgateProgramado;
+        PrazoMaximoProgramacao = prazoMaximoProgramacao;
         UpdatedAt = DateTime.UtcNow;
     }
 
@@ -286,5 +324,23 @@ public class FundoPrazo
     {
         if (valorMinimo.HasValue && valorMinimo.Value < 0)
             throw new DomainValidationException("Valor mínimo não pode ser negativo.");
+    }
+
+    private static void ValidarTipoCalendario(string tipoCalendario)
+    {
+        var tiposValidos = new[] { "NACIONAL", "SAO_PAULO", "RIO_DE_JANEIRO", "EXTERIOR_EUA", "EXTERIOR_EUR" };
+        if (!string.IsNullOrWhiteSpace(tipoCalendario) && !tiposValidos.Contains(tipoCalendario.Trim().ToUpperInvariant()))
+            throw new DomainValidationException(
+                $"Tipo de calendário inválido. Valores válidos: {string.Join(", ", tiposValidos)}");
+    }
+
+    private static void ValidarPrazoMaximoProgramacao(bool permiteResgateProgramado, int? prazoMaximoProgramacao)
+    {
+        if (permiteResgateProgramado && prazoMaximoProgramacao.HasValue && prazoMaximoProgramacao.Value <= 0)
+            throw new DomainValidationException("Prazo máximo de programação deve ser maior que zero.");
+
+        if (!permiteResgateProgramado && prazoMaximoProgramacao.HasValue)
+            throw new DomainValidationException(
+                "Prazo máximo de programação só pode ser informado se resgate programado for permitido.");
     }
 }

@@ -95,6 +95,10 @@ public class FundoTaxaConfiguration : IEntityTypeConfiguration<FundoTaxa>
             .HasDefaultValue(true)
             .IsRequired();
 
+        // Linha d'água global (para taxa de performance)
+        builder.Property(t => t.LinhaDaguaGlobal)
+            .HasColumnName("linha_dagua_global");
+
         // Audit fields
         builder.Property(t => t.CreatedAt)
             .HasColumnName("created_at")

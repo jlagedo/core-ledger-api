@@ -70,6 +70,23 @@ public class FundoPrazoConfiguration : IEntityTypeConfiguration<FundoPrazo>
             .HasColumnName("valor_minimo")
             .HasColumnType("decimal(18,2)");
 
+        // Tipo de calendário para contagem D+X
+        builder.Property(fp => fp.TipoCalendario)
+            .HasColumnName("tipo_calendario")
+            .HasMaxLength(20)
+            .HasDefaultValue("NACIONAL")
+            .IsRequired();
+
+        // Permite resgate programado/agendado
+        builder.Property(fp => fp.PermiteResgateProgramado)
+            .HasColumnName("permite_resgate_programado")
+            .HasDefaultValue(false)
+            .IsRequired();
+
+        // Prazo máximo para programar resgate
+        builder.Property(fp => fp.PrazoMaximoProgramacao)
+            .HasColumnName("prazo_maximo_programacao");
+
         builder.Property(fp => fp.Ativo)
             .HasColumnName("ativo")
             .HasDefaultValue(true)

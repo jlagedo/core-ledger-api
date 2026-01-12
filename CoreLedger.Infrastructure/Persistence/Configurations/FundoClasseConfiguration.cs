@@ -70,6 +70,22 @@ public class FundoClasseConfiguration : IEntityTypeConfiguration<FundoClasse>
             .HasDefaultValue(true)
             .IsRequired();
 
+        // Permite resgate antecipado
+        builder.Property(c => c.PermiteResgateAntecipado)
+            .HasColumnName("permite_resgate_antecipado")
+            .HasDefaultValue(true)
+            .IsRequired();
+
+        // Data de encerramento da classe
+        builder.Property(c => c.DataEncerramento)
+            .HasColumnName("data_encerramento")
+            .HasColumnType("date");
+
+        // Motivo do encerramento
+        builder.Property(c => c.MotivoEncerramento)
+            .HasColumnName("motivo_encerramento")
+            .HasMaxLength(500);
+
         // Audit fields
         builder.Property(c => c.CreatedAt)
             .HasColumnName("created_at")

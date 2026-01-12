@@ -94,6 +94,12 @@ public class FundoTaxa
     public FundoTaxaPerformance? ParametrosPerformance { get; private set; }
 
     /// <summary>
+    /// Indica se a linha d'água é global (true) ou por cotista (false).
+    /// Aplicável apenas para taxas de performance com HWM.
+    /// </summary>
+    public bool? LinhaDaguaGlobal { get; private set; }
+
+    /// <summary>
     /// Data de criação do registro.
     /// </summary>
     public DateTime CreatedAt { get; private set; }
